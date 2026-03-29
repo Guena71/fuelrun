@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-var GEMINI_KEY=import.meta.env.VITE_GEMINI_KEY||"";
+var GROQ_KEY=import.meta.env.VITE_GROQ_KEY||"";
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#1f1f1f",BORD="#2a2a2a";
 var TXT="#f0f0f0",SUB="#888",MUT="#444";
@@ -1592,7 +1592,7 @@ function JournalScreen(p){
 
 function CoachScreen(p){
   var init="Salut "+(p.profile.name||"champion")+" ! Je suis ton coach FuelRun. "+(p.race?"Tu prépares "+p.race.name+" dans "+weeksUntil(p.race.date)+" semaines. Comment puis-je t'aider ?":"Dis-moi ton objectif et je t'aide !");
-  var [messages,setMessages]=useState([{role:"model",parts:[{text:init}]}]);
+  var [messages,setMessages]=useState([{role:"model",content:init}]);
   var [input,setInput]=useState("");
   var [loading,setLoading]=useState(false);
   var [error,setError]=useState("");
@@ -1602,19 +1602,20 @@ function CoachScreen(p){
   function send(){
     if(!input.trim()||loading)return;
     var msg=input.trim();setInput("");setLoading(true);setError("");
-    var newMsgs=messages.concat([{role:"user",parts:[{text:msg}]}]);
+    var newMsgs=messages.concat([{role:"user",content:msg}]);
     setMessages(newMsgs);
     var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+"\nRéponds en français, 3-4 phrases max, naturel et personnalisé.";
-    fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEMINI_KEY,{
+    var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
+    fetch("https://api.groq.com/openai/v1/chat/completions",{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:newMsgs})
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+GROQ_KEY},
+      body:JSON.stringify({model:"llama-3.1-8b-instant",messages:[{role:"system",content:sys}].concat(hist),max_tokens:400})
     }).then(function(r){return r.json();}).then(function(data){
       if(data.error){setError((data.error.message)||"Erreur API");setLoading(false);return;}
-      var reply=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(b){return b.text||"";}).join("")||"Désolé, réessaie.";
-      setMessages(function(m){return m.concat([{role:"model",parts:[{text:reply}]}]);});setLoading(false);
+      var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
+      setMessages(function(m){return m.concat([{role:"model",content:reply}]);});setLoading(false);
     }).catch(function(){
-      setMessages(function(m){return m.concat([{role:"model",parts:[{text:"Problème de connexion."}]}]);});setLoading(false);
+      setMessages(function(m){return m.concat([{role:"model",content:"Problème de connexion."}]);});setLoading(false);
     });
   }
 
@@ -1633,7 +1634,7 @@ function CoachScreen(p){
         {error?<div style={{marginTop:8,fontSize:12,color:RE}}>{error}</div>:null}
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 16px 8px"}}>
-        {messages.map(function(m,i){var isUser=m.role==="user";var txt=(m.parts||[]).map(function(b){return b.text||"";}).join("");return(<div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start",marginBottom:12,gap:8}}>{!isUser?<div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}}>🏃</div>:null}<div style={{maxWidth:"78%",background:isUser?OR:SURF,borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",fontSize:14,color:isUser?"#fff":TXT,lineHeight:1.6,border:isUser?"none":"1px solid "+BORD}}>{txt}</div></div>);})}
+        {messages.map(function(m,i){var isUser=m.role==="user";return(<div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start",marginBottom:12,gap:8}}>{!isUser?<div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}}>🏃</div>:null}<div style={{maxWidth:"78%",background:isUser?OR:SURF,borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",fontSize:14,color:isUser?"#fff":TXT,lineHeight:1.6,border:isUser?"none":"1px solid "+BORD}}>{m.content}</div></div>);})}
         {loading?(<div style={{display:"flex",gap:8,marginBottom:12}}><div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🏃</div><div style={{background:SURF,borderRadius:"16px 16px 16px 4px",padding:"12px 14px",border:"1px solid "+BORD,display:"flex",gap:4}}>{[0,1,2].map(function(i){return <div key={i} style={{width:7,height:7,borderRadius:"50%",background:OR,animation:"pulse 1.2s "+(i*0.2)+"s infinite"}}/>;})}</div></div>):null}
         <div ref={bottomRef}/>
       </div>
