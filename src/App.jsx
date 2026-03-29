@@ -1605,7 +1605,7 @@ function CoachScreen(p){
     var newMsgs=messages.concat([{role:"user",parts:[{text:msg}]}]);
     setMessages(newMsgs);
     var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+"\nRéponds en français, 3-4 phrases max, naturel et personnalisé.";
-    fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="+GEMINI_KEY,{
+    fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEMINI_KEY,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:newMsgs})
