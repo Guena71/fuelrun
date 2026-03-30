@@ -536,9 +536,14 @@ function AuthScreen(){
         <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>{isLogin?"Bon retour !":"Créer un compte"}</div>
         <div style={{fontSize:14,color:SUB,marginBottom:28}}>{isLogin?"Retrouve ton plan et tes stats.":"Gratuit · Sans carte bancaire"}</div>
 
-        <button onClick={handleGoogle} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+        <button onClick={handleGoogle} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
           <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 40 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.2C37.3 38.8 44 33.8 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
           Continuer avec Google
+        </button>
+
+        <button onClick={function(){alert("Connexion Apple bientôt disponible.");}} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:"#fff",border:"1px solid #ddd",color:"#000",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+          <svg width="18" height="18" viewBox="0 0 814 1000"><path fill="#000" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.3-142.7-108.4c-33.7-55.7-52.3-117-52.3-175.2 0-201.3 130-307.1 257.7-307.1 69.1 0 126.4 45.3 170.1 45.3 42.1 0 108.2-47.2 183.1-47.2zm-126.7-153.2c34.4-39.7 60.3-95.2 60.3-150.6 0-7.8-.6-15.6-2-22.3-57.1 2.2-124.2 38.2-164.8 81.2-31.1 33.1-60.1 88.3-60.1 144.5 0 8.5 1.3 17 1.9 19.8 3.3.5 8.6 1.3 14 1.3 51.5.1 116.3-34.9 150.7-74z"/></svg>
+          Continuer avec Apple
         </button>
 
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
@@ -597,10 +602,11 @@ function PricingScreen(p){
   );
 }
 
-function Splash(p){
-  var [showAuth,setShowAuth]=useState(false);
-  if(showAuth)return <AuthScreen/>;
-  return <HeroScreen onCommencer={function(){setShowAuth(true);}} onLogin={function(){setShowAuth(true);}}/>;
+function Splash(){
+  var [step,setStep]=useState(0);
+  if(step===0)return <HeroScreen onCommencer={function(){setStep(1);}} onLogin={function(){setStep(2);}}/>;
+  if(step===1)return <PricingScreen onStart={function(){setStep(2);}}/>;
+  return <AuthScreen/>;
 }
 
 function Onboarding(p){
