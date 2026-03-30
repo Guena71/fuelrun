@@ -778,8 +778,6 @@ function HomeScreen(p){
   if(p.wellbeing){var tot=0;var vals=Object.values(p.wellbeing);for(var vi=0;vi<vals.length;vi++)tot+=vals[vi];var wpct=tot/(4*4);if(wpct<=0.4)wba={text:"Repos aujourd'hui",sub:"Ton corps a besoin de récupérer.",icon:"🛌",color:RE,bg:RE+"12"};else if(wpct<=0.6)wba={text:"Séance légère conseillée",sub:"Ne force pas trop.",icon:"🚶",color:YE,bg:YE+"12"};else if(wpct<=0.8)wba={text:"Séance normale",sub:"Tu es en bonne forme.",icon:"✅",color:BL,bg:BL+"12"};else wba={text:"Super forme !",sub:"Profites-en, donne tout.",icon:"🚀",color:GR,bg:GR+"12"};}
   var quoteIdx=Math.floor(Date.now()/(30*60*1000))%QUOTES.length;
   var quote=QUOTES[quoteIdx];
-  var HABITS=[{id:"run",emoji:"🏃",label:"Courir"},{id:"sleep",emoji:"😴",label:"Sommeil"},{id:"water",emoji:"💧",label:"Hydratation"},{id:"food",emoji:"🥗",label:"Nutrition"},{id:"stretch",emoji:"🧘",label:"Récup"}];
-  var habitDone=HABITS.filter(function(h){return p.habits&&p.habits[h.id];}).length;
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
     <div style={{paddingBottom:8}}>
@@ -894,31 +892,6 @@ function HomeScreen(p){
               <div style={{width:30,height:30,borderRadius:"50%",background:PU+"18",display:"flex",alignItems:"center",justifyContent:"center",color:PU,fontSize:16,flexShrink:0}}>›</div>
             </div>
           )}
-          <div style={{padding:"14px 18px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.8}}>Habitudes du jour</div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <div style={{height:5,width:52,borderRadius:6,background:SURF2,overflow:"hidden"}}>
-                  <div style={{width:(habitDone/HABITS.length*100)+"%",height:"100%",background:"linear-gradient(90deg,"+OR+"99,"+OR+")",borderRadius:6,transition:"width .4s ease"}}/>
-                </div>
-                <span style={{fontSize:11,fontWeight:700,color:habitDone===HABITS.length?OR:MUT}}>{habitDone}/{HABITS.length}</span>
-              </div>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",gap:6}}>
-              {HABITS.map(function(h){
-                var done=p.habits&&p.habits[h.id];
-                return(<div key={h.id} onClick={function(){p.onToggleHabit(h.id);}} style={{flex:1,textAlign:"center",cursor:"pointer"}}>
-                  <div style={{width:"100%",aspectRatio:"1",maxWidth:46,borderRadius:13,background:done?"linear-gradient(135deg,"+OR+"cc,"+OR+")":SURF2,border:"1.5px solid "+(done?OR:BORD),display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:19,boxShadow:done?"0 4px 12px "+OR+"30":"none",transition:"all .2s ease"}}>{h.emoji}</div>
-                  <div style={{fontSize:9,color:done?OR:MUT,fontWeight:done?700:400,lineHeight:1.2,transition:"color .2s"}}>{h.label}</div>
-                </div>);
-              })}
-            </div>
-            {habitDone===HABITS.length?(
-              <div style={{marginTop:12,padding:"8px 14px",borderRadius:10,background:OR+"12",border:"1px solid "+OR+"25",textAlign:"center"}}>
-                <span style={{fontSize:12,color:OR,fontWeight:600}}>Journée parfaite !</span>
-              </div>
-            ):null}
-          </div>
         </div>
 
         {(p.race&&curWeek)?<NutritionMiniCard profile={p.profile} sessType={sessType}/>:null}
@@ -1800,7 +1773,7 @@ export default function App(){
   if(!profile)return null;
 
   function renderTab(){
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} habits={habits} onToggleHabit={toggleHabit}/>;
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
     if(tab==="nutrition")return <NutritionScreen profile={profile}/>;
