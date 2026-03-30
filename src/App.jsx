@@ -559,12 +559,7 @@ function PricingScreen(p){
 }
 
 function Splash(p){
-  var [step,setStep]=useState(0);
-  var [isLogin,setIsLogin]=useState(false);
-  if(step===0)return <HeroScreen onCommencer={function(){setStep(1);}} onLogin={function(){setIsLogin(true);setStep(5);}}/>;
-  if(step>=1&&step<=4)return <FeatureScreen feature={FEATURES[step-1]} index={step-1} isLast={step===4} onNext={function(){setStep(step===4?5:step+1);}} onSkip={function(){setStep(5);}}/>;
-  if(step===5)return <AuthScreen isLogin={isLogin} onNext={function(){setStep(6);}} onToggle={function(){setIsLogin(!isLogin);}}/>;
-  return <PricingScreen onStart={p.onStart}/>;
+  return <HeroScreen onCommencer={p.onStart} onLogin={p.onStart}/>;
 }
 
 function Onboarding(p){
@@ -970,12 +965,15 @@ function SessionCard(p){
   var s=p.session;
   var [open,setOpen]=useState(p.isNext||false);
   var [nutOpen,setNutOpen]=useState(false);
+  var doneKey="fr_done_"+s.date;
+  var [done,setDoneRaw]=useState(function(){return ls(doneKey,false);});
+  function toggleDone(e){e.stopPropagation();var v=!done;setDoneRaw(v);lsSet(doneKey,v);}
   var sc=TYPE_COLORS[s.type]||OR;
   var n=calcNutrition(p.profile,s.type);
   var recipes=RECIPES[s.type]||[];
   var isPast=s.date&&s.date<new Date(new Date().setHours(0,0,0,0));
   return(
-    <Card style={{marginBottom:10,border:p.isNext?"1.5px solid "+sc:"1px solid "+BORD,opacity:isPast?0.5:1}}>
+    <Card style={{marginBottom:10,border:done?"1.5px solid "+GR:p.isNext?"1.5px solid "+sc:"1px solid "+BORD,opacity:(isPast&&!done)?0.5:1}}>
       {p.isNext&&(
         <div style={{background:"linear-gradient(90deg,"+sc+"cc,"+sc+"88)",padding:"5px 14px",display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontSize:10}}>⚡</span>
@@ -997,7 +995,10 @@ function SessionCard(p){
               {(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}
             </div>
           </div>
-          <div style={{width:24,height:24,borderRadius:8,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:SUB,transform:open?"rotate(180deg)":"rotate(0deg)",flexShrink:0}}>▼</div>
+          <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+            <button onClick={toggleDone} style={{width:28,height:28,borderRadius:8,background:done?GR+"22":SURF2,border:"1px solid "+(done?GR:BORD),display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:done?GR:MUT}}>{done?"✓":"○"}</button>
+            <div style={{width:24,height:24,borderRadius:8,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:SUB,transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
+          </div>
         </div>
 
         {open&&(
@@ -1635,6 +1636,13 @@ function CoachScreen(p){
         <div ref={bottomRef}/>
       </div>
       <div style={{padding:"8px 16px 16px",borderTop:"1px solid "+BORD,flexShrink:0}}>
+        {messages.length<=1&&!loading?(
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+            {["Comment préparer ma prochaine séance ?","Que manger avant une course ?","J'ai mal aux jambes, que faire ?","Comment améliorer mon allure ?"].map(function(q,i){
+              return <button key={i} onClick={function(){setInput(q);}} style={{padding:"6px 12px",borderRadius:20,background:SURF2,border:"1px solid "+BORD,color:SUB,fontSize:11,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>{q}</button>;
+            })}
+          </div>
+        ):null}
         <div style={{display:"flex",gap:8}}>
           <input value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")send();}} placeholder="Pose ta question au coach…" style={{flex:1,background:SURF,border:"1px solid "+BORD,borderRadius:12,padding:"12px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
           <button onClick={send} disabled={!input.trim()||loading} style={{width:46,height:46,borderRadius:12,background:OR,border:"none",cursor:!input.trim()||loading?"not-allowed":"pointer",fontSize:18,opacity:!input.trim()||loading?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>↑</button>
@@ -1798,7 +1806,7 @@ export default function App(){
     if(tab==="nutrition")return <NutritionScreen profile={profile}/>;
     if(tab==="journal")  return <JournalScreen race={race} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);lsSet("fr_profile",updated);setProfile(updated);}} onReset={function(){lsSet("fr_profile",null);lsSet("fr_race",null);lsSet("fr_stats",{sessions:0,km:0,streak:0});lsSet("fr_habits",{});setProfile(null);setRace(null);setScreen("onboarding");}}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);lsSet("fr_profile",updated);setProfile(updated);}} onReset={function(){if(!window.confirm("Réinitialiser ton profil ? Toutes tes données seront supprimées."))return;lsSet("fr_profile",null);lsSet("fr_race",null);lsSet("fr_stats",{sessions:0,km:0,streak:0});lsSet("fr_habits",{});setProfile(null);setRace(null);setScreen("onboarding");}}/>;
     return null;
   }
 
