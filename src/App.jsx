@@ -805,9 +805,8 @@ function HomeScreen(p){
           <div style={{animation:"run 2.5s ease-in-out infinite",filter:"drop-shadow(0 0 18px "+OR+"40)"}}><RunnerHero size={88}/></div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
-          {[{label:"Séances",value:p.stats.sessions,color:OR,icon:"🏃"},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL,icon:"📍"},{label:"Streak",value:p.stats.streak,color:YE,icon:"🔥"}].map(function(st,i){
+          {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
             return(<div key={i} style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",borderRadius:14,padding:"14px 10px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
-              <div style={{fontSize:10,marginBottom:4}}>{st.icon}</div>
               <div style={{fontSize:24,fontWeight:800,lineHeight:1}}><AnimCount value={st.value} color={st.color}/></div>
               <div style={{fontSize:9,color:MUT,marginTop:5,fontWeight:500,textTransform:"uppercase",letterSpacing:0.5}}>{st.label}</div>
             </div>);
@@ -848,7 +847,6 @@ function HomeScreen(p){
             </div>
           ):(
             <div style={{padding:"14px 18px",borderBottom:"1px solid "+BORD,display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontSize:22}}>😴</div>
               <div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Pas de séance aujourd'hui</div><div style={{fontSize:11,color:SUB}}>Profite pour récupérer</div></div>
             </div>
           )}
@@ -876,7 +874,6 @@ function HomeScreen(p){
             </div>
           ):(
             <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontSize:22}}>🎯</div>
               <div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Pas encore d'objectif</div><div style={{fontSize:11,color:SUB}}>Ajoute une course pour générer ton plan</div></div>
             </div>
           )}
@@ -923,7 +920,7 @@ function HomeScreen(p){
             </div>
             {habitDone===HABITS.length?(
               <div style={{marginTop:12,padding:"8px 14px",borderRadius:10,background:OR+"12",border:"1px solid "+OR+"25",textAlign:"center"}}>
-                <span style={{fontSize:12,color:OR,fontWeight:600}}>🎉 Journée parfaite !</span>
+                <span style={{fontSize:12,color:OR,fontWeight:600}}>Journée parfaite !</span>
               </div>
             ):null}
           </div>
@@ -1083,7 +1080,6 @@ function TrainingScreen(p){
       <div><LogoBar/>
         <div style={{padding:"24px 16px 0"}}>
           <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:40,marginBottom:12}}>📅</div>
             <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:6}}>Aucun plan actif</div>
             <div style={{fontSize:13,color:SUB}}>Choisis une course pour générer ton plan d'entraînement.</div>
           </div>
@@ -1182,7 +1178,7 @@ function TrainingScreen(p){
       </div>
     </div>
   );}
-  if(planWeeks.length===0){return(<div style={{padding:"60px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:16}}>📅</div><div style={{fontSize:18,fontWeight:600,color:TXT,marginBottom:8}}>Plan indisponible</div><Btn label="Choisir une autre course" onClick={p.onGoToCourses} full/></div>);}
+  if(planWeeks.length===0){return(<div style={{padding:"60px 24px",textAlign:"center"}}><div style={{fontSize:18,fontWeight:600,color:TXT,marginBottom:8}}>Plan indisponible</div><Btn label="Choisir une autre course" onClick={p.onGoToCourses} full/></div>);}
 
   var rd=getCourseReadiness(p.race,p.profile);
   return(
@@ -1433,7 +1429,7 @@ function CoursesScreen(p){
               </div>
             </Card>
           );})}
-          {sorted.length===0?(<div style={{textAlign:"center",padding:"40px 0",color:SUB}}><div style={{fontSize:36,marginBottom:12}}>🔍</div><div style={{fontSize:14,fontWeight:600,color:TXT,marginBottom:6}}>Aucune course trouvée</div></div>):null}
+          {sorted.length===0?(<div style={{textAlign:"center",padding:"40px 0",color:SUB}}><div style={{fontSize:14,fontWeight:600,color:TXT,marginBottom:6}}>Aucune course trouvée</div></div>):null}
         </div>
       </div>
     </div>
