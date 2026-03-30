@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPas
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 var firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey:            "AIzaSyCuk3aJprZXGAzSFkZ7evNrVFOqcfUwZT8",
+  authDomain:        "fuelrun-7a369.firebaseapp.com",
+  projectId:         "fuelrun-7a369",
+  storageBucket:     "fuelrun-7a369.firebasestorage.app",
+  messagingSenderId: "383250949614",
+  appId:             "1:383250949614:web:67c4ed54830ef16aa75aff",
+  measurementId:     "G-BMD3GB4XTG",
 };
 
 var app = initializeApp(firebaseConfig);
