@@ -805,6 +805,15 @@ function HomeScreen(p){
             </div>);
           })}
         </div>
+        {p.stats.sessions>0&&(
+          <button onClick={function(){
+            var txt="J'ai parcouru "+Math.round(p.stats.km)+" km en "+p.stats.sessions+" séance"+(p.stats.sessions>1?"s":"")+" avec FuelRun !"+(p.race?" Je prépare "+p.race.name+" !":"")+" Rejoins-moi sur l'app.";
+            if(navigator.share){navigator.share({title:"FuelRun",text:txt,url:window.location.href});}
+            else{navigator.clipboard&&navigator.clipboard.writeText(txt);}
+          }} style={{width:"100%",marginBottom:10,padding:"10px",borderRadius:12,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:TXT,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",letterSpacing:0.3}}>
+            Partager mes stats
+          </button>
+        )}
         <div style={{padding:"14px 16px",borderRadius:14,background:"rgba(138,100,255,0.15)",border:"1px solid rgba(138,100,255,0.30)",textAlign:"center"}}>
           <div style={{fontSize:13,color:"#fff",lineHeight:1.7,fontStyle:"italic",fontWeight:500}}>"{quote.text}"</div>
           <div style={{fontSize:11,color:PU,fontWeight:700,marginTop:8,letterSpacing:0.3}}>{'\u2014'} {quote.author} {'\u2014'}</div>
@@ -1731,7 +1740,30 @@ function ProfileScreen(p){
           </div>
         )}
 
-        <button onClick={p.onReset} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:4}}>Réinitialiser mon compte</button>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10,marginTop:4}}>
+          <button onClick={function(){
+            var data={profile:p.profile,race:JSON.parse(localStorage.getItem("fr_race")||"null"),stats:JSON.parse(localStorage.getItem("fr_stats")||"{}"),wellbeing:JSON.parse(localStorage.getItem("fr_wellbeing")||"null")};
+            var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+            var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="fuelrun-backup.json";a.click();URL.revokeObjectURL(url);
+          }} style={{padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Exporter</button>
+          <label style={{padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"center",display:"block"}}>
+            Importer
+            <input type="file" accept=".json" style={{display:"none"}} onChange={function(e){
+              var file=e.target.files[0];if(!file)return;
+              var reader=new FileReader();
+              reader.onload=function(ev){try{
+                var data=JSON.parse(ev.target.result);
+                if(data.profile){localStorage.setItem("fr_profile",JSON.stringify(data.profile));}
+                if(data.race){localStorage.setItem("fr_race",JSON.stringify(data.race));}
+                if(data.stats){localStorage.setItem("fr_stats",JSON.stringify(data.stats));}
+                if(data.wellbeing){localStorage.setItem("fr_wellbeing",JSON.stringify(data.wellbeing));}
+                p.onUpdate(data.profile);
+              }catch(err){alert("Fichier invalide");}};
+              reader.readAsText(file);
+            }}/>
+          </label>
+        </div>
+        <button onClick={p.onReset} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon compte</button>
       </div>
     </div>
   );
@@ -1765,8 +1797,23 @@ export default function App(){
   function setStats(fn){setStatsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_stats",next);return next;});}
   function setHabits(fn){setHabitsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_habits",next);return next;});}
 
-  function toggleHabit(id){setHabits(function(h){return Object.assign({},h,{[id]:!h[id]});});}
   function addSession(km){setStats(function(s){return{sessions:s.sessions+1,km:s.km+km,streak:s.streak+1};});}
+
+  useEffect(function(){
+    if(!profile||!("Notification" in window))return;
+    var reqPerm=function(){
+      if(Notification.permission==="default")Notification.requestPermission();
+    };
+    reqPerm();
+    var lastNotif=ls("fr_last_notif","");
+    var todayStr=new Date().toISOString().slice(0,10);
+    if(lastNotif===todayStr||Notification.permission!=="granted")return;
+    var hour=new Date().getHours();
+    if(hour>=7&&hour<=10){
+      lsSet("fr_last_notif",todayStr);
+      new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});
+    }
+  },[profile]);
 
   if(screen==="splash")return <Splash onStart={function(){setScreen("onboarding");}}/>;
   if(screen==="onboarding"){return <Onboarding onDone={function(d){setProfile({name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek});setRace(d.race);setScreen("app");if(d.race)setTab("training");}}/>;}
