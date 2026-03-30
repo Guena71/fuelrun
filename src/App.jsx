@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
 
 var MISTRAL_KEY=import.meta.env.VITE_MISTRAL_KEY||"";
 
@@ -505,21 +506,59 @@ function FeatureScreen(p){
   );
 }
 
-function AuthScreen(p){
+function AuthScreen(){
+  var [isLogin,setIsLogin]=useState(false);
+  var [email,setEmail]=useState("");
+  var [password,setPassword]=useState("");
+  var [error,setError]=useState("");
+  var [loading,setLoading]=useState(false);
+
+  function handleEmail(){
+    if(!email.trim()||!password.trim()){setError("Remplis tous les champs.");return;}
+    setLoading(true);setError("");
+    var fn=isLogin?signInWithEmailAndPassword:createUserWithEmailAndPassword;
+    fn(auth,email,password).catch(function(e){
+      var msg=e.code==="auth/email-already-in-use"?"Email déjà utilisé.":e.code==="auth/wrong-password"||e.code==="auth/invalid-credential"?"Mot de passe incorrect.":e.code==="auth/user-not-found"?"Compte introuvable.":e.code==="auth/weak-password"?"Mot de passe trop court (6 car. min).":"Erreur : "+e.message;
+      setError(msg);setLoading(false);
+    });
+  }
+
+  function handleGoogle(){
+    setLoading(true);setError("");
+    signInWithPopup(auth,googleProvider).catch(function(e){setError(e.message);setLoading(false);});
+  }
+
   return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
       <style>{CSS}</style>
       <LogoBar/>
       <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",paddingTop:32}}>
-        <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>{p.isLogin?"Bon retour !":"Créer un compte"}</div>
-        <div style={{fontSize:14,color:SUB,marginBottom:32}}>{p.isLogin?"Connecte-toi pour retrouver ton plan.":"Gratuit · Sans carte bancaire"}</div>
-        <SocialBtns onNext={p.onNext}/>
-        <div style={{marginBottom:12}}><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>E-mail</label><input placeholder="votre@email.com" type="email" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
-        <div style={{marginBottom:24}}><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Mot de passe</label><input placeholder="••••••••" type="password" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
-        <Btn label={p.isLogin?"Se connecter":"Créer mon compte"} onClick={p.onNext} size="lg" full/>
+        <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>{isLogin?"Bon retour !":"Créer un compte"}</div>
+        <div style={{fontSize:14,color:SUB,marginBottom:28}}>{isLogin?"Retrouve ton plan et tes stats.":"Gratuit · Sans carte bancaire"}</div>
+
+        <button onClick={handleGoogle} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 40 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.2C37.3 38.8 44 33.8 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+          Continuer avec Google
+        </button>
+
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+          <div style={{flex:1,height:1,background:BORD}}/><span style={{fontSize:12,color:MUT}}>ou</span><div style={{flex:1,height:1,background:BORD}}/>
+        </div>
+
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>E-mail</label>
+          <input value={email} onChange={function(e){setEmail(e.target.value);setError("");}} placeholder="votre@email.com" type="email" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+        </div>
+        <div style={{marginBottom:error?12:24}}>
+          <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Mot de passe</label>
+          <input value={password} onChange={function(e){setPassword(e.target.value);setError("");}} onKeyDown={function(e){if(e.key==="Enter")handleEmail();}} placeholder="••••••••" type="password" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+        </div>
+        {error?<div style={{fontSize:13,color:RE,marginBottom:16,padding:"10px 14px",borderRadius:10,background:RE+"10",border:"1px solid "+RE+"30"}}>{error}</div>:null}
+
+        <Btn label={loading?"Chargement…":isLogin?"Se connecter":"Créer mon compte"} onClick={handleEmail} size="lg" full/>
         <div style={{textAlign:"center",marginTop:16,fontSize:13,color:SUB}}>
-          {p.isLogin?"Pas encore de compte ? ":"Déjà un compte ? "}
-          <span onClick={p.onToggle} style={{color:OR,fontWeight:600,cursor:"pointer"}}>{p.isLogin?"S'inscrire":"Se connecter"}</span>
+          {isLogin?"Pas encore de compte ? ":"Déjà un compte ? "}
+          <span onClick={function(){setIsLogin(!isLogin);setError("");}} style={{color:OR,fontWeight:600,cursor:"pointer"}}>{isLogin?"S'inscrire":"Se connecter"}</span>
         </div>
       </div>
     </div>
@@ -559,7 +598,9 @@ function PricingScreen(p){
 }
 
 function Splash(p){
-  return <HeroScreen onCommencer={p.onStart} onLogin={p.onStart}/>;
+  var [showAuth,setShowAuth]=useState(false);
+  if(showAuth)return <AuthScreen/>;
+  return <HeroScreen onCommencer={function(){setShowAuth(true);}} onLogin={function(){setShowAuth(true);}}/>;
 }
 
 function Onboarding(p){
@@ -1763,6 +1804,8 @@ function ProfileScreen(p){
             }}/>
           </label>
         </div>
+        {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
+        <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
         <button onClick={p.onReset} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon compte</button>
       </div>
     </div>
@@ -1781,43 +1824,91 @@ function ls(key,fallback){try{var v=localStorage.getItem(key);return v?JSON.pars
 function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 
 export default function App(){
-  var [screen,setScreen]=useState(function(){return ls("fr_profile",null)?"app":"splash";});
-  var [profile,setProfileRaw]=useState(function(){return ls("fr_profile",null);});
-  var [race,setRaceRaw]=useState(function(){return ls("fr_race",null);});
+  var [authState,setAuthState]=useState("loading"); // loading | unauth | onboarding | app
+  var [user,setUser]=useState(null);
+  var [profile,setProfileRaw]=useState(null);
+  var [race,setRaceRaw]=useState(null);
   var [tab,setTab]=useState("home");
-  var [stats,setStatsRaw]=useState(function(){return ls("fr_stats",{sessions:0,km:0,streak:0});});
+  var [stats,setStatsRaw]=useState({sessions:0,km:0,streak:0});
   var today=new Date().toISOString().slice(0,10);
-  var [wellbeing,setWellbeingRaw]=useState(function(){var s=ls("fr_wellbeing",null);return(s&&s.date===today)?s.data:null;});
+  var [wellbeing,setWellbeingRaw]=useState(null);
   var [showCheckin,setShowCheckin]=useState(false);
-  function setWellbeing(wb){setWellbeingRaw(wb);lsSet("fr_wellbeing",wb?{date:today,data:wb}:null);}
-  var [habits,setHabitsRaw]=useState(function(){return ls("fr_habits",{});});
 
-  function setProfile(v){setProfileRaw(v);lsSet("fr_profile",v);}
-  function setRace(v){setRaceRaw(v);lsSet("fr_race",v);}
-  function setStats(fn){setStatsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_stats",next);return next;});}
-  function setHabits(fn){setHabitsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_habits",next);return next;});}
+  // ── Firestore helpers ──
+  function fsGet(uid){
+    return getDoc(doc(db,"users",uid)).then(function(snap){return snap.exists()?snap.data():null;});
+  }
+  function fsSave(uid,data){
+    return setDoc(doc(db,"users",uid),data,{merge:true});
+  }
+
+  // ── Auth state listener ──
+  useEffect(function(){
+    var unsub=onAuthStateChanged(auth,function(u){
+      if(!u){setUser(null);setAuthState("unauth");return;}
+      setUser(u);
+      fsGet(u.uid).then(function(data){
+        if(data&&data.profile){
+          setProfileRaw(data.profile);
+          setRaceRaw(data.race||null);
+          setStatsRaw(data.stats||{sessions:0,km:0,streak:0});
+          var wb=data.wellbeing;
+          setWellbeingRaw(wb&&wb.date===today?wb.data:null);
+          setAuthState("app");
+        } else {
+          setAuthState("onboarding");
+        }
+      }).catch(function(){setAuthState("onboarding");});
+    });
+    return unsub;
+  },[]);
+
+  // ── Setters avec sync Firestore ──
+  function setProfile(v){setProfileRaw(v);if(user)fsSave(user.uid,{profile:v});}
+  function setRace(v){setRaceRaw(v);if(user)fsSave(user.uid,{race:v});}
+  function setStats(fn){setStatsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;if(user)fsSave(user.uid,{stats:next});return next;});}
+  function setWellbeing(wb){setWellbeingRaw(wb);if(user)fsSave(user.uid,{wellbeing:wb?{date:today,data:wb}:null});}
 
   function addSession(km){setStats(function(s){return{sessions:s.sessions+1,km:s.km+km,streak:s.streak+1};});}
 
+  // ── Notifications ──
   useEffect(function(){
     if(!profile||!("Notification" in window))return;
-    var reqPerm=function(){
-      if(Notification.permission==="default")Notification.requestPermission();
-    };
-    reqPerm();
+    if(Notification.permission==="default")Notification.requestPermission();
     var lastNotif=ls("fr_last_notif","");
     var todayStr=new Date().toISOString().slice(0,10);
     if(lastNotif===todayStr||Notification.permission!=="granted")return;
     var hour=new Date().getHours();
-    if(hour>=7&&hour<=10){
-      lsSet("fr_last_notif",todayStr);
-      new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});
-    }
+    if(hour>=7&&hour<=10){lsSet("fr_last_notif",todayStr);new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});}
   },[profile]);
 
-  if(screen==="splash")return <Splash onStart={function(){setScreen("onboarding");}}/>;
-  if(screen==="onboarding"){return <Onboarding onDone={function(d){setProfile({name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek});setRace(d.race);setScreen("app");if(d.race)setTab("training");}}/>;}
+  if(authState==="loading")return(
+    <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <style>{CSS}</style>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
+        <RunnerHero size={64}/>
+        <div style={{fontSize:14,color:MUT}}>Chargement…</div>
+      </div>
+    </div>
+  );
+
+  if(authState==="unauth")return <Splash/>;
+
+  if(authState==="onboarding"){return <Onboarding onDone={function(d){
+    var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek};
+    setProfile(prof);setRace(d.race);
+    if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
+    setAuthState("app");if(d.race)setTab("training");
+  }}/>;}
+
   if(!profile)return null;
+
+  function handleReset(){
+    if(!window.confirm("Réinitialiser ton profil ? Toutes tes données seront supprimées."))return;
+    if(user)fsSave(user.uid,{profile:null,race:null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
+    setProfileRaw(null);setRaceRaw(null);setStatsRaw({sessions:0,km:0,streak:0});
+    signOut(auth);
+  }
 
   function renderTab(){
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing}/>;
@@ -1826,7 +1917,7 @@ export default function App(){
     if(tab==="nutrition")return <NutritionScreen profile={profile}/>;
     if(tab==="journal")  return <JournalScreen race={race} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);lsSet("fr_profile",updated);setProfile(updated);}} onReset={function(){if(!window.confirm("Réinitialiser ton profil ? Toutes tes données seront supprimées."))return;lsSet("fr_profile",null);lsSet("fr_race",null);lsSet("fr_stats",{sessions:0,km:0,streak:0});lsSet("fr_habits",{});setProfile(null);setRace(null);setScreen("onboarding");}}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
     return null;
   }
 
