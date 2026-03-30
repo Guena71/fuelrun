@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-var GROQ_KEY=import.meta.env.VITE_GROQ_KEY||"";
+var MISTRAL_KEY=import.meta.env.VITE_MISTRAL_KEY||"";
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#1f1f1f",BORD="#2a2a2a";
 var TXT="#f0f0f0",SUB="#888",MUT="#444";
@@ -1606,10 +1606,10 @@ function CoachScreen(p){
     setMessages(newMsgs);
     var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+"\nRéponds en français, 3-4 phrases max, naturel et personnalisé.";
     var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
-    fetch("https://api.groq.com/openai/v1/chat/completions",{
+    fetch("https://api.mistral.ai/v1/chat/completions",{
       method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+GROQ_KEY},
-      body:JSON.stringify({model:"llama-3.1-8b-instant",messages:[{role:"system",content:sys}].concat(hist),max_tokens:400})
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+MISTRAL_KEY},
+      body:JSON.stringify({model:"mistral-small-latest",messages:[{role:"system",content:sys}].concat(hist),max_tokens:400})
     }).then(function(r){return r.json();}).then(function(data){
       if(data.error){setError((data.error.message)||"Erreur API");setLoading(false);return;}
       var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
