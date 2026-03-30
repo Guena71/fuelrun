@@ -1625,7 +1625,7 @@ function CoachScreen(p){
       <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
           <div style={{fontSize:22,fontWeight:700,color:TXT}}>Coach IA</div>
-          <div style={{padding:"3px 10px",borderRadius:20,background:GR+"22",border:"1px solid "+GR+"44"}}><span style={{fontSize:10,fontWeight:600,color:GR}}>Gemini Flash · Illimité</span></div>
+          <div style={{padding:"3px 10px",borderRadius:20,background:GR+"22",border:"1px solid "+GR+"44"}}><span style={{fontSize:10,fontWeight:600,color:GR}}>Mistral AI · Illimité</span></div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,"+OR+"44,"+OR+"11)",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🏃</div>
