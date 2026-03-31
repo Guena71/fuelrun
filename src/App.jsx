@@ -184,7 +184,6 @@ var RECIPES={
      steps:["Mixer tous les ingrédients.","Boire dans les 30 minutes après l'arrivée.","Compléter avec des fruits frais si appétit."]}
   ]
 };
-var RECIPE_LABELS={easy:"Endurance",long:"Sortie longue",interval:"Fractionné",recovery:"Récupération",race:"Jour de course"};
 
 var RACES=[
   /* ── PARIS ── */
@@ -375,7 +374,7 @@ function buildPlan(race,profile){
   var sPerWeek=Math.min(7,Math.max(1,parseInt((profile&&profile.sessWeek)||3)));
   var dayMaps={1:[3],2:[1,4],3:[1,3,5],4:[1,3,5,6],5:[0,2,3,5,6],6:[0,1,2,4,5,6],7:[0,1,2,3,4,5,6]};
   var days=dayMaps[sPerWeek]||[1,3,5];
-  var pt=PACES[level]||PACES.beginner;
+  var pt=(profile&&profile.vdotPaces)?profile.vdotPaces:(PACES[level]||PACES.beginner);
   var jours=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
   var allWeeks=[];var wi=0;
   for(var pi2=0;pi2<phaseSeq.length;pi2++){
@@ -412,6 +411,82 @@ function buildPlan(race,profile){
     wi++;
   }
   return{weeks:allWeeks,planStart:planStart,raceDate:raceDate,idealWeeks:idealWeeks,availWeeks:availWeeks};
+}
+
+// ── VDOT / Allures calibrées (Jack Daniels) ──────────────────────────
+function calcVdot(distKm,timeSec){
+  var t=timeSec/60;
+  var v=(distKm*1000)/t;
+  var pct=0.8+0.1894393*Math.exp(-0.012778*t)+0.2989558*Math.exp(-0.1932605*t);
+  var vo2=-4.60+0.182258*v+0.000104*v*v;
+  return vo2/pct;
+}
+function vdotToPaces(vdot){
+  function p(pct){
+    var tv=pct*vdot;
+    var a=0.000104,b=0.182258,c=-(4.60+tv);
+    var v=(-b+Math.sqrt(b*b-4*a*c))/(2*a);
+    var s=60000/v;
+    var mn=Math.floor(s/60),sc=Math.round(s%60);
+    if(sc>=60){mn++;sc=0;}
+    return mn+":"+String(sc).padStart(2,"0");
+  }
+  return{easy:p(0.65),long:p(0.62),tempo:p(0.88),interval:p(0.975),recovery:p(0.57)};
+}
+
+// ── Stratégie de course ───────────────────────────────────────────────
+function fmtTime(secs){
+  var h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60),s=Math.round(secs%60);
+  if(h>0)return h+"h"+String(m).padStart(2,"0")+"'"+String(s).padStart(2,"0");
+  return m+"'"+String(s).padStart(2,"0");
+}
+function fmtPaceSec(sPerKm){
+  var mn=Math.floor(sPerKm/60),sc=Math.round(sPerKm%60);
+  if(sc>=60){mn++;sc=0;}
+  return mn+":"+String(sc).padStart(2,"0");
+}
+function calcSplits(distKm,goalSec,strategy){
+  var avgSec=goalSec/distKm;
+  var unit=distKm<=21?1:distKm<=50?5:10;
+  var n=Math.floor(distKm/unit);
+  var splits=[];var elapsed=0;
+  for(var i=0;i<n;i++){
+    var frac=(i+0.5)/n;
+    var factor=strategy==="negative"?(frac<0.5?1.02:0.98):1.0;
+    var pace=avgSec*factor;
+    elapsed+=pace*unit;
+    splits.push({km:(i+1)*unit,pace:fmtPaceSec(pace),elapsed:fmtTime(Math.round(elapsed))});
+  }
+  var rem=distKm-n*unit;
+  if(rem>0.05){elapsed+=avgSec*rem;splits.push({km:distKm,pace:fmtPaceSec(avgSec),elapsed:fmtTime(Math.round(goalSec))});}
+  return splits;
+}
+
+// ── Météo ─────────────────────────────────────────────────────────────
+function weatherAdvice(code,temp,wind){
+  var desc,color;
+  if(code===0)     {desc="Ciel dégagé";color=YE;}
+  else if(code<=3) {desc="Nuageux";color=BL;}
+  else if(code<=48){desc="Brouillard";color=MUT;}
+  else if(code<=55){desc="Bruine";color=BL;}
+  else if(code<=65){desc="Pluie";color=BL;}
+  else if(code<=77){desc="Neige";color=BL;}
+  else if(code<=82){desc="Averses";color=BL;}
+  else             {desc="Orage";color=RE;}
+  var tip;
+  if(code>=95)     tip="Orage — entraînement en salle recommandé.";
+  else if(code>=71)tip="Sols glissants — réduis ton allure, sois prudent.";
+  else if(code>=61)tip="Pluie — tenue imperméable, evite les chaussures légères.";
+  else if(temp<0)  tip="Froid extrême — 3 couches, échauffement long.";
+  else if(temp<5)  tip="Froid — bonnet et gants obligatoires.";
+  else if(temp<15) tip="Température idéale pour la performance.";
+  else if(temp<20) tip="Bonne température — hydratation normale.";
+  else if(temp<25) tip="Chaud — bois 200 ml toutes les 20 min.";
+  else if(temp<30) tip="Très chaud — ralentis de 10-15 sec/km.";
+  else             tip="Chaleur extrême — sors tôt le matin seulement.";
+  if(wind>30&&code<61)tip+=" Vent fort, planifie ton parcours en conséquence.";
+  var icon=code===0?"☀":code<=3?"⛅":code<=48?"🌫":code<=65?"🌧":code<=77?"❄":code<=82?"🌦":"⛈";
+  return{desc:desc,tip:tip,color:color,icon:icon};
 }
 
 function Btn(p){
@@ -460,12 +535,6 @@ function HeroScreen(p){
   );
 }
 
-var FEATURES=[
-  {icon:"🗺️",title:"Trouve ta prochaine course",  sub:"Route, trail, partout dans le monde."},
-  {icon:"📅",title:"Un plan fait pour toi",        sub:"Adapté à ton niveau et tes objectifs."},
-  {icon:"🥗",title:"Nutrition personnalisée",      sub:"Calories et repas adaptés à chaque séance."},
-  {icon:"🤖",title:"Coach IA disponible 7j/7",   sub:"Conseils personnalisés, à tout moment."}
-];
 
 
 function AuthScreen(){
@@ -771,6 +840,17 @@ function NutritionMiniCard(p){
 }
 
 function HomeScreen(p){
+  var [weather,setWeather]=useState(null);
+  useEffect(function(){
+    if(!navigator.geolocation)return;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var la=pos.coords.latitude.toFixed(4),lo=pos.coords.longitude.toFixed(4);
+      fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&current=temperature_2m,weathercode,windspeed_10m")
+        .then(function(r){return r.json();})
+        .then(function(d){if(d&&d.current)setWeather(d.current);})
+        .catch(function(){});
+    },function(){},{timeout:5000,maximumAge:300000});
+  },[]);
   var plan=p.race?buildPlan(p.race,p.profile):null;
   var planWeeks=getPlanWeeks(plan);
   var raceWeeks=p.race?weeksUntil(p.race.date):null;
@@ -912,6 +992,21 @@ function HomeScreen(p){
           )}
         </div>
 
+        {weather&&(function(){
+          var adv=weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0);
+          return(
+            <div style={{borderRadius:14,background:SURF,border:"1px solid "+BORD,padding:"14px 16px",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"center",gap:14}}>
+                <div style={{fontSize:34,lineHeight:1,flexShrink:0}}>{adv.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:10,color:adv.color,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Météo · Conseil séance</div>
+                  <div style={{fontSize:13,fontWeight:600,color:TXT,marginBottom:4}}>{adv.desc} · {Math.round(weather.temperature_2m||0)}°C{weather.windspeed_10m>10?" · "+Math.round(weather.windspeed_10m)+" km/h":""}</div>
+                  <div style={{fontSize:12,color:SUB,lineHeight:1.5}}>{adv.tip}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {(p.race&&curWeek)?<NutritionMiniCard profile={p.profile} sessType={sessType}/>:null}
 
       </div>
@@ -1041,9 +1136,93 @@ function SessionCard(p){
   );
 }
 
+function RaceStrategyModal(p){
+  var [goalH,setGoalH]=useState(""); var [goalM,setGoalM]=useState(""); var [goalS,setGoalS]=useState("00");
+  var [strategy,setStrategy]=useState("even");
+  var [splits,setSplits]=useState(null);
+  var dist=p.race?p.race.dist:42;
+  function calc(){
+    var h=parseInt(goalH)||0,m=parseInt(goalM)||0,s=parseInt(goalS)||0;
+    var total=h*3600+m*60+s;
+    if(total<60)return;
+    setSplits(calcSplits(dist,total,strategy));
+  }
+  var unit=dist<=21?1:dist<=50?5:10;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)p.onClose();}}>
+      <div style={{background:SURF,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"24px 20px 36px",animation:"slideUp .3s ease",maxHeight:"88vh",overflowY:"auto"}}>
+        <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 20px"}}/>
+        <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:4}}>Stratégie de course</div>
+        <div style={{fontSize:13,color:SUB,marginBottom:20}}>{p.race&&p.race.name} · {dist} km</div>
+
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:12,color:MUT,display:"block",marginBottom:8}}>Temps objectif</label>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <div style={{flex:1,textAlign:"center"}}>
+              <input value={goalH} onChange={function(e){setGoalH(e.target.value);setSplits(null);}} type="number" min={0} placeholder="00" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"12px 8px",color:TXT,fontSize:18,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <div style={{fontSize:10,color:MUT,marginTop:4}}>heures</div>
+            </div>
+            <span style={{fontSize:20,color:MUT,fontWeight:700}}>:</span>
+            <div style={{flex:1,textAlign:"center"}}>
+              <input value={goalM} onChange={function(e){setGoalM(e.target.value);setSplits(null);}} type="number" min={0} max={59} placeholder="30" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"12px 8px",color:TXT,fontSize:18,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <div style={{fontSize:10,color:MUT,marginTop:4}}>minutes</div>
+            </div>
+            <span style={{fontSize:20,color:MUT,fontWeight:700}}>:</span>
+            <div style={{flex:1,textAlign:"center"}}>
+              <input value={goalS} onChange={function(e){setGoalS(e.target.value);setSplits(null);}} type="number" min={0} max={59} placeholder="00" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"12px 8px",color:TXT,fontSize:18,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <div style={{fontSize:10,color:MUT,marginTop:4}}>secondes</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{marginBottom:16}}>
+          <label style={{fontSize:12,color:MUT,display:"block",marginBottom:8}}>Stratégie d'allure</label>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={function(){setStrategy("even");setSplits(null);}} style={{flex:1,padding:"10px",borderRadius:10,border:"1.5px solid "+(strategy==="even"?OR:BORD),background:strategy==="even"?OR+"15":"transparent",color:strategy==="even"?OR:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              Allure régulière
+            </button>
+            <button onClick={function(){setStrategy("negative");setSplits(null);}} style={{flex:1,padding:"10px",borderRadius:10,border:"1.5px solid "+(strategy==="negative"?GR:BORD),background:strategy==="negative"?GR+"15":"transparent",color:strategy==="negative"?GR:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              Split négatif
+            </button>
+          </div>
+          <div style={{fontSize:11,color:MUT,marginTop:6,lineHeight:1.6}}>{strategy==="negative"?"2% plus lent en première moitié, 2% plus rapide en seconde — la méthode des champions.":"Même allure du début à la fin — fiable pour les débutants."}</div>
+        </div>
+
+        <Btn label="Générer mes splits" onClick={calc} full style={{marginBottom:16}}/>
+
+        {splits&&(
+          <div style={{background:SURF2,borderRadius:12,overflow:"hidden",border:"1px solid "+BORD}}>
+            <div style={{display:"flex",padding:"10px 14px",borderBottom:"1px solid "+BORD}}>
+              <div style={{flex:1,fontSize:11,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5}}>km</div>
+              <div style={{width:70,fontSize:11,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,textAlign:"center"}}>Allure</div>
+              <div style={{width:70,fontSize:11,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,textAlign:"right"}}>Temps</div>
+            </div>
+            {splits.map(function(sp,i){
+              var isHalf=Math.abs(sp.km-dist/2)<unit/2;
+              var isFinish=sp.km===dist;
+              return(
+                <div key={i} style={{display:"flex",alignItems:"center",padding:"10px 14px",borderBottom:i<splits.length-1?"1px solid "+BORD+"80":"none",background:isFinish?OR+"10":isHalf?BL+"08":"transparent"}}>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:13,fontWeight:isFinish?700:400,color:isFinish?OR:TXT}}>{sp.km} km</span>
+                    {isHalf&&<span style={{fontSize:10,color:BL,fontWeight:600,marginLeft:6}}>Mi-course</span>}
+                    {isFinish&&<span style={{fontSize:10,color:OR,fontWeight:600,marginLeft:6}}>Arrivée</span>}
+                  </div>
+                  <div style={{width:70,fontSize:13,fontWeight:600,color:strategy==="negative"?(i<splits.length/2?YE:GR):OR,textAlign:"center"}}>{sp.pace}/km</div>
+                  <div style={{width:70,fontSize:13,fontWeight:isFinish?700:400,color:isFinish?OR:TXT,textAlign:"right"}}>{sp.elapsed}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function TrainingScreen(p){
   var [selWeek,setSelWeek]=useState(null);
   var [forceNoPlan,setForceNoPlan]=useState(false);
+  var [showStrategy,setShowStrategy]=useState(false);
   var scrollRef=useRef(null);
   var races=useRaces();
   var raceId=p.race?p.race.id:null;
@@ -1174,7 +1353,7 @@ function TrainingScreen(p){
 
   var rd=getCourseReadiness(p.race,p.profile);
   return(
-    <div><LogoBar/>
+    <><div><LogoBar/>
       <div style={{padding:"16px 16px 12px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
           <div style={{fontSize:18,fontWeight:700,color:TXT}}>{p.race.name}</div>
@@ -1191,10 +1370,13 @@ function TrainingScreen(p){
           </div>
           <div style={{fontSize:11,color:SUB,textAlign:"center",borderTop:"1px solid "+BORD,paddingTop:8}}>Début recommandé : <span style={{color:TXT,fontWeight:600}}>{fmtDate(plan.planStart)}</span></div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:12,background:rd.color+"12",border:"1px solid "+rd.color+"33"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:12,background:rd.color+"12",border:"1px solid "+rd.color+"33",marginBottom:10}}>
           <span style={{fontSize:14}}>{rd.icon}</span>
           <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,color:rd.color}}>{rd.label}</span><span style={{fontSize:12,color:SUB}}> · {rd.msg}</span></div>
         </div>
+        <button onClick={function(){setShowStrategy(true);}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:PU+"15",border:"1px solid "+PU+"44",color:PU,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+          Stratégie de course · Splits
+        </button>
       </div>
       <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px"}}>
         {planWeeks.map(function(wk,i){var isA=i===activeIdx;var pc=wk.phaseColor;return(
@@ -1233,6 +1415,8 @@ function TrainingScreen(p){
         </div>
       ):null}
     </div>
+    {showStrategy&&<RaceStrategyModal race={p.race} onClose={function(){setShowStrategy(false);}}/>}
+    </>
   );
 }
 
@@ -1429,29 +1613,6 @@ function CoursesScreen(p){
 }
 
 
-function RecipeCard(p){
-  var r=p.recipe;
-  var [open,setOpen]=useState(false);
-  return(
-    <div style={{background:SURF2,borderRadius:14,border:"1px solid "+BORD,marginBottom:10,overflow:"hidden"}}>
-      <div onClick={function(){setOpen(!open);}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:600,color:TXT,marginBottom:3}}>{r.name}</div>
-          <div style={{display:"flex",gap:10}}><span style={{fontSize:12,color:SUB}}>{r.time}</span><span style={{fontSize:12,color:OR,fontWeight:600}}>{r.kcal} kcal</span></div>
-        </div>
-        <div style={{fontSize:11,color:MUT,transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
-      </div>
-      {open?(
-        <div style={{padding:"0 16px 14px",borderTop:"1px solid "+BORD}}>
-          <div style={{fontSize:11,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:8,marginTop:12}}>Ingrédients</div>
-          {r.ingredients.map(function(ing,i){return(<div key={i} style={{display:"flex",alignItems:"center",gap:8,paddingBottom:4}}><div style={{width:4,height:4,borderRadius:"50%",background:OR,flexShrink:0}}/><span style={{fontSize:13,color:TXT}}>{ing}</span></div>);})}
-          <div style={{fontSize:11,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:8,marginTop:12}}>Préparation</div>
-          {r.steps.map(function(step,i){return(<div key={i} style={{display:"flex",gap:10,marginBottom:6}}><div style={{width:20,height:20,borderRadius:"50%",background:OR+"22",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:OR,flexShrink:0}}>{i+1}</div><span style={{fontSize:13,color:SUB,lineHeight:1.5}}>{step}</span></div>);})}
-        </div>
-      ):null}
-    </div>
-  );
-}
 
 
 function JournalScreen(p){
@@ -1469,7 +1630,7 @@ function JournalScreen(p){
   function hasSess(d){for(var wi=0;wi<planWeeks.length;wi++){for(var si=0;si<planWeeks[wi].sessions.length;si++){var s=planWeeks[wi].sessions[si];if(s.date&&s.date.toDateString()===d.toDateString()&&s.type!=="race")return true;}}return false;}
   var doneE=Object.entries(entries).filter(function(e){return e[1].done;});
   var totalKm=doneE.reduce(function(s,e){return s+(parseFloat(e[1].km)||0);},0);
-  function openDay(d){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||"",min:e.min||"",feel:e.feel!=null?e.feel:null,note:e.note||""});}
+  function openDay(d){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||"",min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||""});}
   function save(){var was=!entries[sel.key]||!entries[sel.key].done;setEntries(function(prev){return Object.assign({},prev,{[sel.key]:Object.assign({},form)});});if(form.done&&was&&p.onAddSession)p.onAddSession(parseFloat(form.km)||5);setSel(null);}
   var feels=["😤","😓","😐","🙂","💪"];
   return(
@@ -1513,6 +1674,17 @@ function JournalScreen(p){
               <div style={{marginBottom:14}}>
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:10}}>Ressenti</label>
                 <div style={{display:"flex",gap:8}}>{feels.map(function(e,i){return <div key={i} onClick={function(){setForm(function(f){return Object.assign({},f,{feel:i});});}} style={{flex:1,textAlign:"center",padding:"10px 4px",borderRadius:10,border:"1.5px solid "+(form.feel===i?OR:BORD),background:form.feel===i?OR+"15":SURF2,cursor:"pointer",fontSize:20}}>{e}</div>;})} </div>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <label style={{fontSize:12,color:MUT}}>Effort ressenti (RPE)</label>
+                  <span style={{fontSize:13,fontWeight:700,color:(function(){var r=form.rpe||5;return r<=3?GR:r<=6?YE:r<=8?OR:RE;})()}}>{form.rpe||5}<span style={{fontSize:10,color:MUT,fontWeight:400}}>/10</span></span>
+                </div>
+                <input type="range" min={1} max={10} value={form.rpe||5} onChange={function(e){setForm(function(f){return Object.assign({},f,{rpe:parseInt(e.target.value)});});}} style={{width:"100%",accentColor:OR}}/>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
+                  <span style={{fontSize:10,color:MUT}}>Facile</span>
+                  <span style={{fontSize:10,color:MUT}}>Maximal</span>
+                </div>
               </div>
               <div style={{marginBottom:20}}>
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Note</label>
@@ -1621,6 +1793,45 @@ function SuiviScreen(p){
             </div>
           </div>
         )}
+
+        {/* ── Charge d'entraînement ── */}
+        {(function(){
+          var cutoff=new Date(today);cutoff.setDate(cutoff.getDate()-7);
+          var last7=Object.entries(entries).filter(function(e){return e[1].done&&new Date(e[0])>=cutoff;});
+          if(last7.length===0)return null;
+          var load=last7.reduce(function(s,e){return s+(parseFloat(e[1].km)||0)*(e[1].rpe||5);},0);
+          var avgRpe=last7.reduce(function(s,e){return s+(e[1].rpe||5);},0)/last7.length;
+          var norm=Math.min(1,load/250);
+          var col=norm<0.3?GR:norm<0.55?YE:norm<0.8?OR:RE;
+          var lbl=norm<0.3?"Fraîcheur":norm<0.55?"Charge normale":norm<0.8?"Charge élevée":"Surcharge";
+          return(
+            <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+              <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Charge d'entraînement · 7 jours</div>
+              <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
+                <div style={{flex:1}}>
+                  <div style={{height:8,borderRadius:4,background:SURF2,overflow:"hidden"}}>
+                    <div style={{width:Math.round(norm*100)+"%",height:"100%",background:"linear-gradient(90deg,"+GR+","+col+")",borderRadius:4,transition:"width .5s"}}/>
+                  </div>
+                </div>
+                <div style={{fontSize:13,fontWeight:700,color:col,flexShrink:0,minWidth:80,textAlign:"right"}}>{lbl}</div>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
+                  <div style={{fontSize:16,fontWeight:700,color:OR}}>{Math.round(load)}</div>
+                  <div style={{fontSize:10,color:MUT,marginTop:3}}>Charge (UA)</div>
+                </div>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
+                  <div style={{fontSize:16,fontWeight:700,color:BL}}>{avgRpe.toFixed(1)}</div>
+                  <div style={{fontSize:10,color:MUT,marginTop:3}}>RPE moyen</div>
+                </div>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
+                  <div style={{fontSize:16,fontWeight:700,color:GR}}>{last7.length}</div>
+                  <div style={{fontSize:10,color:MUT,marginTop:3}}>Séances</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Activités récentes ── */}
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,overflow:"hidden",marginBottom:14}}>
@@ -1760,6 +1971,10 @@ function CoachScreen(p){
 function ProfileScreen(p){
   var [editing,setEditing]=useState(false);
   var [form,setForm]=useState({name:p.profile.name||"",age:p.profile.age||"",weight:p.profile.weight||"",height:p.profile.height||"",sex:p.profile.sex||"M",level:p.profile.level||"beginner",sessWeek:p.profile.sessWeek||3,kmWeek:p.profile.kmWeek||25});
+  var [showVdot,setShowVdot]=useState(false);
+  var [vdotDist,setVdotDist]=useState("10");
+  var [vdotTime,setVdotTime]=useState("");
+  var [vdotResult,setVdotResult]=useState(null);
   function save(){p.onUpdate(form);setEditing(false);}
   function field(label,key,type,placeholder){
     return(
@@ -1862,6 +2077,64 @@ function ProfileScreen(p){
             <Btn label="Enregistrer les modifications" onClick={save} full/>
           </div>
         )}
+
+        {/* ── CALIBRATION ALLURES VDOT ── */}
+        <Card style={{marginBottom:16}}>
+          <div onClick={function(){setShowVdot(!showVdot);setVdotResult(null);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",cursor:"pointer"}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:TXT}}>Calibrer mes allures</div>
+              <div style={{fontSize:12,color:p.profile.vdotPaces?GR:SUB,marginTop:2}}>{p.profile.vdotPaces?"Allures personnalisées actives":"Basé sur le niveau de profil"}</div>
+            </div>
+            <div style={{fontSize:10,color:MUT,transform:showVdot?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
+          </div>
+          {showVdot&&(
+            <div style={{padding:"0 18px 18px",borderTop:"1px solid "+BORD}}>
+              <div style={{fontSize:12,color:SUB,marginTop:14,marginBottom:14,lineHeight:1.7}}>Entre une performance récente pour calculer tes allures optimales d'entraînement (méthode Jack Daniels).</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+                <div>
+                  <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Distance</label>
+                  <select value={vdotDist} onChange={function(e){setVdotDist(e.target.value);setVdotResult(null);}} style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit",colorScheme:"dark"}}>
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="21.1">Semi (21,1 km)</option>
+                    <option value="42.2">Marathon (42,2 km)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Temps (hh:mm:ss)</label>
+                  <input value={vdotTime} onChange={function(e){setVdotTime(e.target.value);setVdotResult(null);}} placeholder="00:45:00" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+                </div>
+              </div>
+              {vdotResult&&(
+                <div style={{background:OR+"10",border:"1px solid "+OR+"30",borderRadius:12,padding:"14px 16px",marginBottom:14}}>
+                  <div style={{fontSize:11,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>Tes allures personnalisées</div>
+                  {[{l:"Endurance",k:"easy",c:GR},{l:"Sortie longue",k:"long",c:BL},{l:"Seuil",k:"tempo",c:YE},{l:"Fractionné",k:"interval",c:OR},{l:"Récupération",k:"recovery",c:MUT}].map(function(pp,i){return(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:i<4?8:0}}>
+                      <span style={{fontSize:13,color:SUB}}>{pp.l}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:pp.c}}>{vdotResult[pp.k]}/km</span>
+                    </div>
+                  );})}
+                </div>
+              )}
+              <div style={{display:"flex",gap:8}}>
+                <Btn label="Calculer" onClick={function(){
+                  var parts=vdotTime.split(":").map(Number);
+                  var secs=parts.length===3?parts[0]*3600+parts[1]*60+(parts[2]||0):parts.length===2?parts[0]*60+(parts[1]||0):0;
+                  if(!secs||secs<60)return;
+                  var vdot=calcVdot(parseFloat(vdotDist),secs);
+                  setVdotResult(vdotToPaces(vdot));
+                }} size="sm" style={{flex:1}}/>
+                {vdotResult&&<Btn label="Appliquer" onClick={function(){
+                  p.onUpdate(Object.assign({},p.profile,{vdotPaces:vdotResult}));
+                  setVdotResult(null);setShowVdot(false);
+                }} size="sm" style={{flex:1}}/>}
+                {p.profile.vdotPaces&&<Btn label="Réinitialiser" onClick={function(){
+                  var upd=Object.assign({},p.profile);delete upd.vdotPaces;p.onUpdate(upd);
+                }} size="sm" variant="ghost" style={{flex:1}}/>}
+              </div>
+            </div>
+          )}
+        </Card>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10,marginTop:4}}>
           <button onClick={function(){
