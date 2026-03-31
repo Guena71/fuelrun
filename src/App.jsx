@@ -349,7 +349,7 @@ var PLANS=[
     items:[
       "Tout Essential, plus :",
       "Coach IA illimité 24h/24",
-      "Calibration VDOT & allures cibles",
+      "Allures d'entraînement personnalisées",
       "Stratégie de course & splits",
       "Nutrition complète + recettes",
       "Analyse de performance détaillée",
