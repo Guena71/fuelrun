@@ -1545,8 +1545,9 @@ function NutritionScreen(p){
 }
 
 function JournalScreen(p){
-  var [month,setMonth]=useState(new Date(2026,2,1));
-  var [entries,setEntries]=useState({});
+  var [month,setMonth]=useState(new Date());
+  var entries=p.entries||{};
+  function setEntries(fn){p.onSetEntries&&p.onSetEntries(fn);}
   var [sel,setSel]=useState(null);
   var [form,setForm]=useState({done:false,km:"",min:"",feel:null,note:""});
   var y=month.getFullYear();var mo=month.getMonth();
@@ -1611,6 +1612,171 @@ function JournalScreen(p){
             </div>
           </div>
         ):null}
+      </div>
+    </div>
+  );
+}
+
+function SuiviScreen(p){
+  var entries=p.entries||{};
+  var race=p.race;
+  var today=new Date();
+
+  // ── Calcul km par semaine (8 dernières semaines) ──
+  var weeks=[];
+  for(var w=7;w>=0;w--){
+    var wStart=new Date(today);wStart.setDate(today.getDate()-today.getDay()+1-w*7);wStart.setHours(0,0,0,0);
+    var wEnd=new Date(wStart);wEnd.setDate(wStart.getDate()+6);wEnd.setHours(23,59,59,999);
+    var km=0;
+    Object.entries(entries).forEach(function(e){
+      var d=new Date(e[0]);if(d>=wStart&&d<=wEnd&&e[1].done)km+=parseFloat(e[1].km)||0;
+    });
+    var label=wStart.getDate()+"/"+(wStart.getMonth()+1);
+    weeks.push({label:label,km:Math.round(km),current:w===0});
+  }
+  var maxKm=Math.max.apply(null,weeks.map(function(w){return w.km;}),1)||1;
+  var thisWeekKm=weeks[7].km;
+  var targetKm=p.profile.kmWeek||25;
+
+  // ── Activités récentes ──
+  var recent=Object.entries(entries).filter(function(e){return e[1].done;}).sort(function(a,b){return new Date(b[0])-new Date(a[0]);}).slice(0,5);
+
+  // ── Race progress ──
+  var raceWeeks=race?weeksUntil(race.date):null;
+  var totalPlanWeeks=race?Math.round((new Date(race.date)-new Date())/(7*24*3600*1000)+4):null;
+  var raceProgress=totalPlanWeeks?Math.max(0,Math.min(100,Math.round((1-raceWeeks/totalPlanWeeks)*100))):0;
+
+  function share(){
+    var txt="J'ai couru "+Math.round(Object.entries(entries).filter(function(e){return e[1].done;}).reduce(function(s,e){return s+(parseFloat(e[1].km)||0);},0))+" km au total avec FuelRun !"+(race?" Je prépare "+race.name+" !":"")+" Rejoins-moi.";
+    if(navigator.share)navigator.share({title:"FuelRun",text:txt,url:window.location.href});
+    else if(navigator.clipboard)navigator.clipboard.writeText(txt);
+  }
+
+  return(
+    <div><LogoBar/>
+      <div style={{padding:"20px 16px 80px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <div style={{fontSize:22,fontWeight:700,color:TXT}}>Suivi</div>
+          <button onClick={share} style={{padding:"6px 14px",borderRadius:20,background:OR+"22",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Partager</button>
+        </div>
+
+        {/* ── Stats semaine ── */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"14px 16px"}}>
+            <div style={{fontSize:11,color:MUT,marginBottom:4,textTransform:"uppercase",letterSpacing:0.5}}>Cette semaine</div>
+            <div style={{fontSize:28,fontWeight:800,color:OR,lineHeight:1}}>{thisWeekKm}<span style={{fontSize:13,color:MUT,fontWeight:400}}> km</span></div>
+            <div style={{marginTop:8,height:4,borderRadius:2,background:SURF2,overflow:"hidden"}}>
+              <div style={{width:Math.min(100,Math.round(thisWeekKm/targetKm*100))+"%",height:"100%",background:OR,borderRadius:2,transition:"width .5s"}}/>
+            </div>
+            <div style={{fontSize:10,color:MUT,marginTop:4}}>Objectif : {targetKm} km</div>
+          </div>
+          <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"14px 16px"}}>
+            <div style={{fontSize:11,color:MUT,marginBottom:4,textTransform:"uppercase",letterSpacing:0.5}}>Total</div>
+            <div style={{fontSize:28,fontWeight:800,color:BL,lineHeight:1}}>{p.stats.km?Math.round(p.stats.km):0}<span style={{fontSize:13,color:MUT,fontWeight:400}}> km</span></div>
+            <div style={{fontSize:10,color:MUT,marginTop:8}}>{p.stats.sessions||0} séance{p.stats.sessions!==1?"s":""} · {p.stats.streak||0}j streak</div>
+          </div>
+        </div>
+
+        {/* ── Graphique 8 semaines ── */}
+        <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+          <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:14}}>Km / semaine</div>
+          <div style={{display:"flex",alignItems:"flex-end",gap:4,height:80}}>
+            {weeks.map(function(w,i){
+              var h=maxKm>0?Math.max(4,Math.round(w.km/maxKm*72)):4;
+              return(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                  {w.km>0&&<div style={{fontSize:9,color:w.current?OR:MUT,fontWeight:w.current?700:400}}>{w.km}</div>}
+                  <div style={{width:"100%",height:h,borderRadius:"3px 3px 0 0",background:w.current?OR:SURF2,border:"1px solid "+(w.current?OR:BORD),transition:"height .4s"}}/>
+                  <div style={{fontSize:8,color:w.current?OR:MUT,fontWeight:w.current?700:400,whiteSpace:"nowrap"}}>{w.current?"Sem.":w.label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Progression course ── */}
+        {race&&(
+          <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:13,fontWeight:600,color:TXT}}>{race.name}</div>
+              <div style={{fontSize:12,color:OR,fontWeight:700}}>{raceWeeks} sem.</div>
+            </div>
+            <div style={{height:6,borderRadius:3,background:SURF2,overflow:"hidden",marginBottom:6}}>
+              <div style={{width:raceProgress+"%",height:"100%",background:"linear-gradient(90deg,"+OR+","+GR+")",borderRadius:3,transition:"width .5s"}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between"}}>
+              <span style={{fontSize:10,color:MUT}}>Début</span>
+              <span style={{fontSize:10,color:OR,fontWeight:600}}>{raceProgress}% accompli</span>
+              <span style={{fontSize:10,color:MUT}}>{race.date}</span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Activités récentes ── */}
+        <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,overflow:"hidden",marginBottom:14}}>
+          <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>Activités récentes</div>
+            <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{fontSize:11,color:OR,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>+ Ajouter</button>
+          </div>
+          {recent.length===0?(
+            <div style={{padding:"24px 16px",textAlign:"center"}}>
+              <div style={{fontSize:13,color:SUB,marginBottom:8}}>Aucune sortie enregistrée</div>
+              <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"8px 18px",borderRadius:20,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Enregistrer ma première sortie</button>
+            </div>
+          ):(
+            recent.map(function(e,i){
+              var d=new Date(e[0]);var data=e[1];
+              return(
+                <div key={i} style={{padding:"12px 16px",borderBottom:i<recent.length-1?"1px solid "+BORD:"none",display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:OR+"18",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,color:OR,fontWeight:700}}>{Math.round(data.km||0)}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+data.min+" min":""}</div>
+                    <div style={{fontSize:11,color:MUT,marginTop:2}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}</div>
+                  </div>
+                  {data.feel!=null&&<div style={{fontSize:18}}>{"😤😓😐🙂💪".split("")[data.feel*2]||""}</div>}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+var GUIDE_STEPS=[
+  {tab:"home",     title:"Ton tableau de bord",   desc:"Retrouve ici ta prochaine séance, ton objectif course et ton état de forme."},
+  {tab:"courses",  title:"Trouve ta course",       desc:"Sélectionne une course objectif et laisse FuelRun générer ton plan personnalisé."},
+  {tab:"training", title:"Ton plan d'entraînement",desc:"Toutes tes séances semaine par semaine, avec nutrition et recettes intégrées."},
+  {tab:"suivi",    title:"Suis ta progression",    desc:"Visualise tes km, tes sorties récentes et ta progression vers la course."},
+  {tab:"coach",    title:"Ton coach IA",           desc:"Pose toutes tes questions à ton coach personnel, disponible 24h/24."},
+];
+
+function OnboardingGuide(p){
+  var [step,setStep]=useState(0);
+  var current=GUIDE_STEPS[step];
+  var tabIndex=NAV_IDS.indexOf(current.tab);
+  var tabPct=tabIndex>=0?(tabIndex+0.5)/NAV_IDS.length*100:50;
+  function next(){if(step<GUIDE_STEPS.length-1){setStep(step+1);p.onTab(GUIDE_STEPS[step+1].tab);}else{p.onDone();}}
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:500,pointerEvents:"none"}}>
+      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)",pointerEvents:"auto"}} onClick={p.onDone}/>
+      {/* Bulle */}
+      <div style={{position:"absolute",bottom:90,left:tabPct+"%",transform:"translateX(-50%)",maxWidth:260,pointerEvents:"auto",animation:"fadeIn .3s ease"}}>
+        <div style={{background:OR,borderRadius:14,padding:"16px 18px",boxShadow:"0 8px 32px rgba(0,0,0,.4)"}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{current.title}</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6,marginBottom:14}}>{current.desc}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button onClick={p.onDone} style={{fontSize:11,color:"rgba(255,255,255,.7)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Passer</button>
+            <button onClick={next} style={{padding:"7px 16px",borderRadius:20,background:"#fff",border:"none",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{step<GUIDE_STEPS.length-1?"Suivant →":"Terminer"}</button>
+          </div>
+        </div>
+        {/* Flèche vers le bas */}
+        <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+OR,margin:"0 auto"}}/>
+      </div>
+      {/* Indicateur de progression */}
+      <div style={{position:"absolute",bottom:76,left:"50%",transform:"translateX(-50%)",display:"flex",gap:5,pointerEvents:"auto"}}>
+        {GUIDE_STEPS.map(function(_,i){return <div key={i} style={{width:i===step?18:6,height:6,borderRadius:3,background:i===step?"#fff":"rgba(255,255,255,.3)",transition:"width .3s"}}/>;}) }
       </div>
     </div>
   );
@@ -1819,12 +1985,13 @@ function ProfileScreen(p){
 }
 
 var NAV=[
-  {id:"home",      label:"Accueil",  icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 3l9 8v9a1 1 0 01-1 1h-5v-5h-6v5H4a1 1 0 01-1-1v-9z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/></svg>;}},
-  {id:"courses",   label:"Courses",  icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.7 2 6 4.7 6 8c0 5.3 6 13 6 13s6-7.7 6-13c0-3.3-2.7-6-6-6z" stroke={c} strokeWidth="1.8"/><circle cx="12" cy="8" r="2" stroke={c} strokeWidth="1.8"/></svg>;}},
-  {id:"training",  label:"Plan",     icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke={c} strokeWidth="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>;}},
-  {id:"nutrition", label:"Nutrition",icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3C9 3 6 5.5 6 9c0 2.5 1.5 4.5 3.5 5.5V20h5v-5.5C16.5 13.5 18 11.5 18 9c0-3.5-3-6-6-6z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/></svg>;}},
-  {id:"coach",     label:"Coach",    icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 2H4a1 1 0 00-1 1v12a1 1 0 001 1h3l3 4 3-4h7a1 1 0 001-1V3a1 1 0 00-1-1z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="9" cy="9" r="1" fill={c}/><circle cx="12" cy="9" r="1" fill={c}/><circle cx="15" cy="9" r="1" fill={c}/></svg>;}},
+  {id:"home",     label:"Accueil", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 3l9 8v9a1 1 0 01-1 1h-5v-5h-6v5H4a1 1 0 01-1-1v-9z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/></svg>;}},
+  {id:"courses",  label:"Courses", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.7 2 6 4.7 6 8c0 5.3 6 13 6 13s6-7.7 6-13c0-3.3-2.7-6-6-6z" stroke={c} strokeWidth="1.8"/><circle cx="12" cy="8" r="2" stroke={c} strokeWidth="1.8"/></svg>;}},
+  {id:"training", label:"Plan",    icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke={c} strokeWidth="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>;}},
+  {id:"suivi",    label:"Suivi",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;}},
+  {id:"coach",    label:"Coach",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 2H4a1 1 0 00-1 1v12a1 1 0 001 1h3l3 4 3-4h7a1 1 0 001-1V3a1 1 0 00-1-1z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="9" cy="9" r="1" fill={c}/><circle cx="12" cy="9" r="1" fill={c}/><circle cx="15" cy="9" r="1" fill={c}/></svg>;}},
 ];
+var NAV_IDS=NAV.map(function(n){return n.id;});
 
 function ls(key,fallback){try{var v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
 function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
@@ -1839,6 +2006,9 @@ export default function App(){
   var today=new Date().toISOString().slice(0,10);
   var [wellbeing,setWellbeingRaw]=useState(null);
   var [showCheckin,setShowCheckin]=useState(false);
+  var [entries,setEntriesRaw]=useState(function(){return ls("fr_entries",{});});
+  var [showGuide,setShowGuide]=useState(false);
+  function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
 
   // ── Firestore helpers ──
   function fsGet(uid){
@@ -1905,6 +2075,7 @@ export default function App(){
     setProfile(prof);setRace(d.race);
     if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
     setAuthState("app");if(d.race)setTab("training");
+    if(!ls("fr_guide_done",false))setTimeout(function(){setShowGuide(true);},800);
   }}/>;}
 
   if(!profile)return null;
@@ -1920,8 +2091,8 @@ export default function App(){
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
-    if(tab==="nutrition")return <NutritionScreen profile={profile}/>;
-    if(tab==="journal")  return <JournalScreen race={race} onAddSession={addSession}/>;
+    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onOpenJournal={function(){setTab("journal");}}/>;
+    if(tab==="journal")  return <JournalScreen race={race} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
     if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
     return null;
@@ -1943,6 +2114,7 @@ export default function App(){
         </div>
       </div>
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
+      {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(t){setTab(t);}}/>:null}
     </div>
   );
 }
