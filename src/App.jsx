@@ -870,11 +870,15 @@ function HomeScreen(p){
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
     <div style={{paddingBottom:8}}>
-
       {/* ── HEADER ── */}
-      <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"36px 20px 0px"}}>
+      <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"24px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
+        {/* ── LOGO ROW ── */}
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+          <div style={{animation:"bounce 1.8s ease-in-out infinite"}}><RunnerHero size={28}/></div>
+          <span style={{fontSize:20,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</span>
+        </div>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
           <div>
             <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
@@ -1883,8 +1887,8 @@ function OnboardingGuide(p){
     <div style={{position:"fixed",inset:0,zIndex:500,pointerEvents:"none"}}>
       <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)",pointerEvents:"auto"}} onClick={p.onDone}/>
       {/* Bulle */}
-      <div style={{position:"absolute",bottom:90,left:tabPct+"%",transform:"translateX(-50%)",maxWidth:260,pointerEvents:"auto",animation:"fadeIn .3s ease"}}>
-        <div style={{background:OR,borderRadius:14,padding:"16px 18px",boxShadow:"0 8px 32px rgba(0,0,0,.4)"}}>
+      <div style={{position:"absolute",bottom:90,left:"clamp(8px, calc("+tabPct+"% - 130px), calc(100% - 268px))",maxWidth:260,width:"calc(100% - 16px)",pointerEvents:"auto",animation:"fadeIn .3s ease"}}>
+        <div style={{background:OR,borderRadius:14,padding:"14px 16px",boxShadow:"0 8px 32px rgba(0,0,0,.4)"}}>
           <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{current.title}</div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6,marginBottom:14}}>{current.desc}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
