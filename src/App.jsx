@@ -319,10 +319,55 @@ var RACES=[
 ];
 
 var PLANS=[
-  {name:"Gratuit",   price:"0",     per:"toujours",color:SUB,tag:null,          items:["3 courses","Plan basique","5 messages/jour"],                          cta:"Continuer gratuitement"},
-  {name:"Essential", price:"4,99",  per:"/mois",   color:BL, tag:"Populaire",   items:["Courses illimitées","Plans avancés","30 messages/jour"],               cta:"Essayer 14 j gratuit"},
-  {name:"Pro",       price:"9,99",  per:"/mois",   color:OR, tag:"Recommandé",  items:["Coach illimité","Nutrition complète + Recettes","Prédiction"],         cta:"Essayer 14 j gratuit"},
-  {name:"Elite",     price:"19,99", per:"/mois",   color:PU, tag:"Max",         items:["5 profils","Strava & Garmin","Coach dédié 24/7"],                      cta:"Essayer 14 j gratuit"}
+  {
+    name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
+    desc:"Pour découvrir FuelRun sans engagement.",
+    items:[
+      "1 objectif de course",
+      "Plan d'entraînement basique",
+      "Journal des séances",
+      "Météo & conseils parcours",
+      "5 messages Coach IA / jour",
+    ],
+    cta:"Continuer gratuitement"
+  },
+  {
+    name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
+    desc:"Pour le coureur régulier qui veut progresser.",
+    items:[
+      "Courses & objectifs illimités",
+      "Plans personnalisés avancés",
+      "Journal + RPE + suivi fatigue",
+      "Météo & conseils parcours",
+      "30 messages Coach IA / jour",
+    ],
+    cta:"Essayer 14 j gratuit"
+  },
+  {
+    name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
+    desc:"Pour performer et préparer une vraie compétition.",
+    items:[
+      "Tout Essential, plus :",
+      "Coach IA illimité 24h/24",
+      "Calibration VDOT & allures cibles",
+      "Stratégie de course & splits",
+      "Nutrition complète + recettes",
+      "Analyse de performance détaillée",
+    ],
+    cta:"Essayer 14 j gratuit"
+  },
+  {
+    name:"Elite", price:"19,99", per:"/mois", color:PU, tag:"Max",
+    desc:"Pour les compétiteurs qui veulent le meilleur.",
+    items:[
+      "Tout Pro, plus :",
+      "5 profils (famille / équipe)",
+      "Synchronisation Strava & Garmin",
+      "Prédictions de temps & records",
+      "Coach dédié & support prioritaire",
+    ],
+    cta:"Essayer 14 j gratuit"
+  }
 ];
 
 function getCourseReadiness(race,profile){
@@ -618,12 +663,22 @@ function PricingScreen(p){
           return(
             <div key={i} onClick={p.onStart} style={{position:"relative",background:i===2?OR+"10":SURF2,border:"1.5px solid "+(i===2?OR:BORD),borderRadius:16,padding:"16px 18px",cursor:"pointer"}}>
               {pl.tag?<div style={{position:"absolute",top:-10,right:16,background:pl.color,color:"#fff",fontSize:10,fontWeight:700,borderRadius:6,padding:"2px 10px"}}>{pl.tag}</div>:null}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <div style={{fontSize:16,fontWeight:700,color:i===2?OR:TXT}}>{pl.name}</div>
-                <div><span style={{fontSize:20,fontWeight:800,color:pl.color}}>{pl.price}</span><span style={{fontSize:11,color:MUT,marginLeft:3}}>{pl.per}</span></div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                <div style={{fontSize:17,fontWeight:800,color:i===2?OR:TXT}}>{pl.name}</div>
+                <div><span style={{fontSize:22,fontWeight:800,color:pl.color}}>{pl.price==="0"?"Gratuit":pl.price+"€"}</span>{pl.price!=="0"&&<span style={{fontSize:11,color:MUT,marginLeft:3}}>{pl.per}</span>}</div>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
-                {pl.items.map(function(it,j){return(<div key={j} style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:5,height:5,borderRadius:"50%",background:pl.color,flexShrink:0}}/><span style={{fontSize:13,color:i===0?SUB:TXT}}>{it}</span></div>);})}
+              <div style={{fontSize:12,color:SUB,marginBottom:10}}>{pl.desc}</div>
+              <div style={{height:1,background:BORD,marginBottom:10}}/>
+              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+                {pl.items.map(function(it,j){
+                  var isHeader=it.endsWith(":");
+                  return(<div key={j} style={{display:"flex",alignItems:"center",gap:8}}>
+                    {isHeader
+                      ?<span style={{fontSize:11,fontWeight:700,color:pl.color,textTransform:"uppercase",letterSpacing:0.5}}>{it}</span>
+                      :<><div style={{width:16,height:16,borderRadius:"50%",background:pl.color+"22",border:"1px solid "+pl.color+"44",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><div style={{width:5,height:5,borderRadius:"50%",background:pl.color}}/></div><span style={{fontSize:13,color:i===0?SUB:TXT}}>{it}</span></>
+                    }
+                  </div>);
+                })}
               </div>
               <div style={{background:i===2?OR:SURF2,borderRadius:10,padding:"10px",textAlign:"center",border:i!==2?"1px solid "+BORD:"none"}}>
                 <span style={{fontSize:13,fontWeight:600,color:i===2?"#fff":SUB}}>{pl.cta}</span>
