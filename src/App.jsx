@@ -507,7 +507,7 @@ function LogoBar(){
   return(
     <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 24px 0"}}>
       <style>{CSS}</style>
-      <div style={{animation:"bounce 1.8s ease-in-out infinite"}}><RunnerHero size={56}/></div>
+      <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
       <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</span>
     </div>
   );
