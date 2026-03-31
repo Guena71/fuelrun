@@ -438,23 +438,6 @@ function LogoBar(){
   );
 }
 
-function SocialBtns(p){
-  return(
-    <div>
-      <button onClick={p.onNext} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,width:"100%",background:"#000",border:"1px solid #333",borderRadius:12,padding:"14px 20px",color:"#fff",fontWeight:600,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>
-        <svg width="18" height="18" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-194.3 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg>
-        <span>Continuer avec Apple</span>
-      </button>
-      <button onClick={p.onNext} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"14px 20px",color:TXT,fontWeight:600,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.1c-.6 2.9-2.3 5.4-4.8 7v5.8h7.7c4.5-4.2 7.1-10.3 7.1-16.9z"/><path fill="#34A853" d="M24 48c6.5 0 12-2.1 15.9-5.8l-7.7-5.8c-2.2 1.4-4.9 2.3-8.2 2.3-6.3 0-11.7-4.3-13.6-10H2.5v6C6.4 42.6 14.6 48 24 48z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.5s.3-3.1.8-4.5v-6H2.5C.9 17 0 20.4 0 24.2s.9 7.2 2.5 10.1l7.9-5.6z"/><path fill="#EA4335" d="M24 9.5c3.5 0 6.7 1.2 9.2 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 5.9C12.3 13.8 17.7 9.5 24 9.5z"/></svg>
-        <span>Continuer avec Google</span>
-      </button>
-      <div style={{display:"flex",alignItems:"center",gap:10,margin:"8px 0 16px"}}>
-        <div style={{flex:1,height:1,background:BORD}}/><span style={{fontSize:12,color:MUT}}>ou</span><div style={{flex:1,height:1,background:BORD}}/>
-      </div>
-    </div>
-  );
-}
 
 function HeroScreen(p){
   return(
@@ -484,27 +467,6 @@ var FEATURES=[
   {icon:"🤖",title:"Coach IA disponible 7j/7",   sub:"Conseils personnalisés, à tout moment."}
 ];
 
-function FeatureScreen(p){
-  var f=p.feature;
-  return(
-    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
-      <style>{CSS}</style>
-      <LogoBar/>
-      <div style={{display:"flex",gap:6,margin:"24px 0 0"}}>
-        {FEATURES.map(function(_,i){return <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=p.index?OR:SURF2}}/>;}) }
-      </div>
-      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",textAlign:"center",alignItems:"center"}}>
-        <div style={{width:90,height:90,borderRadius:24,background:SURF2,display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,marginBottom:28}}>{f.icon}</div>
-        <div style={{fontSize:26,fontWeight:700,color:TXT,lineHeight:1.15,marginBottom:12,maxWidth:300,textAlign:"center"}}>{f.title}</div>
-        <div style={{fontSize:16,color:SUB,lineHeight:1.7,maxWidth:280}}>{f.sub}</div>
-      </div>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        <Btn label={p.isLast?"Créer mon compte":"Suivant"} onClick={p.onNext} size="lg" full/>
-        {p.isLast?null:<button onClick={p.onSkip} style={{background:"none",border:"none",color:MUT,fontSize:14,cursor:"pointer",padding:"8px",fontFamily:"inherit"}}>Ignorer</button>}
-      </div>
-    </div>
-  );
-}
 
 function AuthScreen(){
   var [isLogin,setIsLogin]=useState(false);
@@ -1466,11 +1428,6 @@ function CoursesScreen(p){
   );
 }
 
-function RecipeCardInline(p){
-  var r=p.recipe;
-  var [open,setOpen]=useState(false);
-  return(<div style={{background:SURF2,borderRadius:10,marginBottom:6,overflow:"hidden"}}><div onClick={function(){setOpen(!open);}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",cursor:"pointer"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:TXT}}>{r.name}</div><div style={{fontSize:11,color:SUB,marginTop:2}}>{r.time} · <span style={{color:OR,fontWeight:600}}>{r.kcal} kcal</span></div></div><div style={{fontSize:10,color:MUT,transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div></div>{open?(<div style={{padding:"0 12px 10px",borderTop:"1px solid "+BORD}}><div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6,marginTop:8}}>Ingrédients</div>{r.ingredients.map(function(ing,ii){return(<div key={ii} style={{display:"flex",gap:6,paddingBottom:3}}><div style={{width:4,height:4,borderRadius:"50%",background:OR,flexShrink:0,marginTop:5}}/><span style={{fontSize:12,color:TXT}}>{ing}</span></div>);})}<div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6,marginTop:8}}>Préparation</div>{r.steps.map(function(st,si){return(<div key={si} style={{display:"flex",gap:8,marginBottom:4}}><div style={{width:18,height:18,borderRadius:"50%",background:OR+"22",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:OR,flexShrink:0}}>{si+1}</div><span style={{fontSize:12,color:SUB,lineHeight:1.5}}>{st}</span></div>);})}</div>):null}</div>);
-}
 
 function RecipeCard(p){
   var r=p.recipe;
@@ -1496,53 +1453,6 @@ function RecipeCard(p){
   );
 }
 
-function NutritionScreen(p){
-  var [sessType,setSessType]=useState("easy");
-  var [showRecipes,setShowRecipes]=useState(false);
-  var n=calcNutrition(p.profile,sessType);
-  var types=[{id:"easy",label:"Endurance"},{id:"long",label:"Sortie longue"},{id:"interval",label:"Fractionné"},{id:"tempo",label:"Seuil"},{id:"recovery",label:"Récupération"},{id:"race",label:"Jour de course"},{id:"rest",label:"Repos"}];
-  var recipes=RECIPES[sessType]||[];
-  return(
-    <div><LogoBar/>
-      <div style={{padding:"20px 16px 0"}}>
-        <div style={{fontSize:22,fontWeight:700,color:TXT,marginBottom:6}}>Nutrition</div>
-        <div style={{fontSize:14,color:SUB,marginBottom:20}}>Adapte ton alimentation à chaque séance.</div>
-        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:20}}>
-          {types.map(function(t){return <Chip key={t.id} label={t.label} active={sessType===t.id} onClick={function(){setSessType(t.id);setShowRecipes(false);}}/>;}) }
-        </div>
-        <div style={{background:"linear-gradient(135deg,"+OR+"20,"+OR+"08)",borderRadius:20,padding:"24px 20px",marginBottom:16,border:"1px solid "+OR+"30",textAlign:"center"}}>
-          <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Apport calorique estimé</div>
-          <div style={{fontSize:56,fontWeight:800,color:TXT,lineHeight:1}}>{n.kcal}<span style={{fontSize:18,fontWeight:500,color:SUB,marginLeft:4}}>kcal</span></div>
-        </div>
-        <Card style={{padding:"16px 18px",marginBottom:14}}>
-          <div style={{fontSize:13,fontWeight:600,color:TXT,marginBottom:14}}>Répartition des macros</div>
-          {(function(){var totalKcal=n.carbs*4+n.prot*4+n.fat*9;return[{label:"Glucides",value:n.carbs,unit:"g",color:BL,pct:Math.round(n.carbs*4/totalKcal*100)},{label:"Protéines",value:n.prot,unit:"g",color:GR,pct:Math.round(n.prot*4/totalKcal*100)},{label:"Lipides",value:n.fat,unit:"g",color:YE,pct:Math.round(n.fat*9/totalKcal*100)}];})().map(function(m,i){
-            return(<div key={i} style={{marginBottom:i<2?14:0}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:13,color:SUB}}>{m.label}</span><span style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}{m.unit} ({m.pct}%)</span></div><div style={{height:5,background:SURF2,borderRadius:3,overflow:"hidden"}}><div style={{width:m.pct+"%",height:"100%",background:m.color,borderRadius:3}}/></div></div>);
-          })}
-        </Card>
-        <Card style={{marginBottom:14}}>
-          <div style={{padding:"14px 18px",borderBottom:"1px solid "+BORD}}><div style={{fontSize:13,fontWeight:600,color:TXT}}>Plan de repas</div></div>
-          {n.meals.map(function(m,i){return(<div key={i} style={{padding:"14px 18px",borderBottom:i<n.meals.length-1?"1px solid "+BORD:"none"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12,fontWeight:600,color:OR}}>{m.time}</span><span style={{fontSize:12,color:SUB}}>{m.kcal} kcal</span></div><div style={{fontSize:14,color:TXT}}>{m.food}</div></div>);})}
-        </Card>
-        {recipes.length>0?(
-          <div style={{marginBottom:24}}>
-            <div onClick={function(){setShowRecipes(!showRecipes);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",background:SURF,borderRadius:14,border:"1px solid "+GR+"44",cursor:"pointer",marginBottom:showRecipes?12:0}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <div style={{width:32,height:32,borderRadius:8,background:GR+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👨‍🍳</div>
-                <div>
-                  <div style={{fontSize:14,fontWeight:600,color:TXT}}>Recettes du jour</div>
-                  <div style={{fontSize:11,color:GR,marginTop:1}}>Pro · {recipes.length} recettes pour {RECIPE_LABELS[sessType]||sessType}</div>
-                </div>
-              </div>
-              <div style={{fontSize:11,color:MUT,transform:showRecipes?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
-            </div>
-            {showRecipes?recipes.map(function(r,i){return <RecipeCard key={i} recipe={r}/>;}) :null}
-          </div>
-        ):null}
-      </div>
-    </div>
-  );
-}
 
 function JournalScreen(p){
   var [month,setMonth]=useState(new Date());
@@ -1978,6 +1888,7 @@ function ProfileScreen(p){
         </div>
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
+        <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
         <button onClick={p.onReset} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon compte</button>
       </div>
     </div>
@@ -2094,7 +2005,7 @@ export default function App(){
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onOpenJournal={function(){setTab("journal");}}/>;
     if(tab==="journal")  return <JournalScreen race={race} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
     return null;
   }
 
