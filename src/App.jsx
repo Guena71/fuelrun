@@ -676,21 +676,11 @@ function GpsTrackerModal({onSave,onClose}){
 }
 
 function LogoBar(p){
-  var initials=p.profile?(p.profile.name||"?").split(" ").map(function(w){return w[0];}).join("").slice(0,2).toUpperCase():null;
   return(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 24px 0"}}>
+    <div style={{display:"flex",alignItems:"center",padding:"12px 24px 0"}}>
       <style>{CSS}</style>
-      <div style={{display:"flex",alignItems:"center",gap:14}}>
-        <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
-        <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</span>
-      </div>
-      {initials?(
-        <button onClick={function(){p.onProfile&&p.onProfile();}} style={{width:46,height:46,borderRadius:14,background:"linear-gradient(135deg,"+OR+",#c43a00)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",cursor:"pointer",flexShrink:0,boxShadow:"0 2px 12px "+OR+"55"}}>
-          {initials}
-        </button>
-      ):(
-        <div style={{width:70,height:70,borderRadius:"50%",background:"radial-gradient(circle, "+OR+"40 0%, "+OR+"10 60%, transparent 100%)",boxShadow:"0 0 32px 12px "+OR+"30",animation:"pulse 2.4s ease-in-out infinite"}}/>
-      )}
+      <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
+      <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
     </div>
   );
 }
@@ -1081,7 +1071,7 @@ function HomeScreen(p){
               <span style={{fontSize:11,color:OR,fontWeight:600}}>{LEVEL_LABELS[p.profile.level]||""}</span>
             </div>
           </div>
-          <button onClick={function(){setShowResetConfirm(true);}} style={{marginTop:4,padding:"7px 13px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Réinitialiser</button>
+          <button onClick={function(){setShowResetConfirm(true);}} style={{marginTop:4,padding:"7px 13px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Réinitialiser ton profil</button>
         </div>
         {showResetConfirm&&(
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowResetConfirm(false);}}>
