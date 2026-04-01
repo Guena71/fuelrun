@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import L from "leaflet";
 import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
 
 var MISTRAL_KEY=import.meta.env.VITE_MISTRAL_KEY||"";
@@ -546,6 +547,108 @@ function Stat(p){return(<div style={{flex:1,textAlign:"center"}}><div style={{fo
 function RunnerHero(p){
   var sz=p.size||160;
   return(<svg width={sz} height={sz} viewBox="0 0 160 160" fill="none"><circle cx="80" cy="80" r="76" fill={OR} fillOpacity="0.07"/><circle cx="80" cy="80" r="58" fill={OR} fillOpacity="0.05"/><path d="M80 24 L126 110 L34 110 Z" fill={OR} fillOpacity="0.9"/><path d="M80 24 L93 52 L80 46 L67 52 Z" fill="#fff" fillOpacity="0.18"/><path d="M34 110 L56 74 L78 110 Z" fill={OR} fillOpacity="0.4"/><path d="M14 126 Q80 114 146 126" stroke={OR} strokeWidth="4.5" strokeLinecap="round" fill="none"/></svg>);
+}
+
+// ── GPS / MAP ─────────────────────────────────────────────────────────────────
+function parseGpx(text){
+  var doc=new DOMParser().parseFromString(text,"application/xml");
+  var pts=doc.querySelectorAll("trkpt,rtept,wpt");
+  var track=[];
+  pts.forEach(function(pt){
+    var lat=parseFloat(pt.getAttribute("lat")),lon=parseFloat(pt.getAttribute("lon"));
+    var t=pt.querySelector("time");
+    if(!isNaN(lat)&&!isNaN(lon))track.push({lat:lat,lon:lon,ts:t?new Date(t.textContent).getTime():null});
+  });
+  return track;
+}
+function calcTrackKm(track){
+  if(!track||track.length<2)return 0;
+  var d=0;
+  for(var i=1;i<track.length;i++){
+    var R=6371,dLat=(track[i].lat-track[i-1].lat)*Math.PI/180,dLon=(track[i].lon-track[i-1].lon)*Math.PI/180;
+    var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(track[i-1].lat*Math.PI/180)*Math.cos(track[i].lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    d+=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+  return Math.round(d*100)/100;
+}
+function RunMap({track,height}){
+  var ref=useRef(null);
+  var mapInst=useRef(null);
+  useEffect(function(){
+    if(!track||track.length<2||!ref.current)return;
+    if(mapInst.current){mapInst.current.remove();mapInst.current=null;}
+    var map=L.map(ref.current,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,touchZoom:false,doubleClickZoom:false});
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+    var coords=track.map(function(p){return[p.lat,p.lon];});
+    L.polyline(coords,{color:OR,weight:4,opacity:0.9}).addTo(map);
+    L.circleMarker(coords[0],{radius:6,fillColor:"#22c55e",fillOpacity:1,color:"#fff",weight:2}).addTo(map);
+    L.circleMarker(coords[coords.length-1],{radius:6,fillColor:RE,fillOpacity:1,color:"#fff",weight:2}).addTo(map);
+    map.fitBounds(L.polyline(coords).getBounds(),{padding:[16,16]});
+    mapInst.current=map;
+    return function(){if(mapInst.current){mapInst.current.remove();mapInst.current=null;}};
+  },[track]);
+  return <div ref={ref} style={{height:height||200,borderRadius:12,overflow:"hidden",background:SURF2}}/>;
+}
+function GpsTrackerModal({onSave,onClose}){
+  var [status,setStatus]=useState("idle");
+  var [track,setTrack]=useState([]);
+  var [elapsed,setElapsed]=useState(0);
+  var [spd,setSpd]=useState(0);
+  var watchId=useRef(null);
+  var timerRef=useRef(null);
+  var startTs=useRef(null);
+  var elapsedBase=useRef(0);
+  function startTracking(){
+    setStatus("running");
+    startTs.current=Date.now();
+    watchId.current=navigator.geolocation.watchPosition(function(pos){
+      setTrack(function(t){return t.concat([{lat:pos.coords.latitude,lon:pos.coords.longitude,ts:Date.now()}]);});
+      setSpd(Math.round((pos.coords.speed||0)*3.6*10)/10);
+    },function(){},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+    timerRef.current=setInterval(function(){setElapsed(elapsedBase.current+Math.floor((Date.now()-startTs.current)/1000));},1000);
+  }
+  function pauseTracking(){
+    setStatus("paused");
+    elapsedBase.current=elapsed;
+    if(watchId.current!=null)navigator.geolocation.clearWatch(watchId.current);
+    clearInterval(timerRef.current);
+  }
+  function stopTracking(){pauseTracking();setStatus("done");}
+  useEffect(function(){return function(){if(watchId.current!=null)navigator.geolocation.clearWatch(watchId.current);clearInterval(timerRef.current);};},[]); // eslint-disable-line
+  var km=calcTrackKm(track);
+  var pace=km>0&&elapsed>0?fmtPaceSec(elapsed/km):"--:--";
+  return(
+    <div style={{position:"fixed",inset:0,background:BG,zIndex:300,display:"flex",flexDirection:"column",padding:"0 0 32px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid "+BORD}}>
+        <button onClick={onClose} style={{background:SURF2,border:"1px solid "+BORD,borderRadius:8,padding:"6px 14px",color:SUB,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+        <div style={{fontSize:14,fontWeight:600,color:TXT}}>Enregistrement GPS</div>
+        <div style={{width:70}}/>
+      </div>
+      <div style={{flex:1,padding:"12px 16px 0"}}>
+        {track.length>1
+          ?<RunMap track={track} height={220}/>
+          :<div style={{height:220,borderRadius:12,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:8}}><span style={{fontSize:40}}>📍</span><span style={{fontSize:12,color:SUB}}>En attente du GPS…</span></div>
+        }
+      </div>
+      <div style={{display:"flex",justifyContent:"space-around",padding:"20px 24px"}}>
+        {[{label:"Durée",val:fmtTime(elapsed),col:OR},{label:"Distance",val:km.toFixed(2)+" km",col:BL},{label:"Allure",val:pace+" /km",col:GR}].map(function(s,i){
+          return <div key={i} style={{textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:s.col}}>{s.val}</div><div style={{fontSize:10,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginTop:2}}>{s.label}</div></div>;
+        })}
+      </div>
+      <div style={{display:"flex",justifyContent:"center",gap:16,padding:"0 24px"}}>
+        {status==="idle"&&<button onClick={startTracking} style={{width:80,height:80,borderRadius:"50%",background:GR,border:"none",cursor:"pointer",fontSize:28,boxShadow:"0 0 24px "+GR+"60",color:"#fff"}}>▶</button>}
+        {status==="running"&&<>
+          <button onClick={pauseTracking} style={{width:72,height:72,borderRadius:"50%",background:YE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏸</button>
+          <button onClick={stopTracking} style={{width:72,height:72,borderRadius:"50%",background:RE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏹</button>
+        </>}
+        {status==="paused"&&<>
+          <button onClick={startTracking} style={{width:72,height:72,borderRadius:"50%",background:GR,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>▶</button>
+          <button onClick={stopTracking} style={{width:72,height:72,borderRadius:"50%",background:RE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏹</button>
+        </>}
+        {status==="done"&&<button onClick={function(){onSave({track:track,km:String(km.toFixed(2)),min:String(Math.round(elapsed/60))});}} style={{padding:"16px 40px",borderRadius:14,background:OR,border:"none",cursor:"pointer",fontSize:16,fontWeight:700,color:"#fff",fontFamily:"inherit"}}>Enregistrer</button>}
+      </div>
+    </div>
+  );
 }
 
 function LogoBar(){
@@ -1679,6 +1782,7 @@ function JournalScreen(p){
   function setEntries(fn){p.onSetEntries&&p.onSetEntries(fn);}
   var [sel,setSel]=useState(null);
   var [form,setForm]=useState({done:false,km:"",min:"",feel:null,note:""});
+  var [showGps,setShowGps]=useState(false);
   var y=month.getFullYear();var mo=month.getMonth();
   var dc=new Date(y,mo+1,0).getDate();
   var fd=(function(){var d=new Date(y,mo,1).getDay();return d===0?6:d-1;})();
@@ -1688,11 +1792,11 @@ function JournalScreen(p){
   function hasSess(d){for(var wi=0;wi<planWeeks.length;wi++){for(var si=0;si<planWeeks[wi].sessions.length;si++){var s=planWeeks[wi].sessions[si];if(s.date&&s.date.toDateString()===d.toDateString()&&s.type!=="race")return true;}}return false;}
   var doneE=Object.entries(entries).filter(function(e){return e[1].done;});
   var totalKm=doneE.reduce(function(s,e){return s+(parseFloat(e[1].km)||0);},0);
-  function openDay(d){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||"",min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||""});}
+  function openDay(d){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||"",min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||"",track:e.track||null});}
   function save(){var was=!entries[sel.key]||!entries[sel.key].done;setEntries(function(prev){return Object.assign({},prev,{[sel.key]:Object.assign({},form)});});if(form.done&&was&&p.onAddSession)p.onAddSession(parseFloat(form.km)||5);setSel(null);}
   var feels=["😤","😓","😐","🙂","💪"];
   return(
-    <div><LogoBar/>
+    <><div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
         <div style={{fontSize:22,fontWeight:700,color:TXT,marginBottom:16}}>Journal</div>
         <Card style={{marginBottom:14}}><div style={{display:"flex",padding:"14px 18px"}}><Stat value={doneE.length} label="séances" color={OR}/><div style={{width:1,background:BORD}}/><Stat value={Math.round(totalKm)+" km"} label="ce mois" color={BL}/></div></Card>
@@ -1725,10 +1829,30 @@ function JournalScreen(p){
                 <span style={{fontSize:14,fontWeight:500,color:TXT}}>Séance accomplie</span>
                 <div style={{width:22,height:22,borderRadius:6,background:form.done?OR:"transparent",border:"2px solid "+(form.done?OR:BORD),display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13}}>{form.done?"✓":""}</div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                 <div><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Distance (km)</label><input value={form.km} onChange={function(e){setForm(function(f){return Object.assign({},f,{km:e.target.value});});}} type="number" placeholder="12" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
                 <div><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Durée (min)</label><input value={form.min} onChange={function(e){setForm(function(f){return Object.assign({},f,{min:e.target.value});});}} type="number" placeholder="60" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
               </div>
+              {/* GPS / GPX */}
+              <div style={{display:"flex",gap:8,marginBottom:14}}>
+                <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"10px",borderRadius:10,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📍 GPS en direct</button>
+                <label style={{flex:1,padding:"10px",borderRadius:10,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:12,fontWeight:600,cursor:"pointer",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  📎 Import GPX
+                  <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                    var file=e.target.files&&e.target.files[0];if(!file)return;
+                    var reader=new FileReader();
+                    reader.onload=function(ev){
+                      var track=parseGpx(ev.target.result);
+                      if(track.length>0){
+                        var km=calcTrackKm(track);
+                        var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
+                        setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min});});
+                      }
+                    };reader.readAsText(file);e.target.value="";
+                  }}/>
+                </label>
+              </div>
+              {form.track&&form.track.length>1&&<div style={{marginBottom:14}}><RunMap track={form.track} height={160}/></div>}
               <div style={{marginBottom:14}}>
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:10}}>Ressenti</label>
                 <div style={{display:"flex",gap:8}}>{feels.map(function(e,i){return <div key={i} onClick={function(){setForm(function(f){return Object.assign({},f,{feel:i});});}} style={{flex:1,textAlign:"center",padding:"10px 4px",borderRadius:10,border:"1.5px solid "+(form.feel===i?OR:BORD),background:form.feel===i?OR+"15":SURF2,cursor:"pointer",fontSize:20}}>{e}</div>;})} </div>
@@ -1754,6 +1878,8 @@ function JournalScreen(p){
         ):null}
       </div>
     </div>
+    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){setForm(function(f){return Object.assign({},f,{track:res.track,km:res.km,min:res.min,done:true});});setShowGps(false);}}/>}
+    </>
   );
 }
 
@@ -1780,6 +1906,9 @@ function SuiviScreen(p){
 
   // ── Activités récentes ──
   var recent=Object.entries(entries).filter(function(e){return e[1].done;}).sort(function(a,b){return new Date(b[0])-new Date(a[0]);}).slice(0,5);
+
+  // ── Dernière sortie avec track GPS ──
+  var lastTracked=(Object.entries(entries).filter(function(e){return e[1].done&&e[1].track&&e[1].track.length>1;}).sort(function(a,b){return new Date(b[0])-new Date(a[0]);})[0])||null;
 
   // ── Race progress ──
   var raceWeeks=race?weeksUntil(race.date):null;
@@ -1817,6 +1946,17 @@ function SuiviScreen(p){
           </div>
         </div>
 
+        {/* ── Carte dernière sortie GPS ── */}
+        {lastTracked&&(
+          <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>Dernière sortie</div>
+              <div style={{fontSize:11,color:SUB}}>{fmtDate(new Date(lastTracked[0]))} · {lastTracked[1].km} km</div>
+            </div>
+            <RunMap track={lastTracked[1].track} height={200}/>
+            {lastTracked[1].min&&<div style={{marginTop:8,fontSize:12,color:SUB,textAlign:"center"}}>Durée : {lastTracked[1].min} min · Allure moy. : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
+          </div>
+        )}
         {/* ── Graphique 8 semaines ── */}
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:14}}>Km / semaine</div>
