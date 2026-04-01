@@ -2101,7 +2101,9 @@ function SuiviScreen(p){
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,overflow:"hidden",marginBottom:14}}>
           <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>Activités récentes</div>
-            <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{fontSize:11,color:OR,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>+ Ajouter</button>
+            <div style={{display:"flex",gap:12,alignItems:"center"}}>
+              <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{fontSize:11,color:SUB,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Voir le journal →</button>
+            </div>
           </div>
           {recent.length===0?(
             <div style={{padding:"24px 16px",textAlign:"center"}}>
@@ -2112,13 +2114,14 @@ function SuiviScreen(p){
             recent.map(function(e,i){
               var d=new Date(e[0]);var data=e[1];
               return(
-                <div key={i} style={{padding:"12px 16px",borderBottom:i<recent.length-1?"1px solid "+BORD:"none",display:"flex",alignItems:"center",gap:12}}>
+                <div key={i} onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"12px 16px",borderBottom:i<recent.length-1?"1px solid "+BORD:"none",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                   <div style={{width:36,height:36,borderRadius:10,background:OR+"18",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,color:OR,fontWeight:700}}>{Math.round(data.km||0)}</div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+data.min+" min":""}</div>
                     <div style={{fontSize:11,color:MUT,marginTop:2}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}</div>
                   </div>
                   {data.feel!=null&&<div style={{fontSize:18}}>{"😤😓😐🙂💪".split("")[data.feel*2]||""}</div>}
+                  <div style={{fontSize:12,color:MUT}}>›</div>
                 </div>
               );
             })
