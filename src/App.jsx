@@ -1886,6 +1886,16 @@ function SuiviScreen(p){
   var entries=p.entries||{};
   var race=p.race;
   var today=new Date();
+  var [showGps,setShowGps]=useState(false);
+
+  function saveTrack(res){
+    var key=today.toDateString();
+    var prev=entries[key]||{};
+    var wasNotDone=!prev.done;
+    var updated=Object.assign({},prev,{done:true,track:res.track,km:res.km,min:res.min});
+    p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[key]:updated});});
+    if(wasNotDone&&p.onAddSession)p.onAddSession(parseFloat(res.km)||0);
+  }
 
   // ── Calcul km par semaine (8 dernières semaines) ──
   var weeks=[];
@@ -1921,7 +1931,7 @@ function SuiviScreen(p){
   }
 
   return(
-    <div><LogoBar/>
+    <><div><LogoBar/>
       <div style={{padding:"20px 16px 80px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
           <div style={{fontSize:22,fontWeight:700,color:TXT}}>Suivi</div>
@@ -1942,6 +1952,31 @@ function SuiviScreen(p){
             <div style={{fontSize:11,color:MUT,marginBottom:4,textTransform:"uppercase",letterSpacing:0.5}}>Total</div>
             <div style={{fontSize:28,fontWeight:800,color:BL,lineHeight:1}}>{p.stats.km?Math.round(p.stats.km):0}<span style={{fontSize:13,color:MUT,fontWeight:400}}> km</span></div>
             <div style={{fontSize:10,color:MUT,marginTop:8}}>{p.stats.sessions||0} séance{p.stats.sessions!==1?"s":""} · {p.stats.streak||0}j streak</div>
+          </div>
+        </div>
+
+        {/* ── Enregistrer une sortie ── */}
+        <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+          <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Enregistrer une sortie</div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              <span style={{fontSize:24}}>📍</span>GPS en direct
+            </button>
+            <label style={{flex:1,padding:"14px 10px",borderRadius:12,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
+              <span style={{fontSize:24}}>📎</span>Import GPX
+              <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                var file=e.target.files&&e.target.files[0];if(!file)return;
+                var reader=new FileReader();
+                reader.onload=function(ev){
+                  var track=parseGpx(ev.target.result);
+                  if(track.length>1){
+                    var km=calcTrackKm(track);
+                    var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
+                    saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});
+                  }
+                };reader.readAsText(file);e.target.value="";
+              }}/>
+            </label>
           </div>
         </div>
 
@@ -2042,6 +2077,7 @@ function SuiviScreen(p){
         </div>
       </div>
     </div>
+    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){saveTrack(res);setShowGps(false);}}/>}</>
   );
 }
 
@@ -2455,7 +2491,7 @@ export default function App(){
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
-    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onOpenJournal={function(){setTab("journal");}}/>;
+    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}}/>;
     if(tab==="journal")  return <JournalScreen race={race} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
     if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
