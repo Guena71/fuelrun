@@ -1045,7 +1045,6 @@ function HomeScreen(p){
               <span style={{fontSize:11,color:OR,fontWeight:600}}>{LEVEL_LABELS[p.profile.level]||""}</span>
             </div>
           </div>
-          <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 18px "+OR+"40)"}}><RunnerHero size={88}/></div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
           {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
