@@ -321,7 +321,7 @@ var RACES=[
 
 var PLANS=[
   {
-    name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
+    id:"gratuit", name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
     desc:"Pour découvrir FuelRun sans engagement.",
     items:[
       "1 objectif de course",
@@ -333,7 +333,7 @@ var PLANS=[
     cta:"Continuer gratuitement"
   },
   {
-    name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
+    id:"essential", name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Pour le coureur régulier qui veut progresser.",
     items:[
       "Courses et objectifs illimités",
@@ -341,24 +341,26 @@ var PLANS=[
       "Journal + RPE + suivi fatigue",
       "Météo et conseils parcours",
       "30 messages Coach IA / jour",
+      "Import tracés GPX (Garmin, Polar…)",
     ],
     cta:"Essayer 14 j gratuit"
   },
   {
-    name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
+    id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
     desc:"Pour performer et préparer une vraie compétition.",
     items:[
       "Tout Essential, plus :",
       "Coach IA illimité 24h/24",
       "Allures d'entraînement personnalisées",
       "Stratégie de course et splits",
+      "GPS en direct (suivi de sortie)",
       "Nutrition complète + recettes",
       "Analyse de performance détaillée",
     ],
     cta:"Essayer 14 j gratuit"
   },
   {
-    name:"Elite", price:"19,99", per:"/mois", color:PU, tag:"Max",
+    id:"elite", name:"Elite", price:"19,99", per:"/mois", color:PU, tag:"Max",
     desc:"Pour les compétiteurs qui veulent le meilleur.",
     items:[
       "Tout Pro, plus :",
@@ -370,6 +372,29 @@ var PLANS=[
     cta:"Essayer 14 j gratuit"
   }
 ];
+
+function planLevel(profile){
+  var p=(profile&&profile.plan)||"gratuit";
+  if(p==="elite")return 3;
+  if(p==="pro")return 2;
+  if(p==="essential")return 1;
+  return 0;
+}
+
+function UpgradeModal({feature,minPlanLabel,minPlanColor,onClose,onUpgrade}){
+  var col=minPlanColor||OR;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.82)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:SURF,borderRadius:22,padding:"32px 24px 24px",width:"100%",maxWidth:360,textAlign:"center",border:"1px solid "+BORD}}>
+        <div style={{fontSize:44,marginBottom:14}}>🔒</div>
+        <div style={{fontSize:18,fontWeight:800,color:TXT,marginBottom:8}}>{feature}</div>
+        <div style={{fontSize:13,color:SUB,marginBottom:24,lineHeight:1.7}}>Cette fonctionnalité est disponible à partir du plan <span style={{color:col,fontWeight:700}}>{minPlanLabel}</span>.</div>
+        <button onClick={onUpgrade} style={{width:"100%",padding:"14px",borderRadius:12,background:col,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Voir les formules</button>
+        <button onClick={onClose} style={{width:"100%",padding:"11px",borderRadius:12,background:"transparent",border:"1px solid "+BORD,color:SUB,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Plus tard</button>
+      </div>
+    </div>
+  );
+}
 
 function getCourseReadiness(race,profile){
   var lvl=(profile&&profile.level)||"beginner";
@@ -764,7 +789,7 @@ function PricingScreen(p){
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {PLANS.map(function(pl,i){
           return(
-            <div key={i} onClick={p.onStart} style={{position:"relative",background:i===2?OR+"10":SURF2,border:"1.5px solid "+(i===2?OR:BORD),borderRadius:16,padding:"16px 18px",cursor:"pointer"}}>
+            <div key={i} onClick={function(){lsSet("fr_pending_plan",pl.id||"gratuit");p.onStart();}} style={{position:"relative",background:i===2?OR+"10":SURF2,border:"1.5px solid "+(i===2?OR:BORD),borderRadius:16,padding:"16px 18px",cursor:"pointer"}}>
               {pl.tag?<div style={{position:"absolute",top:-10,right:16,background:pl.color,color:"#fff",fontSize:10,fontWeight:700,borderRadius:6,padding:"2px 10px"}}>{pl.tag}</div>:null}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                 <div style={{fontSize:17,fontWeight:800,color:i===2?OR:TXT}}>{pl.name}</div>
@@ -1383,6 +1408,7 @@ function TrainingScreen(p){
   var [selWeek,setSelWeek]=useState(null);
   var [forceNoPlan,setForceNoPlan]=useState(false);
   var [showStrategy,setShowStrategy]=useState(false);
+  var [showStrategyUpgrade,setShowStrategyUpgrade]=useState(false);
   var scrollRef=useRef(null);
   var races=useRaces();
   var raceId=p.race?p.race.id:null;
@@ -1534,8 +1560,8 @@ function TrainingScreen(p){
           <span style={{fontSize:14}}>{rd.icon}</span>
           <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,color:rd.color}}>{rd.label}</span><span style={{fontSize:12,color:SUB}}> · {rd.msg}</span></div>
         </div>
-        <button onClick={function(){setShowStrategy(true);}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:PU+"15",border:"1px solid "+PU+"44",color:PU,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
-          Stratégie de course · Splits
+        <button onClick={function(){if(planLevel(p.profile)<2){setShowStrategyUpgrade(true);}else{setShowStrategy(true);}}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:planLevel(p.profile)>=2?PU+"15":SURF2,border:"1px solid "+(planLevel(p.profile)>=2?PU+"44":BORD),color:planLevel(p.profile)>=2?PU:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          {planLevel(p.profile)<2&&<span style={{fontSize:12}}>🔒</span>}Stratégie de course · Splits{planLevel(p.profile)<2&&<span style={{fontSize:10,color:OR,fontWeight:700,marginLeft:4}}>Pro</span>}
         </button>
       </div>
       <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px"}}>
@@ -1576,6 +1602,7 @@ function TrainingScreen(p){
       ):null}
     </div>
     {showStrategy&&<RaceStrategyModal race={p.race} onClose={function(){setShowStrategy(false);}}/>}
+    {showStrategyUpgrade&&<UpgradeModal feature="Stratégie de course · Splits" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowStrategyUpgrade(false);}} onUpgrade={function(){setShowStrategyUpgrade(false);}}/>}
     </>
   );
 }
@@ -1782,6 +1809,7 @@ function JournalScreen(p){
   var [sel,setSel]=useState(null);
   var [form,setForm]=useState({done:false,km:"",min:"",feel:null,note:""});
   var [showGps,setShowGps]=useState(false);
+  var [showGpxUpgradeJ,setShowGpxUpgradeJ]=useState(false);
   var y=month.getFullYear();var mo=month.getMonth();
   var dc=new Date(y,mo+1,0).getDate();
   var fd=(function(){var d=new Date(y,mo,1).getDay();return d===0?6:d-1;})();
@@ -1837,21 +1865,27 @@ function JournalScreen(p){
                 <div><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Durée (min)</label><input value={form.min} onChange={function(e){setForm(function(f){return Object.assign({},f,{min:e.target.value});});}} type="number" placeholder="60" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
               </div>
               {/* Import GPX depuis montre */}
-              <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"10px",borderRadius:10,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:14}}>
-                📎 Importer un tracé GPX (Garmin, Polar…)
-                <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
-                  var file=e.target.files&&e.target.files[0];if(!file)return;
-                  var reader=new FileReader();
-                  reader.onload=function(ev){
-                    var track=parseGpx(ev.target.result);
-                    if(track.length>0){
-                      var km=calcTrackKm(track);
-                      var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
-                      setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,done:true});});
-                    }
-                  };reader.readAsText(file);e.target.value="";
-                }}/>
-              </label>
+              {planLevel(p.profile)>=1?(
+                <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"10px",borderRadius:10,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:14}}>
+                  📎 Importer un tracé GPX (Garmin, Polar…)
+                  <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                    var file=e.target.files&&e.target.files[0];if(!file)return;
+                    var reader=new FileReader();
+                    reader.onload=function(ev){
+                      var track=parseGpx(ev.target.result);
+                      if(track.length>0){
+                        var km=calcTrackKm(track);
+                        var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
+                        setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,done:true});});
+                      }
+                    };reader.readAsText(file);e.target.value="";
+                  }}/>
+                </label>
+              ):(
+                <div onClick={function(){setShowGpxUpgradeJ(true);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"10px",borderRadius:10,background:SURF2,border:"1px solid "+BORD,color:MUT,fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:14}}>
+                  🔒 Importer un tracé GPX <span style={{fontSize:10,color:BL,fontWeight:700,marginLeft:4}}>Essential+</span>
+                </div>
+              )}
               {form.track&&form.track.length>1&&<div style={{marginBottom:14}}><RunMap track={form.track} height={160}/></div>}
               <div style={{marginBottom:14}}>
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:10}}>Ressenti</label>
@@ -1879,6 +1913,7 @@ function JournalScreen(p){
       </div>
     </div>
     {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){setForm(function(f){return Object.assign({},f,{track:res.track,km:res.km,min:res.min,done:true});});setShowGps(false);}}/>}
+    {showGpxUpgradeJ&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgradeJ(false);}} onUpgrade={function(){setShowGpxUpgradeJ(false);}}/>}
     </>
   );
 }
@@ -1888,6 +1923,8 @@ function SuiviScreen(p){
   var race=p.race;
   var today=new Date();
   var [showGps,setShowGps]=useState(false);
+  var [showGpsUpgrade,setShowGpsUpgrade]=useState(false);
+  var [showGpxUpgrade,setShowGpxUpgrade]=useState(false);
 
   function saveTrack(res){
     var key=today.toDateString();
@@ -1959,24 +1996,36 @@ function SuiviScreen(p){
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Enregistrer une sortie</div>
           <div style={{display:"flex",gap:10}}>
-            <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-              <span style={{fontSize:24}}>📍</span>GPS en direct
-            </button>
-            <label style={{flex:1,padding:"14px 10px",borderRadius:12,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
-              <span style={{fontSize:24}}>📎</span>Import GPX
-              <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
-                var file=e.target.files&&e.target.files[0];if(!file)return;
-                var reader=new FileReader();
-                reader.onload=function(ev){
-                  var track=parseGpx(ev.target.result);
-                  if(track.length>1){
-                    var km=calcTrackKm(track);
-                    var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
-                    saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});
-                  }
-                };reader.readAsText(file);e.target.value="";
-              }}/>
-            </label>
+            {planLevel(p.profile)>=2?(
+              <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                <span style={{fontSize:24}}>📍</span>GPS en direct
+              </button>
+            ):(
+              <button onClick={function(){setShowGpsUpgrade(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:24}}>🔒</span>GPS en direct<span style={{fontSize:9,color:OR,fontWeight:700}}>Pro</span>
+              </button>
+            )}
+            {planLevel(p.profile)>=1?(
+              <label style={{flex:1,padding:"14px 10px",borderRadius:12,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
+                <span style={{fontSize:24}}>📎</span>Import GPX
+                <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                  var file=e.target.files&&e.target.files[0];if(!file)return;
+                  var reader=new FileReader();
+                  reader.onload=function(ev){
+                    var track=parseGpx(ev.target.result);
+                    if(track.length>1){
+                      var km=calcTrackKm(track);
+                      var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
+                      saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});
+                    }
+                  };reader.readAsText(file);e.target.value="";
+                }}/>
+              </label>
+            ):(
+              <button onClick={function(){setShowGpxUpgrade(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:24}}>🔒</span>Import GPX<span style={{fontSize:9,color:BL,fontWeight:700}}>Essential</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -2077,7 +2126,10 @@ function SuiviScreen(p){
         </div>
       </div>
     </div>
-    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){saveTrack(res);setShowGps(false);}}/>}</>
+    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){saveTrack(res);setShowGps(false);}}/>}
+    {showGpsUpgrade&&<UpgradeModal feature="GPS en direct" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowGpsUpgrade(false);}} onUpgrade={function(){setShowGpsUpgrade(false);}}/>}
+    {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);}}/>}
+    </>
   );
 }
 
@@ -2125,11 +2177,19 @@ function CoachScreen(p){
   var [input,setInput]=useState("");
   var [loading,setLoading]=useState(false);
   var [error,setError]=useState("");
+  var [showCoachUpgrade,setShowCoachUpgrade]=useState(false);
   var bottomRef=useRef(null);
+  var todayKey=new Date().toISOString().slice(0,10);
+  var countKey="fr_coach_count_"+todayKey;
+  var [dailyCount,setDailyCount]=useState(function(){return ls(countKey,0);});
+  var lvl=planLevel(p.profile);
+  var maxMsg=lvl>=2?Infinity:lvl>=1?30:5;
+  var remaining=maxMsg===Infinity?null:Math.max(0,maxMsg-dailyCount);
   useEffect(function(){if(bottomRef.current)bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages]);
 
   function send(){
     if(!input.trim()||loading)return;
+    if(maxMsg!==Infinity&&dailyCount>=maxMsg){setShowCoachUpgrade(true);return;}
     var msg=input.trim();setInput("");setLoading(true);setError("");
     var newMsgs=messages.concat([{role:"user",content:msg}]);
     setMessages(newMsgs);
@@ -2142,7 +2202,9 @@ function CoachScreen(p){
     }).then(function(r){return r.json();}).then(function(data){
       if(data.error){setError((data.error.message)||"Erreur API");setLoading(false);return;}
       var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
-      setMessages(function(m){return m.concat([{role:"model",content:reply}]);});setLoading(false);
+      setMessages(function(m){return m.concat([{role:"model",content:reply}]);});
+      var nc=dailyCount+1;setDailyCount(nc);lsSet(countKey,nc);
+      setLoading(false);
     }).catch(function(){
       setMessages(function(m){return m.concat([{role:"model",content:"Problème de connexion."}]);});setLoading(false);
     });
@@ -2154,7 +2216,7 @@ function CoachScreen(p){
       <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
           <div style={{fontSize:22,fontWeight:700,color:TXT}}>Coach IA</div>
-          <div/>
+          {remaining!==null&&<div style={{fontSize:11,fontWeight:600,color:remaining<=2?RE:remaining<=5?YE:MUT,background:SURF2,padding:"3px 8px",borderRadius:8,border:"1px solid "+BORD}}>{remaining} msg restants</div>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,"+OR+"44,"+OR+"11)",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🏃</div>
@@ -2177,9 +2239,15 @@ function CoachScreen(p){
         ):null}
         <div style={{display:"flex",gap:8}}>
           <input value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")send();}} placeholder="Pose ta question au coach…" style={{flex:1,background:SURF,border:"1px solid "+BORD,borderRadius:12,padding:"12px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-          <button onClick={send} disabled={!input.trim()||loading} style={{width:46,height:46,borderRadius:12,background:OR,border:"none",cursor:!input.trim()||loading?"not-allowed":"pointer",fontSize:18,opacity:!input.trim()||loading?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>↑</button>
+          <button onClick={send} disabled={!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)} style={{width:46,height:46,borderRadius:12,background:maxMsg!==Infinity&&dailyCount>=maxMsg?MUT:OR,border:"none",cursor:!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)?"not-allowed":"pointer",fontSize:18,opacity:!input.trim()||loading?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>{maxMsg!==Infinity&&dailyCount>=maxMsg?"🔒":"↑"}</button>
         </div>
+        {maxMsg!==Infinity&&dailyCount>=maxMsg&&(
+          <div onClick={function(){setShowCoachUpgrade(true);}} style={{marginTop:8,padding:"10px 12px",borderRadius:10,background:OR+"15",border:"1px solid "+OR+"33",cursor:"pointer",textAlign:"center"}}>
+            <span style={{fontSize:12,color:OR,fontWeight:600}}>Limite journalière atteinte · Passer à un plan supérieur</span>
+          </div>
+        )}
       </div>
+      {showCoachUpgrade&&<UpgradeModal feature={"Coach IA · Limite atteinte"} minPlanLabel={lvl<1?"Essential":"Pro"} minPlanColor={lvl<1?BL:OR} onClose={function(){setShowCoachUpgrade(false);}} onUpgrade={function(){setShowCoachUpgrade(false);}}/>}
     </div>
   );
 }
@@ -2192,6 +2260,7 @@ function ProfileScreen(p){
   var [vdotTime,setVdotTime]=useState("");
   var [vdotResult,setVdotResult]=useState(null);
   var [showResetModal,setShowResetModal]=useState(false);
+  var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
   function save(){p.onUpdate(form);setEditing(false);}
   function field(label,key,type,placeholder){
     return(
@@ -2220,6 +2289,21 @@ function ProfileScreen(p){
             {editing?"Annuler":"Modifier"}
           </button>
         </div>
+
+        {/* ── PLAN BADGE ── */}
+        {(function(){
+          var pl=PLANS.find(function(x){return x.id===(p.profile.plan||"gratuit");});
+          if(!pl)return null;
+          return(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:12,background:pl.color+"14",border:"1px solid "+pl.color+"33",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:16}}>✦</span>
+                <div><div style={{fontSize:12,color:MUT}}>Formule actuelle</div><div style={{fontSize:14,fontWeight:700,color:pl.color}}>{pl.name}</div></div>
+              </div>
+              {pl.id==="gratuit"&&<button onClick={function(){}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>}
+            </div>
+          );
+        })()}
 
         {/* ── STATS ── */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
@@ -2297,12 +2381,15 @@ function ProfileScreen(p){
 
         {/* ── CALIBRATION ALLURES VDOT ── */}
         <Card style={{marginBottom:16}}>
-          <div onClick={function(){setShowVdot(!showVdot);setVdotResult(null);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",cursor:"pointer"}}>
+          <div onClick={function(){if(planLevel(p.profile)<2){setShowVdotUpgrade(true);}else{setShowVdot(!showVdot);setVdotResult(null);}}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",cursor:"pointer"}}>
             <div>
-              <div style={{fontSize:14,fontWeight:600,color:TXT}}>Calibrer mes allures</div>
-              <div style={{fontSize:12,color:p.profile.vdotPaces?GR:SUB,marginTop:2}}>{p.profile.vdotPaces?"Allures personnalisées actives":"Basé sur le niveau de profil"}</div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:14,fontWeight:600,color:TXT}}>Calibrer mes allures</span>
+                {planLevel(p.profile)<2&&<span style={{fontSize:9,fontWeight:700,color:OR,background:OR+"18",padding:"2px 6px",borderRadius:6}}>Pro</span>}
+              </div>
+              <div style={{fontSize:12,color:planLevel(p.profile)>=2&&p.profile.vdotPaces?GR:SUB,marginTop:2}}>{planLevel(p.profile)>=2&&p.profile.vdotPaces?"Allures personnalisées actives":"Basé sur le niveau de profil"}</div>
             </div>
-            <div style={{fontSize:10,color:MUT,transform:showVdot?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
+            <div style={{fontSize:10,color:MUT,transform:showVdot?"rotate(180deg)":"rotate(0deg)"}}>{planLevel(p.profile)<2?"🔒":"▼"}</div>
           </div>
           {showVdot&&(
             <div style={{padding:"0 18px 18px",borderTop:"1px solid "+BORD}}>
@@ -2396,7 +2483,9 @@ function ProfileScreen(p){
           </div>
         </div>
       </div>
-    )}</>
+    )}
+    {showVdotUpgrade&&<UpgradeModal feature="Calibrer mes allures" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowVdotUpgrade(false);}} onUpgrade={function(){setShowVdotUpgrade(false);}}/>}
+    </>
   );
 }
 
@@ -2487,7 +2576,7 @@ export default function App(){
   if(authState==="unauth")return <Splash/>;
 
   if(authState==="onboarding"){return <Onboarding onDone={function(d){
-    var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek};
+    var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek,plan:ls("fr_pending_plan","gratuit")};
     setProfile(prof);setRace(d.race);
     if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
     setAuthState("app");if(d.race)setTab("training");
@@ -2507,7 +2596,7 @@ export default function App(){
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}}/>;
-    if(tab==="journal")  return <JournalScreen race={race} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
+    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
     if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
     return null;
