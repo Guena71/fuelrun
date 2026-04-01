@@ -2202,7 +2202,7 @@ function ProfileScreen(p){
   }
   var stats=[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km)+" km",color:BL},{label:"Streak",value:p.stats.streak+" j",color:YE}];
   return(
-    <div><LogoBar/>
+    <><div><LogoBar/>
       <div style={{padding:"20px 16px 80px"}}>
         {/* ── EN-TÊTE ── */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
@@ -2395,7 +2395,7 @@ function ProfileScreen(p){
           </div>
         </div>
       </div>
-    )}
+    )}</>
   );
 }
 
