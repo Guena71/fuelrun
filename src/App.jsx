@@ -2311,7 +2311,7 @@ function ProfileScreen(p){
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <button onClick={function(){setShowResetModal(true);}} title="Réinitialiser le profil" style={{width:34,height:34,borderRadius:10,background:RE+"12",border:"1px solid "+RE+"33",color:RE,fontSize:15,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>↺</button>
+            <button onClick={function(){setShowResetModal(true);}} style={{padding:"7px 12px",borderRadius:20,background:RE+"15",border:"1px solid "+RE+"44",color:RE,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Reset</button>
             <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
               {editing?"Annuler":"Modifier"}
             </button>
