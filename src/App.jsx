@@ -327,7 +327,7 @@ var PLANS=[
       "1 objectif de course",
       "Plan d'entraînement basique",
       "Journal des séances",
-      "Météo & conseils parcours",
+      "Météo et conseils parcours",
       "5 messages Coach IA / jour",
     ],
     cta:"Continuer gratuitement"
@@ -336,10 +336,10 @@ var PLANS=[
     name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Pour le coureur régulier qui veut progresser.",
     items:[
-      "Courses & objectifs illimités",
+      "Courses et objectifs illimités",
       "Plans personnalisés avancés",
       "Journal + RPE + suivi fatigue",
-      "Météo & conseils parcours",
+      "Météo et conseils parcours",
       "30 messages Coach IA / jour",
     ],
     cta:"Essayer 14 j gratuit"
@@ -351,7 +351,7 @@ var PLANS=[
       "Tout Essential, plus :",
       "Coach IA illimité 24h/24",
       "Allures d'entraînement personnalisées",
-      "Stratégie de course & splits",
+      "Stratégie de course et splits",
       "Nutrition complète + recettes",
       "Analyse de performance détaillée",
     ],
@@ -363,9 +363,9 @@ var PLANS=[
     items:[
       "Tout Pro, plus :",
       "5 profils (famille / équipe)",
-      "Synchronisation Strava & Garmin",
-      "Prédictions de temps & records",
-      "Coach dédié & support prioritaire",
+      "Synchronisation Strava et Garmin",
+      "Prédictions de temps et records",
+      "Coach dédié et support prioritaire",
     ],
     cta:"Essayer 14 j gratuit"
   }
