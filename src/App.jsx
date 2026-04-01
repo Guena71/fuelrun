@@ -1823,34 +1823,35 @@ function JournalScreen(p){
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)setSel(null);}}>
             <div style={{background:SURF,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"24px 24px 36px",animation:"slideUp .3s ease",maxHeight:"85vh",overflowY:"auto"}}>
               <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 20px"}}/>
-              <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:20}}>{fmtDate(sel.date)}</div>
-              <div onClick={function(){setForm(function(f){return Object.assign({},f,{done:!f.done});});}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 16px",borderRadius:12,border:"1.5px solid "+(form.done?OR:BORD),background:form.done?OR+"15":SURF2,cursor:"pointer",marginBottom:14}}>
-                <span style={{fontSize:14,fontWeight:500,color:TXT}}>Séance accomplie</span>
-                <div style={{width:22,height:22,borderRadius:6,background:form.done?OR:"transparent",border:"2px solid "+(form.done?OR:BORD),display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13}}>{form.done?"✓":""}</div>
+              <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:16}}>{fmtDate(sel.date)}</div>
+              {/* ── Séance accomplie (bien mis en évidence) ── */}
+              <div onClick={function(){setForm(function(f){return Object.assign({},f,{done:!f.done});});}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"18px 16px",borderRadius:14,border:"2px solid "+(form.done?OR:BORD),background:form.done?"linear-gradient(135deg,"+OR+"22,"+OR+"08)":SURF2,cursor:"pointer",marginBottom:16,transition:"all .2s"}}>
+                <div>
+                  <div style={{fontSize:15,fontWeight:700,color:form.done?OR:TXT}}>{form.done?"✅ Séance accomplie !":"Marquer comme accomplie"}</div>
+                  <div style={{fontSize:11,color:form.done?OR+"aa":MUT,marginTop:3}}>{form.done?"Bravo, continue comme ça !":"Coche ici une fois ta séance terminée"}</div>
+                </div>
+                <div style={{width:28,height:28,borderRadius:8,background:form.done?OR:"transparent",border:"2px solid "+(form.done?OR:BORD),display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:16,flexShrink:0,transition:"all .2s"}}>{form.done?"✓":""}</div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                 <div><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Distance (km)</label><input value={form.km} onChange={function(e){setForm(function(f){return Object.assign({},f,{km:e.target.value});});}} type="number" placeholder="12" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
                 <div><label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Durée (min)</label><input value={form.min} onChange={function(e){setForm(function(f){return Object.assign({},f,{min:e.target.value});});}} type="number" placeholder="60" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/></div>
               </div>
-              {/* GPS / GPX */}
-              <div style={{display:"flex",gap:8,marginBottom:14}}>
-                <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"10px",borderRadius:10,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📍 GPS en direct</button>
-                <label style={{flex:1,padding:"10px",borderRadius:10,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:12,fontWeight:600,cursor:"pointer",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  📎 Import GPX
-                  <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
-                    var file=e.target.files&&e.target.files[0];if(!file)return;
-                    var reader=new FileReader();
-                    reader.onload=function(ev){
-                      var track=parseGpx(ev.target.result);
-                      if(track.length>0){
-                        var km=calcTrackKm(track);
-                        var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
-                        setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min});});
-                      }
-                    };reader.readAsText(file);e.target.value="";
-                  }}/>
-                </label>
-              </div>
+              {/* Import GPX depuis montre */}
+              <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"10px",borderRadius:10,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:14}}>
+                📎 Importer un tracé GPX (Garmin, Polar…)
+                <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                  var file=e.target.files&&e.target.files[0];if(!file)return;
+                  var reader=new FileReader();
+                  reader.onload=function(ev){
+                    var track=parseGpx(ev.target.result);
+                    if(track.length>0){
+                      var km=calcTrackKm(track);
+                      var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
+                      setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,done:true});});
+                    }
+                  };reader.readAsText(file);e.target.value="";
+                }}/>
+              </label>
               {form.track&&form.track.length>1&&<div style={{marginBottom:14}}><RunMap track={form.track} height={160}/></div>}
               <div style={{marginBottom:14}}>
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:10}}>Ressenti</label>
