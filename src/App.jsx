@@ -2297,7 +2297,7 @@ function ProfileScreen(p){
           return(
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:12,background:pl.color+"14",border:"1px solid "+pl.color+"33",marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:16}}>✦</span>
+                <span style={{fontSize:16}}>⭐</span>
                 <div><div style={{fontSize:12,color:MUT}}>Formule actuelle</div><div style={{fontSize:14,fontWeight:700,color:pl.color}}>{pl.name}</div></div>
               </div>
               {pl.id==="gratuit"&&<button onClick={function(){}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>}
