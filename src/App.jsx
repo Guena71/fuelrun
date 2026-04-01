@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
 
-var MISTRAL_KEY=import.meta.env.VITE_MISTRAL_KEY||"";
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#1f1f1f",BORD="#2a2a2a";
 var TXT="#f0f0f0",SUB="#888",MUT="#444";
@@ -2179,6 +2178,7 @@ function CoachScreen(p){
   var [messages,setMessages]=useState([{role:"model",content:init}]);
   var [input,setInput]=useState("");
   var [loading,setLoading]=useState(false);
+  var [histLoaded,setHistLoaded]=useState(false);
   var [error,setError]=useState("");
   var [showCoachUpgrade,setShowCoachUpgrade]=useState(false);
   var bottomRef=useRef(null);
@@ -2190,6 +2190,26 @@ function CoachScreen(p){
   var remaining=maxMsg===Infinity?null:Math.max(0,maxMsg-dailyCount);
   useEffect(function(){if(bottomRef.current)bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages]);
 
+  // ── Charger l'historique depuis Firestore au premier rendu ──
+  useEffect(function(){
+    if(!p.user||histLoaded)return;
+    getDoc(doc(db,"users",p.user.uid)).then(function(snap){
+      if(snap.exists()){
+        var data=snap.data();
+        if(data.coachHistory&&Array.isArray(data.coachHistory)&&data.coachHistory.length>0){
+          setMessages(data.coachHistory);
+        }
+      }
+      setHistLoaded(true);
+    }).catch(function(){setHistLoaded(true);});
+  },[p.user]);
+
+  function saveHistory(msgs){
+    if(!p.user)return;
+    var trimmed=msgs.slice(-40); // garder les 40 derniers messages
+    setDoc(doc(db,"users",p.user.uid),{coachHistory:trimmed},{merge:true}).catch(function(){});
+  }
+
   function send(){
     if(!input.trim()||loading)return;
     if(maxMsg!==Infinity&&dailyCount>=maxMsg){setShowCoachUpgrade(true);return;}
@@ -2198,14 +2218,16 @@ function CoachScreen(p){
     setMessages(newMsgs);
     var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+"\nRéponds en français, 3-4 phrases max, naturel et personnalisé.";
     var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
-    fetch("https://api.mistral.ai/v1/chat/completions",{
+    fetch("/api/coach",{
       method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+MISTRAL_KEY},
-      body:JSON.stringify({model:"mistral-small-latest",messages:[{role:"system",content:sys}].concat(hist),max_tokens:400})
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({system:sys,messages:hist})
     }).then(function(r){return r.json();}).then(function(data){
-      if(data.error){setError((data.error.message)||"Erreur API");setLoading(false);return;}
+      if(data.error){setError(data.error.message||data.error||"Erreur API");setLoading(false);return;}
       var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
-      setMessages(function(m){return m.concat([{role:"model",content:reply}]);});
+      var updated=newMsgs.concat([{role:"model",content:reply}]);
+      setMessages(updated);
+      saveHistory(updated);
       var nc=dailyCount+1;setDailyCount(nc);lsSet(countKey,nc);
       setLoading(false);
     }).catch(function(){
@@ -2448,9 +2470,16 @@ function ProfileScreen(p){
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10,marginTop:4}}>
           <button onClick={function(){
-            var data={profile:p.profile,race:JSON.parse(localStorage.getItem("fr_race")||"null"),stats:JSON.parse(localStorage.getItem("fr_stats")||"{}"),wellbeing:JSON.parse(localStorage.getItem("fr_wellbeing")||"null")};
+            var data={
+              version:2,
+              exportedAt:new Date().toISOString(),
+              profile:p.profile,
+              race:p.race,
+              stats:p.stats,
+              entries:p.entries||{}
+            };
             var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-            var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="fuelrun-backup.json";a.click();URL.revokeObjectURL(url);
+            var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="fuelrun-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);
           }} style={{padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Exporter</button>
           <label style={{padding:"13px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:TXT,fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"center",display:"block"}}>
             Importer
@@ -2459,13 +2488,10 @@ function ProfileScreen(p){
               var reader=new FileReader();
               reader.onload=function(ev){try{
                 var data=JSON.parse(ev.target.result);
-                if(data.profile){localStorage.setItem("fr_profile",JSON.stringify(data.profile));}
-                if(data.race){localStorage.setItem("fr_race",JSON.stringify(data.race));}
-                if(data.stats){localStorage.setItem("fr_stats",JSON.stringify(data.stats));}
-                if(data.wellbeing){localStorage.setItem("fr_wellbeing",JSON.stringify(data.wellbeing));}
-                p.onUpdate(data.profile);
-              }catch(err){alert("Fichier invalide");}};
-              reader.readAsText(file);
+                if(!data.profile)throw new Error("Fichier invalide");
+                p.onImport(data);
+              }catch(err){p.onSaveError("Fichier invalide ou corrompu");}};
+              reader.readAsText(file);e.target.value="";
             }}/>
           </label>
         </div>
@@ -2518,6 +2544,8 @@ export default function App(){
   var [showCheckin,setShowCheckin]=useState(false);
   var [entries,setEntriesRaw]=useState(function(){return ls("fr_entries",{});});
   var [showGuide,setShowGuide]=useState(false);
+  var [toast,setToast]=useState(null); // {msg, type:"ok"|"err"}
+  function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
   function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
 
   // ── Firestore helpers ──
@@ -2525,7 +2553,9 @@ export default function App(){
     return getDoc(doc(db,"users",uid)).then(function(snap){return snap.exists()?snap.data():null;});
   }
   function fsSave(uid,data){
-    return setDoc(doc(db,"users",uid),data,{merge:true});
+    return setDoc(doc(db,"users",uid),data,{merge:true}).catch(function(){
+      showToast("Erreur de sauvegarde — vérifie ta connexion","err");
+    });
   }
 
   // ── Auth state listener ──
@@ -2602,8 +2632,8 @@ export default function App(){
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
-    if(tab==="coach")    return <CoachScreen profile={profile} race={race}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} stats={stats} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user}/>;
+    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
 
@@ -2624,6 +2654,13 @@ export default function App(){
       </div>
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
       {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(t){setTab(t);}}/>:null}
+      {toast&&(
+        <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",zIndex:600,pointerEvents:"none",width:"calc(100% - 48px)",maxWidth:382}}>
+          <div style={{background:toast.type==="err"?RE:GR,color:"#fff",borderRadius:12,padding:"12px 18px",fontSize:13,fontWeight:600,textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,.4)",animation:"slideUp .25s ease"}}>
+            {toast.msg}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
