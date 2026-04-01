@@ -2649,7 +2649,8 @@ export default function App(){
   function handleReset(){
     if(user)fsSave(user.uid,{profile:null,race:null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
     setProfileRaw(null);setRaceRaw(null);setStatsRaw({sessions:0,km:0,streak:0});
-    setTab("courses");
+    setTab("home");
+    setAuthState("onboarding");
   }
 
   function renderTab(){
