@@ -2327,12 +2327,9 @@ function ProfileScreen(p){
               <div style={{fontSize:13,color:SUB,marginTop:2}}>{LEVEL_LABELS[p.profile.level]||""}</div>
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <button onClick={function(){setShowResetModal(true);}} style={{padding:"7px 12px",borderRadius:20,background:RE+"15",border:"1px solid "+RE+"44",color:RE,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Reset</button>
-            <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
-              {editing?"Annuler":"Modifier"}
-            </button>
-          </div>
+          <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+            {editing?"Annuler":"Modifier"}
+          </button>
         </div>
 
         {/* ── PLAN BADGE ── */}
@@ -2514,7 +2511,8 @@ function ProfileScreen(p){
         </div>
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
-        <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Changer d'objectif course</button>
+        <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
+        <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:RE,border:"none",borderRadius:12,padding:"13px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon profil</button>
       </div>
     </div>
 
