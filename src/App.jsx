@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
 
@@ -593,7 +593,7 @@ function GpsTrackerModal({onSave,onClose}){
   var [status,setStatus]=useState("idle");
   var [track,setTrack]=useState([]);
   var [elapsed,setElapsed]=useState(0);
-  var [spd,setSpd]=useState(0);
+  var [,setSpd]=useState(0);
   var watchId=useRef(null);
   var timerRef=useRef(null);
   var startTs=useRef(null);
@@ -1909,7 +1909,6 @@ function SuiviScreen(p){
     var label=wStart.getDate()+"/"+(wStart.getMonth()+1);
     weeks.push({label:label,km:Math.round(km),current:w===0});
   }
-  var maxKm=Math.max.apply(null,weeks.map(function(w){return w.km;}),1)||1;
   var thisWeekKm=weeks[7].km;
   var targetKm=p.profile.kmWeek||25;
 
@@ -1938,7 +1937,7 @@ function SuiviScreen(p){
           <button onClick={share} style={{padding:"6px 14px",borderRadius:20,background:OR+"22",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Partager</button>
         </div>
 
-        {/* ── Stats semaine ── */}
+        {/* ── Stats ── */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
           <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"14px 16px"}}>
             <div style={{fontSize:11,color:MUT,marginBottom:4,textTransform:"uppercase",letterSpacing:0.5}}>Cette semaine</div>
