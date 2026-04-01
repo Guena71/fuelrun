@@ -1064,9 +1064,9 @@ function HomeScreen(p){
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
         <div style={{marginBottom:24}}>
           <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:10}}>
             <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
-            <button onClick={function(){setShowResetConfirm(true);}} style={{padding:"6px 12px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Réinitialiser ton profil</button>
+            <button onClick={function(){setShowResetConfirm(true);}} style={{padding:"6px 12px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,marginBottom:2}}>Réinitialiser ton profil</button>
           </div>
           <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:OR}}/>
