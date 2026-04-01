@@ -2190,6 +2190,7 @@ function ProfileScreen(p){
   var [vdotDist,setVdotDist]=useState("10");
   var [vdotTime,setVdotTime]=useState("");
   var [vdotResult,setVdotResult]=useState(null);
+  var [showResetModal,setShowResetModal]=useState(false);
   function save(){p.onUpdate(form);setEditing(false);}
   function field(label,key,type,placeholder){
     return(
@@ -2377,9 +2378,24 @@ function ProfileScreen(p){
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
         <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
-        <button onClick={p.onReset} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon compte</button>
+        <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon profil</button>
       </div>
     </div>
+
+    {/* ── Modal confirmation reset ── */}
+    {showResetModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowResetModal(false);}}>
+        <div style={{background:SURF,borderRadius:20,padding:"28px 24px",width:"100%",maxWidth:380,animation:"fadeIn .2s ease"}}>
+          <div style={{fontSize:24,textAlign:"center",marginBottom:12}}>⚠️</div>
+          <div style={{fontSize:18,fontWeight:700,color:TXT,textAlign:"center",marginBottom:8}}>Réinitialiser le profil ?</div>
+          <div style={{fontSize:13,color:SUB,textAlign:"center",lineHeight:1.6,marginBottom:24}}>Ton profil, ton plan et tes stats seront effacés. Tu pourras choisir une nouvelle course et repartir de zéro.</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <button onClick={function(){setShowResetModal(false);p.onReset();}} style={{width:"100%",padding:"14px",borderRadius:12,background:RE,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Confirmer et choisir une nouvelle course</button>
+            <button onClick={function(){setShowResetModal(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 }
 
@@ -2480,10 +2496,9 @@ export default function App(){
   if(!profile)return null;
 
   function handleReset(){
-    if(!window.confirm("Réinitialiser ton profil ? Toutes tes données seront supprimées."))return;
     if(user)fsSave(user.uid,{profile:null,race:null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
     setProfileRaw(null);setRaceRaw(null);setStatsRaw({sessions:0,km:0,streak:0});
-    signOut(auth);
+    setTab("courses");
   }
 
   function renderTab(){
