@@ -792,7 +792,7 @@ function PricingScreen(p){
               {pl.tag?<div style={{position:"absolute",top:-10,right:16,background:pl.color,color:"#fff",fontSize:10,fontWeight:700,borderRadius:6,padding:"2px 10px"}}>{pl.tag}</div>:null}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                 <div style={{fontSize:17,fontWeight:800,color:i===2?OR:TXT}}>{pl.name}</div>
-                <div><span style={{fontSize:22,fontWeight:800,color:pl.color}}>{pl.price==="0"?"Gratuit":pl.price+"€"}</span>{pl.price!=="0"&&<span style={{fontSize:11,color:MUT,marginLeft:3}}>{pl.per}</span>}</div>
+                <div><span style={{fontSize:22,fontWeight:800,color:pl.color}}>{pl.price==="0"?"0 €":pl.price+"€"}</span><span style={{fontSize:11,color:MUT,marginLeft:3}}>{pl.per}</span></div>
               </div>
               <div style={{fontSize:12,color:SUB,marginBottom:10}}>{pl.desc}</div>
               <div style={{height:1,background:BORD,marginBottom:10}}/>
