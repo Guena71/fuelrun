@@ -780,8 +780,12 @@ function PricingScreen(p){
   return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
       <style>{CSS}</style>
-      <LogoBar/>
-      <div style={{paddingTop:28,marginBottom:20}}>
+      {p.onClose?(
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 0 0"}}>
+          <button onClick={p.onClose} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:0}}>← Retour</button>
+        </div>
+      ):<LogoBar/>}
+      <div style={{paddingTop:p.onClose?12:28,marginBottom:20}}>
         <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>Choisir ma formule</div>
         <div style={{fontSize:14,color:SUB}}>Sans engagement · Résiliable à tout moment</div>
       </div>
@@ -1191,7 +1195,12 @@ function HomeScreen(p){
             </div>
           );
         })()}
-        {(p.race&&curWeek)?<NutritionMiniCard profile={p.profile} sessType={sessType}/>:null}
+        {(p.race&&curWeek)?(planLevel(p.profile)>=2?<NutritionMiniCard profile={p.profile} sessType={sessType}/>:(
+          <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"14px 18px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:18}}>🥗</span><div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Nutrition du jour</div><div style={{fontSize:11,color:MUT,marginTop:2}}>Disponible à partir du plan Pro</div></div></div>
+            <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"3px 8px",borderRadius:6}}>Pro</span>
+          </div>
+        )):null}
 
       </div>
     </div>
@@ -1284,6 +1293,14 @@ function SessionCard(p){
 
             {/* ── NUTRITION + REPAS + RECETTES (accordéon) ── */}
             {(function(){
+              if(planLevel(p.profile)<2){return(
+                <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,fontWeight:600,color:MUT}}>Nutrition · Repas · Recettes</span></div>
+                    <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro</span>
+                  </div>
+                </div>
+              );}
               var rows=recipes.length>0?recipes:n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal};});
               var totalKcal=rows.reduce(function(s,r){return s+(r.kcal||0);},0);
               return(
@@ -1601,7 +1618,7 @@ function TrainingScreen(p){
       ):null}
     </div>
     {showStrategy&&<RaceStrategyModal race={p.race} onClose={function(){setShowStrategy(false);}}/>}
-    {showStrategyUpgrade&&<UpgradeModal feature="Stratégie de course · Splits" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowStrategyUpgrade(false);}} onUpgrade={function(){setShowStrategyUpgrade(false);}}/>}
+    {showStrategyUpgrade&&<UpgradeModal feature="Stratégie de course · Splits" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowStrategyUpgrade(false);}} onUpgrade={function(){setShowStrategyUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }
@@ -1912,7 +1929,7 @@ function JournalScreen(p){
       </div>
     </div>
     {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){setForm(function(f){return Object.assign({},f,{track:res.track,km:res.km,min:res.min,done:true});});setShowGps(false);}}/>}
-    {showGpxUpgradeJ&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgradeJ(false);}} onUpgrade={function(){setShowGpxUpgradeJ(false);}}/>}
+    {showGpxUpgradeJ&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgradeJ(false);}} onUpgrade={function(){setShowGpxUpgradeJ(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }
@@ -2129,8 +2146,8 @@ function SuiviScreen(p){
       </div>
     </div>
     {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){saveTrack(res);setShowGps(false);}}/>}
-    {showGpsUpgrade&&<UpgradeModal feature="GPS en direct" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowGpsUpgrade(false);}} onUpgrade={function(){setShowGpsUpgrade(false);}}/>}
-    {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);}}/>}
+    {showGpsUpgrade&&<UpgradeModal feature="GPS en direct" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowGpsUpgrade(false);}} onUpgrade={function(){setShowGpsUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
+    {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }
@@ -2272,7 +2289,7 @@ function CoachScreen(p){
           </div>
         )}
       </div>
-      {showCoachUpgrade&&<UpgradeModal feature={"Coach IA · Limite atteinte"} minPlanLabel={lvl<1?"Essential":"Pro"} minPlanColor={lvl<1?BL:OR} onClose={function(){setShowCoachUpgrade(false);}} onUpgrade={function(){setShowCoachUpgrade(false);}}/>}
+      {showCoachUpgrade&&<UpgradeModal feature={"Coach IA · Limite atteinte"} minPlanLabel={lvl<1?"Essential":"Pro"} minPlanColor={lvl<1?BL:OR} onClose={function(){setShowCoachUpgrade(false);}} onUpgrade={function(){setShowCoachUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </div>
   );
 }
@@ -2328,7 +2345,7 @@ function ProfileScreen(p){
                 <span style={{fontSize:16}}>⭐</span>
                 <div><div style={{fontSize:12,color:MUT}}>Formule actuelle</div><div style={{fontSize:14,fontWeight:700,color:pl.color}}>{pl.name}</div></div>
               </div>
-              {pl.id==="gratuit"&&<button onClick={function(){}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>}
+              {pl.id==="gratuit"&&<button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>}
             </div>
           );
         })()}
@@ -2515,7 +2532,7 @@ function ProfileScreen(p){
         </div>
       </div>
     )}
-    {showVdotUpgrade&&<UpgradeModal feature="Calibrer mes allures" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowVdotUpgrade(false);}} onUpgrade={function(){setShowVdotUpgrade(false);}}/>}
+    {showVdotUpgrade&&<UpgradeModal feature="Calibrer mes allures" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowVdotUpgrade(false);}} onUpgrade={function(){setShowVdotUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }
@@ -2544,6 +2561,7 @@ export default function App(){
   var [showCheckin,setShowCheckin]=useState(false);
   var [entries,setEntriesRaw]=useState(function(){return ls("fr_entries",{});});
   var [showGuide,setShowGuide]=useState(false);
+  var [showPricing,setShowPricing]=useState(false);
   var [toast,setToast]=useState(null); // {msg, type:"ok"|"err"}
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
   function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
@@ -2627,13 +2645,14 @@ export default function App(){
   }
 
   function renderTab(){
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing}/>;
-    if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}}/>;
+    var goPrice=function(){setShowPricing(true);};
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice}/>;
+    if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
-    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}}/>;
-    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
-    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
+    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
+    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice}/>;
+    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
 
@@ -2652,6 +2671,17 @@ export default function App(){
           );})}
         </div>
       </div>
+      {showPricing&&(
+        <div style={{position:"fixed",inset:0,background:BG,zIndex:450,overflowY:"auto"}}>
+          <PricingScreen onClose={function(){setShowPricing(false);}} onStart={function(){
+            var chosen=ls("fr_pending_plan","gratuit");
+            var updated=Object.assign({},profile,{plan:chosen});
+            setProfile(updated);
+            setShowPricing(false);
+            showToast("Formule mise à jour ✓","ok");
+          }}/>
+        </div>
+      )}
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
       {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(t){setTab(t);}}/>:null}
       {toast&&(
