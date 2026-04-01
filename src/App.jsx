@@ -675,7 +675,8 @@ function GpsTrackerModal({onSave,onClose}){
   );
 }
 
-function LogoBar(){
+function LogoBar(p){
+  var initials=p.profile?(p.profile.name||"?").split(" ").map(function(w){return w[0];}).join("").slice(0,2).toUpperCase():null;
   return(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 24px 0"}}>
       <style>{CSS}</style>
@@ -683,7 +684,13 @@ function LogoBar(){
         <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
         <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</span>
       </div>
-      <div style={{width:70,height:70,borderRadius:"50%",background:"radial-gradient(circle, "+OR+"40 0%, "+OR+"10 60%, transparent 100%)",boxShadow:"0 0 32px 12px "+OR+"30",animation:"pulse 2.4s ease-in-out infinite"}}/>
+      {initials?(
+        <button onClick={function(){p.onProfile&&p.onProfile();}} style={{width:46,height:46,borderRadius:14,background:"linear-gradient(135deg,"+OR+",#c43a00)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff",cursor:"pointer",flexShrink:0,boxShadow:"0 2px 12px "+OR+"55"}}>
+          {initials}
+        </button>
+      ):(
+        <div style={{width:70,height:70,borderRadius:"50%",background:"radial-gradient(circle, "+OR+"40 0%, "+OR+"10 60%, transparent 100%)",boxShadow:"0 0 32px 12px "+OR+"30",animation:"pulse 2.4s ease-in-out infinite"}}/>
+      )}
     </div>
   );
 }
@@ -1059,7 +1066,7 @@ function HomeScreen(p){
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
     <div style={{paddingBottom:8}}>
-      <LogoBar/>
+      <LogoBar profile={p.profile} onProfile={function(){p.onGoToProfile&&p.onGoToProfile();}}/>
       {/* ── HEADER ── */}
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
@@ -1073,9 +1080,6 @@ function HomeScreen(p){
               <span style={{fontSize:11,color:OR,fontWeight:600}}>{LEVEL_LABELS[p.profile.level]||""}</span>
             </div>
           </div>
-          <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{width:46,height:46,borderRadius:14,background:"linear-gradient(135deg,"+OR+"44,#1a0800)",border:"2px solid "+OR+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:700,color:OR,cursor:"pointer",flexShrink:0}}>
-            {(p.profile.name||"?").split(" ").map(function(w){return w[0];}).join("").slice(0,2).toUpperCase()}
-          </button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
           {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
