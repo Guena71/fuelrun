@@ -2288,9 +2288,12 @@ function ProfileScreen(p){
               <div style={{fontSize:13,color:SUB,marginTop:2}}>{LEVEL_LABELS[p.profile.level]||""}</div>
             </div>
           </div>
-          <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
-            {editing?"Annuler":"Modifier"}
-          </button>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <button onClick={function(){setShowResetModal(true);}} title="Réinitialiser le profil" style={{width:34,height:34,borderRadius:10,background:RE+"12",border:"1px solid "+RE+"33",color:RE,fontSize:15,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>↺</button>
+            <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              {editing?"Annuler":"Modifier"}
+            </button>
+          </div>
         </div>
 
         {/* ── PLAN BADGE ── */}
@@ -2468,8 +2471,7 @@ function ProfileScreen(p){
         </div>
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
-        <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
-        <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon profil</button>
+        <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Changer d'objectif course</button>
       </div>
     </div>
 
@@ -2608,8 +2610,8 @@ export default function App(){
   return(
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden"}}>
       <style>{CSS}</style>
-      <div style={{width:"100%",maxWidth:430,background:BG,minHeight:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,overflowY:"auto",paddingBottom:70}}>{renderTab()}</div>
+      <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
+        <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>{renderTab()}</div>
         <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
           {NAV.map(function(n){var active=tab===n.id;var color=active?OR:MUT;return(
             <button key={n.id} onClick={function(){setTab(n.id);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
