@@ -1956,23 +1956,6 @@ function SuiviScreen(p){
             {lastTracked[1].min&&<div style={{marginTop:8,fontSize:12,color:SUB,textAlign:"center"}}>Durée : {lastTracked[1].min} min · Allure moy. : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
           </div>
         )}
-        {/* ── Graphique 8 semaines ── */}
-        <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
-          <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:14}}>Km / semaine</div>
-          <div style={{display:"flex",alignItems:"flex-end",gap:4,height:80}}>
-            {weeks.map(function(w,i){
-              var h=maxKm>0?Math.max(4,Math.round(w.km/maxKm*72)):4;
-              return(
-                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                  {w.km>0&&<div style={{fontSize:9,color:w.current?OR:MUT,fontWeight:w.current?700:400}}>{w.km}</div>}
-                  <div style={{width:"100%",height:h,borderRadius:"3px 3px 0 0",background:w.current?OR:SURF2,border:"1px solid "+(w.current?OR:BORD),transition:"height .4s"}}/>
-                  <div style={{fontSize:8,color:w.current?OR:MUT,fontWeight:w.current?700:400,whiteSpace:"nowrap"}}>{w.current?"Sem.":w.label}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
         {/* ── Progression course ── */}
         {race&&(
           <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
