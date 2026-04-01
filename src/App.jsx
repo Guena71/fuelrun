@@ -1204,12 +1204,30 @@ function HomeScreen(p){
             </div>
           );
         })()}
-        {(p.race&&curWeek)?(planLevel(p.profile)>=2?<NutritionMiniCard profile={p.profile} sessType={sessType}/>:(
-          <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"14px 18px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:18}}>🥗</span><div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Nutrition du jour</div><div style={{fontSize:11,color:MUT,marginTop:2}}>Disponible à partir du plan Pro</div></div></div>
-            <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"3px 8px",borderRadius:6}}>Pro</span>
-          </div>
-        )):null}
+        {(p.race&&curWeek)?(function(){
+          var n=calcNutrition(p.profile,sessType);
+          var isPro=planLevel(p.profile)>=2;
+          return(
+            <Card style={{marginBottom:14}}>
+              <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div><div style={{fontSize:14,fontWeight:600,color:TXT}}>Nutrition du jour</div><div style={{fontSize:12,color:SUB,marginTop:2}}>Pour ta course {p.race.name}</div></div>
+                  <div style={{fontSize:22,fontWeight:800,color:OR}}>{n.kcal}<span style={{fontSize:11,fontWeight:500,marginLeft:2}}>kcal</span></div>
+                </div>
+                <div style={{display:"flex",gap:8,marginTop:12}}>
+                  {[{label:"Glucides",value:n.carbs+"g",color:BL},{label:"Protéines",value:n.prot+"g",color:GR},{label:"Lipides",value:n.fat+"g",color:YE}].map(function(m,i){
+                    return <div key={i} style={{flex:1,background:SURF2,borderRadius:10,padding:"8px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:3}}>{m.label}</div></div>;
+                  })}
+                </div>
+              </div>
+              {isPro?n.meals.map(function(m,i){return(<div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderBottom:i<n.meals.length-1?"1px solid "+BORD:"none"}}><div style={{fontSize:10,fontWeight:600,color:MUT,width:72,flexShrink:0}}>{m.time}</div><div style={{flex:1,fontSize:13,color:TXT}}>{m.food}</div><div style={{fontSize:12,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</div></div>);}):
+              <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
+                <div style={{fontSize:12,color:SUB}}>Plan repas détaillé disponible en Pro</div>
+                <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"3px 8px",borderRadius:6,flexShrink:0}}>Pro</span>
+              </div>}
+            </Card>
+          );
+        })():null}
 
       </div>
     </div>
