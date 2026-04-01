@@ -1036,6 +1036,7 @@ function NutritionMiniCard(p){
 }
 
 function HomeScreen(p){
+  var [showResetConfirm,setShowResetConfirm]=useState(false);
   var [weather,setWeather]=useState(null);
   useEffect(function(){
     if(!navigator.geolocation)return;
@@ -1071,7 +1072,7 @@ function HomeScreen(p){
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
           <div>
             <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
             <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
@@ -1080,7 +1081,18 @@ function HomeScreen(p){
               <span style={{fontSize:11,color:OR,fontWeight:600}}>{LEVEL_LABELS[p.profile.level]||""}</span>
             </div>
           </div>
+          <button onClick={function(){setShowResetConfirm(true);}} style={{marginTop:4,padding:"7px 13px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Réinitialiser</button>
         </div>
+        {showResetConfirm&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowResetConfirm(false);}}>
+            <div style={{background:SURF,borderRadius:20,padding:"28px 24px",width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:12}}>
+              <div style={{fontSize:18,fontWeight:700,color:TXT,textAlign:"center"}}>Réinitialiser le profil ?</div>
+              <div style={{fontSize:13,color:SUB,textAlign:"center",lineHeight:1.6}}>Toutes tes données seront effacées et tu devras recommencer la configuration.</div>
+              <button onClick={function(){setShowResetConfirm(false);p.onReset&&p.onReset();}} style={{width:"100%",padding:"14px",borderRadius:12,background:RE,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Confirmer</button>
+              <button onClick={function(){setShowResetConfirm(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+            </div>
+          </div>
+        )}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
           {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
             return(<div key={i} style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",borderRadius:14,padding:"14px 10px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
@@ -2652,7 +2664,7 @@ export default function App(){
 
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}}/>;
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
