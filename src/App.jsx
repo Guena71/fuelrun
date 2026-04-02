@@ -8,10 +8,11 @@ var TXT="#f0f0f0",SUB="#888",MUT="#444";
 var OR="#FF5A1F",GR="#22C55E",BL="#3B82F6",PU="#A855F7",YE="#F59E0B",RE="#EF4444";
 
 var CSS=[
-  "*{box-sizing:border-box;margin:0;padding:0;}",
-  "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;overflow-x:hidden;overscroll-behavior-x:none;}",
-  "html{overflow-x:hidden;overscroll-behavior-x:none;}",
-  "html,body{max-width:100vw;}",
+  "*{box-sizing:border-box;margin:0;padding:0;touch-action:pan-y;}",
+  "html{overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
+  "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
+  "#root{overflow-x:hidden;max-width:100vw;position:relative;}",
+  "input,select,textarea{font-size:16px!important;}",
   "@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}",
   "@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}",
   "@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}",
