@@ -1103,9 +1103,7 @@ function HomeScreen(p){
                 </div>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:46,height:46,borderRadius:12,background:sessCol+"22",border:"1px solid "+sessCol+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
-                  {sessType==="long"?"🏔":sessType==="interval"?"⚡":sessType==="tempo"?"🎯":sessType==="recovery"?"🌿":sessType==="race"?"🏁":"🏃"}
-                </div>
+                <div style={{width:10,height:10,borderRadius:"50%",background:sessCol,flexShrink:0}}/>
                 <div style={{flex:1}}>
                   <div style={{fontSize:15,fontWeight:700,color:TXT,marginBottom:3}}>{nextSess.label}</div>
                   <div style={{display:"flex",gap:10}}>
@@ -1115,7 +1113,6 @@ function HomeScreen(p){
                 </div>
                 {nextSess.pace?<div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div><div style={{fontSize:9,color:MUT,marginTop:1}}>durée est.</div></div>:null}
               </div>
-              {(function(){var n=calcNutrition(p.profile,sessType);return(<div style={{display:"flex",gap:6,marginTop:12}}>{[{l:"Kcal",v:n.kcal,c:OR},{l:"Glucides",v:n.carbs+"g",c:BL},{l:"Protéines",v:n.prot+"g",c:GR},{l:"Lipides",v:n.fat+"g",c:YE}].map(function(m,i){return(<div key={i} style={{flex:1,background:"rgba(0,0,0,0.15)",borderRadius:8,padding:"6px 4px",textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:m.c}}>{m.v}</div><div style={{fontSize:8,color:MUT,marginTop:2}}>{m.l}</div></div>);})}</div>);})()}
             </div>
           ):(
             <div style={{padding:"14px 18px",borderBottom:"1px solid "+BORD,display:"flex",alignItems:"center",gap:12}}>
