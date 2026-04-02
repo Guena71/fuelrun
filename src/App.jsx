@@ -9,8 +9,9 @@ var OR="#FF5A1F",GR="#22C55E",BL="#3B82F6",PU="#A855F7",YE="#F59E0B",RE="#EF4444
 
 var CSS=[
   "*{box-sizing:border-box;margin:0;padding:0;}",
-  "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;}",
-  "html,body{overflow-x:hidden;}",
+  "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;overflow-x:hidden;overscroll-behavior-x:none;}",
+  "html{overflow-x:hidden;overscroll-behavior-x:none;}",
+  "html,body{max-width:100vw;}",
   "@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}",
   "@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}",
   "@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}",
@@ -2666,10 +2667,10 @@ export default function App(){
   }
 
   return(
-    <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden"}}>
+    <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <style>{CSS}</style>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>{renderTab()}</div>
+        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
         <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
           {NAV.map(function(n){var active=tab===n.id;var color=active?OR:MUT;return(
             <button key={n.id} onClick={function(){setTab(n.id);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
