@@ -1682,7 +1682,9 @@ function suggestRaces(profile,races,preferredType){
 
 function CoursesScreen(p){
   var races=useRaces();
-  var [tab,setTab]=useState("route");var [search,setSearch]=useState("");var [custom,setCustom]=useState([]);var [showAdd,setShowAdd]=useState(false);
+  var [tab,setTab]=useState(function(){return ls("fr_courses_tab","route");});
+  function setTabPersist(v){lsSet("fr_courses_tab",v);setTab(v);}
+  var [search,setSearch]=useState("");var [custom,setCustom]=useState([]);var [showAdd,setShowAdd]=useState(false);
   var [n,setN]=useState("");var [d,setD]=useState("");var [dt,setDt]=useState("");var [tp,setTp]=useState("route");
   var [userPos,setUserPos]=useState(null);var [locLoading,setLocLoading]=useState(false);var [locError,setLocError]=useState(null);var [nearMe,setNearMe]=useState(false);
   var [showCityFallback,setShowCityFallback]=useState(false);var [cityInput,setCityInput]=useState("");
@@ -1768,8 +1770,8 @@ function CoursesScreen(p){
         })()}
         <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="Rechercher une course ou une ville…" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"12px 16px",color:TXT,fontSize:14,outline:"none",marginBottom:12,fontFamily:"inherit"}}/>
         <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
-          <Chip label="Route" active={tab==="route"} onClick={function(){setTab("route");}}/>
-          <Chip label="Trail" active={tab==="trail"} color={GR} onClick={function(){setTab("trail");}}/>
+          <Chip label="Route" active={tab==="route"} onClick={function(){setTabPersist("route");}}/>
+          <Chip label="Trail" active={tab==="trail"} color={GR} onClick={function(){setTabPersist("trail");}}/>
           <button onClick={function(){if(nearMe){setNearMe(false);setShowCityFallback(false);}else{requestLocation();}}} style={{display:"flex",alignItems:"center",gap:5,background:nearMe?OR+"22":"none",border:"1px solid "+(nearMe?OR:BORD),borderRadius:20,padding:"7px 14px",color:nearMe?OR:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
             {locLoading?"⏳":"📍"}{locLoading?"Localisation...":nearMe?"Près de moi ✓":"Près de moi"}
           </button>
@@ -2265,9 +2267,9 @@ function CoachScreen(p){
   }
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 70px)"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 70px)",overflowX:"hidden",maxWidth:"100%"}}>
       <LogoBar/>
-      <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0}}>
+      <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0,overflowX:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
           <div style={{fontSize:22,fontWeight:700,color:TXT}}>Coach IA</div>
           {remaining!==null&&<div style={{fontSize:11,fontWeight:600,color:remaining<=2?RE:remaining<=5?YE:MUT,background:SURF2,padding:"3px 8px",borderRadius:8,border:"1px solid "+BORD}}>{remaining} msg restants</div>}
@@ -2278,8 +2280,8 @@ function CoachScreen(p){
         </div>
         {error?<div style={{marginTop:8,fontSize:12,color:RE}}>{error}</div>:null}
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"16px 16px 8px"}}>
-        {messages.map(function(m,i){var isUser=m.role==="user";return(<div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start",marginBottom:12,gap:8}}>{!isUser?<div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}}>🏃</div>:null}<div style={{maxWidth:"78%",background:isUser?OR:SURF,borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",fontSize:14,color:isUser?"#fff":TXT,lineHeight:1.6,border:isUser?"none":"1px solid "+BORD}}>{m.content}</div></div>);})}
+      <div style={{flex:1,overflowY:"auto",overflowX:"hidden",padding:"16px 16px 8px"}}>
+        {messages.map(function(m,i){var isUser=m.role==="user";return(<div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start",marginBottom:12,gap:8}}>{!isUser?<div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}}>🏃</div>:null}<div style={{maxWidth:"78%",background:isUser?OR:SURF,borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",fontSize:14,color:isUser?"#fff":TXT,lineHeight:1.6,border:isUser?"none":"1px solid "+BORD,wordBreak:"break-word",overflowWrap:"break-word"}}>{m.content}</div></div>);})}
         {loading?(<div style={{display:"flex",gap:8,marginBottom:12}}><div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🏃</div><div style={{background:SURF,borderRadius:"16px 16px 16px 4px",padding:"12px 14px",border:"1px solid "+BORD,display:"flex",gap:4}}>{[0,1,2].map(function(i){return <div key={i} style={{width:7,height:7,borderRadius:"50%",background:OR,animation:"pulse 1.2s "+(i*0.2)+"s infinite"}}/>;})}</div></div>):null}
         <div ref={bottomRef}/>
       </div>
