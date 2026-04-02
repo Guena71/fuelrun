@@ -677,7 +677,7 @@ function GpsTrackerModal({onSave,onClose}){
   );
 }
 
-function LogoBar(p){
+function LogoBar(){
   return(
     <div style={{display:"flex",alignItems:"center",padding:"12px 24px 0"}}>
       <style>{CSS}</style>
@@ -1006,26 +1006,6 @@ function AnimCount(p){
   return <span style={{color:p.color||TXT}}>{disp}</span>;
 }
 
-function NutritionMiniCard(p){
-  var n=calcNutrition(p.profile,p.sessType);
-  var labels={easy:"Endurance",long:"Sortie longue",interval:"Fractionné",tempo:"Seuil",recovery:"Récupération",race:"Jour de course"};
-  return(
-    <Card style={{marginBottom:14}}>
-      <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div><div style={{fontSize:14,fontWeight:600,color:TXT}}>Nutrition du jour</div><div style={{fontSize:12,color:SUB,marginTop:2}}>Pour une séance {labels[p.sessType]||"normale"}</div></div>
-          <div style={{fontSize:22,fontWeight:800,color:OR}}>{n.kcal}<span style={{fontSize:11,fontWeight:500,marginLeft:2}}>kcal</span></div>
-        </div>
-        <div style={{display:"flex",gap:8,marginTop:12}}>
-          {[{label:"Glucides",value:n.carbs+"g",color:BL},{label:"Protéines",value:n.prot+"g",color:GR},{label:"Lipides",value:n.fat+"g",color:YE}].map(function(m,i){
-            return <div key={i} style={{flex:1,background:SURF2,borderRadius:10,padding:"8px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:3}}>{m.label}</div></div>;
-          })}
-        </div>
-      </div>
-      {n.meals.map(function(m,i){return(<div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderBottom:i<n.meals.length-1?"1px solid "+BORD:"none"}}><div style={{fontSize:10,fontWeight:600,color:MUT,width:72,flexShrink:0}}>{m.time}</div><div style={{flex:1,fontSize:13,color:TXT}}>{m.food}</div><div style={{fontSize:12,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</div></div>);})}
-    </Card>
-  );
-}
 
 function HomeScreen(p){
   var [showResetConfirm,setShowResetConfirm]=useState(false);
