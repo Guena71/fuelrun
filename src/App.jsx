@@ -327,6 +327,7 @@ var PLANS=[
       "Plan d'entraînement basique",
       "Journal des séances",
       "Météo et conseils parcours",
+      "Nutrition du jour (kcal + macros)",
       "5 messages Coach IA / jour",
     ],
     cta:"Continuer gratuitement"
@@ -339,6 +340,7 @@ var PLANS=[
       "Plans personnalisés avancés",
       "Journal + RPE + suivi fatigue",
       "Météo et conseils parcours",
+      "Nutrition du jour (kcal + macros)",
       "30 messages Coach IA / jour",
       "Import tracés GPX (Garmin, Polar…)",
     ],
@@ -353,7 +355,7 @@ var PLANS=[
       "Allures d'entraînement personnalisées",
       "Stratégie de course et splits",
       "GPS en direct (suivi de sortie)",
-      "Nutrition complète + recettes",
+      "Nutrition complète + plan repas + recettes",
       "Analyse de performance détaillée",
     ],
     cta:"Essayer 14 j gratuit"
