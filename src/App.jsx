@@ -840,7 +840,7 @@ function Onboarding(p){
   function confirmCustom(){
     if(!cn||!cd||!cdt)return;
     var r={id:Date.now(),name:cn,dist:parseFloat(cd),type:ct,date:cdt,city:"Personnalisé",custom:true};
-    setCustom(function(prev){return prev.concat([r]);});
+    setCustom(function(prev){return [r].concat(prev);});
     setSelected(r);setShowCustom(false);setCn("");setCd("");setCdt("");
   }
   var canNext=step===0?!!name.trim():step===1?!!level:true;
@@ -1721,13 +1721,15 @@ function CoursesScreen(p){
     );
   }
 
-  var all=races.concat(custom);
+  var all=custom.concat(races);
   var filtered=all.filter(function(r){if(r.type!==tab)return false;if(search&&!r.name.toLowerCase().includes(search.toLowerCase())&&!r.city.toLowerCase().includes(search.toLowerCase()))return false;return true;});
   var sorted=filtered.slice().sort(function(a,b){
+    if(a.custom&&!b.custom)return -1;
+    if(!a.custom&&b.custom)return 1;
     if(nearMe&&userPos){return haversineKm(userPos.lat,userPos.lng,a.lat,a.lng)-haversineKm(userPos.lat,userPos.lng,b.lat,b.lng);}
     return new Date(a.date)-new Date(b.date);
   });
-  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return prev.concat([r]);});p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
+  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return [r].concat(prev);});p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
   return(
     <div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
