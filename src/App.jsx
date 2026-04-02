@@ -8,7 +8,7 @@ var TXT="#f0f0f0",SUB="#888",MUT="#444";
 var OR="#FF5A1F",GR="#22C55E",BL="#3B82F6",PU="#A855F7",YE="#F59E0B",RE="#EF4444";
 
 var CSS=[
-  "*{box-sizing:border-box;margin:0;padding:0;touch-action:pan-y;}",
+  "*{box-sizing:border-box;margin:0;padding:0;touch-action:pan-y;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}",
   "html{overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
   "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
   "#root{overflow-x:hidden;max-width:100vw;position:relative;}",
@@ -1105,10 +1105,10 @@ function HomeScreen(p){
               <div style={{display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:10,height:10,borderRadius:"50%",background:sessCol,flexShrink:0}}/>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:700,color:TXT,marginBottom:3}}>{nextSess.label}</div>
+                  <div style={{fontSize:16,fontWeight:800,color:TXT,marginBottom:3,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
                   <div style={{display:"flex",gap:10}}>
-                    {nextSess.type!=="race"?<span style={{fontSize:12,color:SUB}}>{nextSess.km} km</span>:null}
-                    {nextSess.pace?<span style={{fontSize:12,color:SUB}}>· {nextSess.pace}/km</span>:null}
+                    {nextSess.type!=="race"?<span style={{fontSize:13,color:SUB,fontWeight:500}}>{nextSess.km} km</span>:null}
+                    {nextSess.pace?<span style={{fontSize:13,color:SUB,fontWeight:500}}>· {nextSess.pace}/km</span>:null}
                   </div>
                 </div>
                 {nextSess.pace?<div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div><div style={{fontSize:9,color:MUT,marginTop:1}}>durée est.</div></div>:null}
