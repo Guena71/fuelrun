@@ -1303,10 +1303,10 @@ function SessionCard(p){
             {/* ── NUTRITION + REPAS + RECETTES (accordéon) ── */}
             {(function(){
               if(planLevel(p.profile)<2){return(
-                <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden"}}>
+                <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden",cursor:"pointer"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,fontWeight:600,color:MUT}}>Nutrition · Repas · Recettes</span></div>
-                    <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro</span>
+                    <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
                   </div>
                 </div>
               );}
@@ -1618,7 +1618,7 @@ function TrainingScreen(p){
               <Stat value={w.sessions.length} label="séances" color={BL}/>
             </div>
           </Card>
-          {w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())}/>;})}
+          {w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} onShowPricing={p.onShowPricing}/>;})}
           <div style={{display:"flex",gap:10,marginBottom:24,marginTop:4}}>
             <Btn label="Précédente" onClick={function(){setSelWeek(Math.max(0,activeIdx-1));}} disabled={activeIdx===0} variant="ghost" style={{flex:1}} size="sm"/>
             <Btn label="Suivante"  onClick={function(){setSelWeek(Math.min(planWeeks.length-1,activeIdx+1));}} disabled={activeIdx===planWeeks.length-1} variant="ghost" style={{flex:1}} size="sm"/>
