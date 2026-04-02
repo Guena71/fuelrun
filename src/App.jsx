@@ -1732,7 +1732,7 @@ function CoursesScreen(p){
     if(nearMe&&userPos){return haversineKm(userPos.lat,userPos.lng,a.lat,a.lng)-haversineKm(userPos.lat,userPos.lng,b.lat,b.lng);}
     return new Date(a.date)-new Date(b.date);
   });
-  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return [r].concat(prev);});p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
+  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return [r].concat(prev);});p.onAddCustom?p.onAddCustom(r):p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
   return(
     <div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
@@ -2663,7 +2663,7 @@ export default function App(){
     var goPrice=function(){setShowPricing(true);};
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
-    if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}}/>;
+    if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}} onAddCustom={function(r){setRace(r);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice}/>;
