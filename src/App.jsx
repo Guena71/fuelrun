@@ -321,48 +321,48 @@ var RACES=[
 var PLANS=[
   {
     id:"gratuit", name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
-    desc:"Pour découvrir FuelRun sans engagement.",
+    desc:"Les bases pour débuter et suivre ta première course.",
     items:[
       "1 objectif de course",
       "Plan d'entraînement basique",
       "Journal des séances",
-      "Météo et conseils parcours",
       "Nutrition du jour (kcal + macros)",
+      "Météo et conseils parcours",
       "5 messages Coach IA / jour",
     ],
-    cta:"Continuer gratuitement"
+    cta:"Commencer gratuitement"
   },
   {
     id:"essential", name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
-    desc:"Pour le coureur régulier qui veut progresser.",
+    desc:"Le suivi complet pour progresser régulièrement.",
     items:[
       "Courses et objectifs illimités",
-      "Plans personnalisés avancés",
+      "Plans d'entraînement personnalisés",
       "Journal + RPE + suivi fatigue",
-      "Météo et conseils parcours",
       "Nutrition du jour (kcal + macros)",
       "30 messages Coach IA / jour",
       "Import tracés GPX (Garmin, Polar…)",
+      "Météo et conseils parcours",
     ],
     cta:"Essayer 14 j gratuit"
   },
   {
-    id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
-    desc:"Pour performer et préparer une vraie compétition.",
+    id:"pro", name:"Pro", price:"7,99", per:"/mois", color:OR, tag:"Recommandé",
+    desc:"La préparation complète pour performer en compétition.",
     items:[
       "Tout Essential, plus :",
       "Coach IA illimité 24h/24",
-      "Allures d'entraînement personnalisées",
+      "Allures et zones d'entraînement",
       "Stratégie de course et splits",
-      "GPS en direct (suivi de sortie)",
       "Nutrition complète + plan repas + recettes",
+      "GPS en direct (suivi de sortie)",
       "Analyse de performance détaillée",
     ],
     cta:"Essayer 14 j gratuit"
   },
   {
-    id:"elite", name:"Elite", price:"19,99", per:"/mois", color:PU, tag:"Max",
-    desc:"Pour les compétiteurs qui veulent le meilleur.",
+    id:"elite", name:"Elite", price:"14,99", per:"/mois", color:PU, tag:"Max",
+    desc:"L'arsenal complet pour les compétiteurs sérieux.",
     items:[
       "Tout Pro, plus :",
       "5 profils (famille / équipe)",
