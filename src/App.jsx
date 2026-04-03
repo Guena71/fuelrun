@@ -364,6 +364,37 @@ var PLANS=[
   }
 ];
 
+// ── URLs d'inscription par course ──────────────────────────────────────
+var REG_URLS={
+  // Trails majeurs
+  112:"https://utmb.world/utmb-world-series/races/utmb",
+  113:"https://utmb.world/utmb-world-series/races/ccc",
+  152:"https://utmb.world/utmb-world-series/races/tds",
+  154:"https://utmb.world/utmb-world-series/races/occ",
+  107:"https://www.maxi-race.com",
+  119:"https://www.lestempliers.com",
+  120:"https://www.grandraid-reunion.com",
+  150:"https://www.wser.org",
+  151:"https://hardrock100.com",
+  153:"https://ultratraillavaredo.com",
+  134:"https://www.ecotrail.fr",
+  // Marathons monde
+  51:"https://www.baa.org/races/boston-marathon",
+  52:"https://www.tcslondonmarathon.com",
+  53:"https://www.bmw-berlin-marathon.com",
+  54:"https://www.chicagomarathon.com",
+  55:"https://www.nyrr.org/races/tcsnewyorkcitymarathon",
+  56:"https://www.marathon.tokyo",
+  57:"https://valenciaciudaddelrunning.com/en/marathon",
+  58:"https://www.tcsamstelgoldrace.nl",
+  // Marathon de Paris
+  5:"https://www.schneiderelectricparismarathon.com",
+};
+function regUrl(race){
+  if(REG_URLS[race.id])return REG_URLS[race.id];
+  return "https://www.klikego.com/recherche?terms="+encodeURIComponent(race.name);
+}
+
 function planLevel(profile){
   var p=(profile&&profile.plan)||"gratuit";
   if(p==="elite"||p==="pro")return 2;
@@ -1826,10 +1857,11 @@ function CoursesScreen(p){
                       <div style={{fontSize:11,fontWeight:700,color:col,textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>{r.type==="trail"?"Trail":"Route"}</div>
                       <div style={{fontSize:13,fontWeight:700,color:TXT,lineHeight:1.3,marginBottom:4}}>{r.name}</div>
                       <div style={{fontSize:12,color:SUB,marginBottom:8}}>{r.city}</div>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                         <span style={{fontSize:14,fontWeight:800,color:col}}>{r.dist}<span style={{fontSize:10,fontWeight:500,marginLeft:2}}>km</span></span>
                         <span style={{fontSize:10,color:MUT}}>{wks} sem.</span>
                       </div>
+                      <a href={regUrl(r)} target="_blank" rel="noopener noreferrer" onClick={function(e){e.stopPropagation();}} style={{display:"block",textAlign:"center",fontSize:10,fontWeight:700,color:col,background:col+"18",border:"1px solid "+col+"33",borderRadius:6,padding:"4px 6px",textDecoration:"none"}}>S'inscrire →</a>
                       {on?<div style={{position:"absolute",bottom:10,right:10,width:18,height:18,borderRadius:"50%",background:col,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700}}>✓</div>:null}
                     </div>
                   );
@@ -1888,7 +1920,12 @@ function CoursesScreen(p){
                     {distFromUser!=null?<><span style={{fontSize:12,color:MUT}}>·</span><span style={{fontSize:12,color:OR,fontWeight:600}}>📍 {distFromUser} km</span></>:null}
                   </div>
                 </div>
-                {on?<div style={{color:col,fontWeight:700,fontSize:16}}>✓</div>:<div style={{color:MUT,fontSize:18}}>›</div>}
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
+                  {on?<div style={{color:col,fontWeight:700,fontSize:16}}>✓</div>:<div style={{color:MUT,fontSize:18}}>›</div>}
+                  {!r.custom&&(
+                    <a href={regUrl(r)} target="_blank" rel="noopener noreferrer" onClick={function(e){e.stopPropagation();}} style={{fontSize:10,fontWeight:700,color:col,background:col+"18",border:"1px solid "+col+"44",borderRadius:6,padding:"3px 8px",textDecoration:"none",whiteSpace:"nowrap"}}>S'inscrire →</a>
+                  )}
+                </div>
               </div>
             </Card>
           );})}
