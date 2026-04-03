@@ -2508,6 +2508,19 @@ function ProfileScreen(p){
           );})}
         </div>
 
+        {/* ── NIVEAU (toujours visible) ── */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:12,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:8}}>Niveau</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {LEVELS.map(function(l){var on=(p.profile.level||"beginner")===l.id;return(
+              <button key={l.id} onClick={function(){p.onUpdate({level:l.id});}} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:10,border:"1.5px solid "+(on?OR:BORD),background:on?OR+"18":"transparent",cursor:"pointer",fontFamily:"inherit"}}>
+                <span style={{fontSize:14}}>{l.emoji}</span>
+                <span style={{fontSize:12,fontWeight:on?700:400,color:on?OR:SUB}}>{l.label}</span>
+              </button>
+            );})}
+          </div>
+        </div>
+
         {!editing?(
           /* ── VUE LECTURE ── */
           <Card style={{marginBottom:16}}>
@@ -2517,7 +2530,6 @@ function ProfileScreen(p){
               {label:"Poids",            value:p.profile.weight+" kg"},
               {label:"Taille",           value:p.profile.height+" cm"},
               {label:"Sexe",             value:p.profile.sex==="F"?"Femme":"Homme"},
-              {label:"Niveau",           value:LEVEL_LABELS[p.profile.level]||p.profile.level},
               {label:"Séances / sem.",   value:p.profile.sessWeek||3},
               {label:"Base km / sem.",   value:(p.profile.kmWeek||25)+" km"}
             ].map(function(it,i,arr){return(
@@ -2541,17 +2553,6 @@ function ProfileScreen(p){
               <div style={{display:"flex",gap:8}}>
                 <button onClick={function(){setForm(function(f){return Object.assign({},f,{sex:"M"});});}} style={{flex:1,padding:"10px",borderRadius:10,border:"1.5px solid "+(form.sex==="M"?OR:BORD),background:form.sex==="M"?OR+"18":"transparent",color:form.sex==="M"?OR:SUB,fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>Homme</button>
                 <button onClick={function(){setForm(function(f){return Object.assign({},f,{sex:"F"});});}} style={{flex:1,padding:"10px",borderRadius:10,border:"1.5px solid "+(form.sex==="F"?OR:BORD),background:form.sex==="F"?OR+"18":"transparent",color:form.sex==="F"?OR:SUB,fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>Femme</button>
-              </div>
-            </div>
-            <div style={{marginBottom:12}}>
-              <label style={{fontSize:12,color:MUT,display:"block",marginBottom:5}}>Niveau</label>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                {LEVELS.map(function(l){var on=form.level===l.id;return(
-                  <div key={l.id} onClick={function(){setForm(function(f){return Object.assign({},f,{level:l.id});});}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:12,border:"1.5px solid "+(on?OR:BORD),background:on?OR+"12":SURF,cursor:"pointer"}}>
-                    <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:on?OR:TXT}}>{l.label}</div><div style={{fontSize:11,color:MUT}}>{l.sub}</div></div>
-                    <div style={{width:16,height:16,borderRadius:"50%",border:"2px solid "+(on?OR:BORD),background:on?OR:"transparent",flexShrink:0}}/>
-                  </div>
-                );})}
               </div>
             </div>
             <div style={{marginBottom:12}}>
