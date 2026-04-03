@@ -1071,9 +1071,9 @@ function HomeScreen(p){
             Partager mes stats
           </button>
         )}
-        <div style={{padding:"14px 16px",borderRadius:14,background:"rgba(138,100,255,0.15)",border:"1px solid rgba(138,100,255,0.30)",textAlign:"center"}}>
-          <div style={{fontSize:13,color:"#fff",lineHeight:1.7,fontStyle:"italic",fontWeight:500}}>"{quote.text}"</div>
-          <div style={{fontSize:11,color:PU,fontWeight:700,marginTop:8,letterSpacing:0.3}}>{'\u2014'} {quote.author} {'\u2014'}</div>
+        <div style={{padding:"14px 16px",borderRadius:14,background:OR+"12",border:"1px solid "+OR+"25",textAlign:"center"}}>
+          <div style={{fontSize:13,color:TXT,lineHeight:1.7,fontStyle:"italic",fontWeight:500}}>"{quote.text}"</div>
+          <div style={{fontSize:11,color:OR,fontWeight:700,marginTop:8,letterSpacing:0.3}}>{'\u2014'} {quote.author} {'\u2014'}</div>
         </div>
       </div>
 
@@ -1207,12 +1207,12 @@ function HomeScreen(p){
             </div>
           ):(
             <div onClick={p.onCheckin} style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",borderBottom:"1px solid "+BORD,cursor:"pointer"}}>
-              <div style={{width:44,height:44,borderRadius:12,background:PU+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🌡️</div>
+              <div style={{width:44,height:44,borderRadius:12,background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🌡️</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:600,color:TXT}}>Comment tu te sens ?</div>
                 <div style={{fontSize:12,color:SUB,marginTop:2}}>Check-in rapide · 30 sec</div>
               </div>
-              <div style={{width:30,height:30,borderRadius:"50%",background:PU+"18",display:"flex",alignItems:"center",justifyContent:"center",color:PU,fontSize:16,flexShrink:0}}>›</div>
+              <div style={{width:30,height:30,borderRadius:"50%",background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",color:OR,fontSize:16,flexShrink:0}}>›</div>
             </div>
           )}
         </div>
