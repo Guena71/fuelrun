@@ -1826,7 +1826,7 @@ function CoursesScreen(p){
         ):null}
         <div style={{display:"flex",flexDirection:"column",gap:8,paddingBottom:24}}>
           {sorted.map(function(r){var on=p.race&&p.race.id===r.id;var wks=weeksUntil(r.date);var col=r.type==="trail"?GR:BL;var distFromUser=(nearMe&&userPos&&r.lat!=null)?haversineKm(userPos.lat,userPos.lng,r.lat,r.lng):null;return(
-            <Card key={r.id} onClick={function(){p.setRace(on?null:r);}} style={{cursor:"pointer",borderColor:on?col:BORD,background:on?col+"0f":SURF}}>
+            <Card key={r.id} onClick={function(){p.setRace(r);}} style={{cursor:"pointer",borderColor:on?col:BORD,background:on?col+"0f":SURF}}>
               <div style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:14,fontWeight:600,color:on?col:TXT}}>{r.name}</span>{r.star?<span style={{fontSize:11}}>⭐</span>:null}</div>
