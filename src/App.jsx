@@ -8,7 +8,7 @@ var TXT="#f0f0f0",SUB="#888",MUT="#444";
 var OR="#FF5A1F",GR="#22C55E",BL="#3B82F6",PU="#A855F7",YE="#F59E0B",RE="#EF4444";
 
 var CSS=[
-  "*{box-sizing:border-box;margin:0;padding:0;touch-action:pan-y;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}",
+  "*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}",
   "html{overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
   "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;overflow-x:hidden;overscroll-behavior:none;max-width:100vw;position:relative;}",
   "#root{overflow-x:hidden;max-width:100vw;position:relative;}",
@@ -1588,7 +1588,7 @@ function TrainingScreen(p){
           {planLevel(p.profile)<2&&<span style={{fontSize:12}}>🔒</span>}Stratégie de course · Splits{planLevel(p.profile)<2&&<span style={{fontSize:10,color:OR,fontWeight:700,marginLeft:4}}>Pro</span>}
         </button>
       </div>
-      <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px"}}>
+      <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px",touchAction:"pan-x"}}>
         {planWeeks.map(function(wk,i){var isA=i===activeIdx;var pc=wk.phaseColor;return(
           <div key={i} onClick={function(){setSelWeek(i);}} style={{flexShrink:0,width:54,textAlign:"center",padding:"10px 4px",borderRadius:12,border:"1.5px solid "+(isA?pc:BORD),background:isA?pc+"20":SURF,cursor:"pointer",position:"relative",opacity:wk.isPast?0.55:1}}>
             {wk.isCurrent?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:OR,color:"#fff",fontSize:7,fontWeight:700,borderRadius:4,padding:"1px 5px",whiteSpace:"nowrap"}}>now</div>:null}
@@ -1743,7 +1743,7 @@ function CoursesScreen(p){
                 <div style={{fontSize:13,fontWeight:700,color:TXT}}>Pour toi</div>
                 <div style={{padding:"2px 8px",borderRadius:20,background:OR+"22",border:"1px solid "+OR+"44"}}><span style={{fontSize:10,color:OR,fontWeight:700}}>Basé sur ton profil</span></div>
               </div>
-              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4}}>
+              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,touchAction:"pan-x"}}>
                 {sugg.map(function(r){
                   var on=p.race&&p.race.id===r.id;
                   var col=r.type==="trail"?GR:BL;
