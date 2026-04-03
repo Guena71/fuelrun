@@ -1079,61 +1079,121 @@ function HomeScreen(p){
 
       <div style={{padding:"14px 16px 0"}}>
 
-        {/* ── SÉANCE + OBJECTIF COURSE ── */}
-        <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
-          {nextSess?(
-            <div style={{padding:"12px 16px",background:"linear-gradient(135deg,"+sessCol+"16,"+sessCol+"04)",borderBottom:"1px solid "+sessCol+"20"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                <div style={{fontSize:10,color:sessCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2}}>Prochaine séance</div>
-                <div style={{padding:"3px 10px",borderRadius:20,background:sessCol+"18",border:"1px solid "+sessCol+"35"}}>
-                  <span style={{fontSize:10,color:sessCol,fontWeight:600}}>{nextSess.dayLabel}{nextSess.date?" · "+nextSess.date.getDate()+"/"+(nextSess.date.getMonth()+1):""}</span>
+        {/* ── OBJECTIF COURSE ── */}
+        {p.race&&planWeeks.length>0&&(
+          <div style={{borderRadius:16,background:SURF,border:"1px solid "+BORD,marginBottom:14,padding:"14px 16px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div>
+                <div style={{fontSize:10,color:raceCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Objectif</div>
+                <div style={{fontSize:14,fontWeight:700,color:TXT,lineHeight:1.2}}>{p.race.name}</div>
+                <div style={{fontSize:11,color:SUB,marginTop:2}}>{p.race.city} · 🏁 {fmtS(new Date(p.race.date))}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                <div style={{fontSize:24,fontWeight:800,color:raceCol,lineHeight:1}}>{p.race.dist}<span style={{fontSize:11,fontWeight:500,color:MUT,marginLeft:2}}>km</span></div>
+                <div style={{fontSize:9,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>{p.race.type==="trail"?"Trail":"Route"}</div>
+              </div>
+            </div>
+            <div style={{height:5,background:raceCol+"18",borderRadius:6,overflow:"hidden",marginBottom:5}}>
+              <div style={{width:raceProgress+"%",height:"100%",background:"linear-gradient(90deg,"+raceCol+"99,"+raceCol+")",borderRadius:6}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between"}}>
+              <span style={{fontSize:10,color:MUT}}>Sem. 1</span>
+              <span style={{fontSize:10,color:raceCol,fontWeight:600}}>{raceProgress}% · dans {raceWeeks} sem.</span>
+              <span style={{fontSize:10,color:MUT}}>Sem. {planWeeks.length}</span>
+            </div>
+          </div>
+        )}
+
+        {/* ── TRIPTYQUE AUJOURD'HUI ── */}
+        {(function(){
+          var n=p.race&&curWeek?calcNutrition(p.profile,sessType):null;
+          var isPro=planLevel(p.profile)>=2;
+          var coachTips={
+            easy:"Zone 2, tu dois pouvoir parler confortablement. C'est cette allure qui construit ta base aérobie.",
+            long:"Démarre doucement et garde de l'énergie pour les derniers kms. Hydrate-toi toutes les 20 min.",
+            interval:"Échauffement 15 min impératif. Récupère bien entre les répétitions — la qualité prime.",
+            tempo:"Allure inconfortable mais contrôlée. Ne pars pas trop vite les 5 premières minutes.",
+            recovery:"Très basse intensité, petite foulée. L'objectif : circuler le sang, pas performer.",
+            race:"C'est le jour J ! Démarre plus lentement que prévu. Fais confiance à ton plan.",
+          };
+          var tip=coachTips[sessType]||"Écoute ton corps aujourd'hui. La régularité prime sur l'intensité.";
+          return(
+            <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
+              <div style={{padding:"12px 16px",background:"linear-gradient(135deg,"+OR+"10,transparent)",borderBottom:"1px solid "+BORD}}>
+                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2}}>Aujourd'hui</div>
+              </div>
+
+              {/* Séance */}
+              <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:sessCol+"20",border:"1px solid "+sessCol+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🏃</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:3}}>Séance</div>
+                    {nextSess?(
+                      <div>
+                        <div style={{fontSize:15,fontWeight:800,color:TXT,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
+                        <div style={{fontSize:12,color:SUB,marginTop:2}}>
+                          {nextSess.type!=="race"?nextSess.km+" km":""}{nextSess.pace?" · "+nextSess.pace+"/km":""}
+                        </div>
+                      </div>
+                    ):(
+                      <div style={{fontSize:14,fontWeight:600,color:SUB}}>Repos — récupération active</div>
+                    )}
+                  </div>
+                  {nextSess&&nextSess.pace&&(
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div>
+                      <div style={{fontSize:9,color:MUT}}>durée est.</div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:10,height:10,borderRadius:"50%",background:sessCol,flexShrink:0}}/>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:16,fontWeight:800,color:TXT,marginBottom:3,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
-                  <div style={{display:"flex",gap:10}}>
-                    {nextSess.type!=="race"?<span style={{fontSize:13,color:SUB,fontWeight:500}}>{nextSess.km} km</span>:null}
-                    {nextSess.pace?<span style={{fontSize:13,color:SUB,fontWeight:500}}>· {nextSess.pace}/km</span>:null}
+
+              {/* Nutrition */}
+              {n&&(
+                <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:36,height:36,borderRadius:10,background:GR+"20",border:"1px solid "+GR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🥗</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:3}}>Nutrition</div>
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <span style={{fontSize:15,fontWeight:800,color:OR}}>{n.kcal} kcal</span>
+                        <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
+                      </div>
+                    </div>
+                    {!isPro&&(
+                      <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"4px 10px",borderRadius:8,background:OR+"18",border:"1px solid "+OR+"33",cursor:"pointer",flexShrink:0}}>
+                        <span style={{fontSize:10,fontWeight:700,color:OR}}>Plan repas Pro</span>
+                      </div>
+                    )}
+                  </div>
+                  {isPro&&n.meals.length>0&&(
+                    <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:4}}>
+                      {n.meals.slice(0,3).map(function(m,i){return(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
+                          <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
+                          <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
+                          <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
+                        </div>
+                      );})}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Coach */}
+              <div style={{padding:"14px 16px"}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:PU+"20",border:"1px solid "+PU+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>💬</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Conseil du coach</div>
+                    <div style={{fontSize:13,color:TXT,lineHeight:1.6}}>{tip}</div>
                   </div>
                 </div>
-                {nextSess.pace?<div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div><div style={{fontSize:9,color:MUT,marginTop:1}}>durée est.</div></div>:null}
               </div>
             </div>
-          ):(
-            <div style={{padding:"14px 18px",borderBottom:"1px solid "+BORD,display:"flex",alignItems:"center",gap:12}}>
-              <div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Pas de séance aujourd'hui</div><div style={{fontSize:11,color:SUB}}>Profite pour récupérer</div></div>
-            </div>
-          )}
-          {(p.race&&planWeeks.length>0)?(
-            <div style={{padding:"14px 18px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <div>
-                  <div style={{fontSize:10,color:raceCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Objectif</div>
-                  <div style={{fontSize:14,fontWeight:700,color:TXT,lineHeight:1.2}}>{p.race.name}</div>
-                  <div style={{fontSize:11,color:SUB,marginTop:2}}>{p.race.city} · 🏁 {fmtS(new Date(p.race.date))}</div>
-                </div>
-                <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
-                  <div style={{fontSize:24,fontWeight:800,color:raceCol,lineHeight:1}}>{p.race.dist}<span style={{fontSize:11,fontWeight:500,color:MUT,marginLeft:2}}>km</span></div>
-                  <div style={{fontSize:9,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>{p.race.type==="trail"?"Trail":"Route"}</div>
-                </div>
-              </div>
-              <div style={{height:5,background:raceCol+"18",borderRadius:6,overflow:"hidden",marginBottom:5}}>
-                <div style={{width:raceProgress+"%",height:"100%",background:"linear-gradient(90deg,"+raceCol+"99,"+raceCol+")",borderRadius:6}}/>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between"}}>
-                <span style={{fontSize:10,color:MUT}}>Sem. 1</span>
-                <span style={{fontSize:10,color:raceCol,fontWeight:600}}>{raceProgress}% · dans {raceWeeks} sem.</span>
-                <span style={{fontSize:10,color:MUT}}>Sem. {planWeeks.length}</span>
-              </div>
-            </div>
-          ):(
-            <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
-              <div><div style={{fontSize:13,fontWeight:600,color:TXT}}>Pas encore d'objectif</div><div style={{fontSize:11,color:SUB}}>Ajoute une course pour générer ton plan</div></div>
-            </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* ── WELLBEING + HABITUDES ── */}
         <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
@@ -1172,30 +1232,6 @@ function HomeScreen(p){
             </div>
           );
         })()}
-        {(p.race&&curWeek)?(function(){
-          var n=calcNutrition(p.profile,sessType);
-          var isPro=planLevel(p.profile)>=2;
-          return(
-            <Card style={{marginBottom:14}}>
-              <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div><div style={{fontSize:14,fontWeight:600,color:TXT}}>Nutrition du jour</div><div style={{fontSize:12,color:SUB,marginTop:2}}>Pour ta course {p.race.name}</div></div>
-                  <div style={{fontSize:22,fontWeight:800,color:OR}}>{n.kcal}<span style={{fontSize:11,fontWeight:500,marginLeft:2}}>kcal</span></div>
-                </div>
-                <div style={{display:"flex",gap:8,marginTop:12}}>
-                  {[{label:"Glucides",value:n.carbs+"g",color:BL},{label:"Protéines",value:n.prot+"g",color:GR},{label:"Lipides",value:n.fat+"g",color:YE}].map(function(m,i){
-                    return <div key={i} style={{flex:1,background:SURF2,borderRadius:10,padding:"8px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:3}}>{m.label}</div></div>;
-                  })}
-                </div>
-              </div>
-              {isPro?n.meals.map(function(m,i){return(<div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderBottom:i<n.meals.length-1?"1px solid "+BORD:"none"}}><div style={{fontSize:10,fontWeight:600,color:MUT,width:72,flexShrink:0}}>{m.time}</div><div style={{flex:1,fontSize:13,color:TXT}}>{m.food}</div><div style={{fontSize:12,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</div></div>);}):
-              <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
-                <div style={{fontSize:12,color:SUB}}>Plan repas détaillé disponible en Pro</div>
-                <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"3px 8px",borderRadius:6,flexShrink:0}}>Pro</span>
-              </div>}
-            </Card>
-          );
-        })():null}
 
       </div>
     </div>
