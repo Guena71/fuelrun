@@ -357,7 +357,6 @@ var PLANS=[
       "Allures et zones d'entraînement",
       "Stratégie de course et splits",
       "Nutrition complète + plan repas + recettes",
-      "GPS en direct (suivi de sortie)",
       "Analyse de performance détaillée",
     ],
     cta:"Essayer 14 j gratuit"
@@ -2024,15 +2023,6 @@ function SuiviScreen(p){
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Enregistrer une sortie</div>
           <div style={{display:"flex",gap:10}}>
-            {planLevel(p.profile)>=2?(
-              <button onClick={function(){setShowGps(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-                <span style={{fontSize:24}}>📍</span>GPS en direct
-              </button>
-            ):(
-              <button onClick={function(){setShowGpsUpgrade(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                <span style={{fontSize:24}}>🔒</span>GPS en direct<span style={{fontSize:9,color:OR,fontWeight:700}}>Pro</span>
-              </button>
-            )}
             {planLevel(p.profile)>=1?(
               <label style={{flex:1,padding:"14px 10px",borderRadius:12,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
                 <span style={{fontSize:24}}>📎</span>Import GPX
@@ -2157,8 +2147,6 @@ function SuiviScreen(p){
         </div>
       </div>
     </div>
-    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){saveTrack(res);setShowGps(false);}}/>}
-    {showGpsUpgrade&&<UpgradeModal feature="GPS en direct" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowGpsUpgrade(false);}} onUpgrade={function(){setShowGpsUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
