@@ -1991,8 +1991,11 @@ function JournalScreen(p){
         {sel?(
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)setSel(null);}}>
             <div style={{background:SURF,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"24px 24px 36px",animation:"slideUp .3s ease",maxHeight:"85vh",overflowY:"auto"}}>
-              <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 20px"}}/>
-              <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:16}}>{fmtDate(sel.date)}</div>
+              <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 16px"}}/>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                <div style={{fontSize:18,fontWeight:700,color:TXT}}>{fmtDate(sel.date)}</div>
+                <button onClick={function(){setSel(null);}} style={{width:32,height:32,borderRadius:9,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16,color:MUT,flexShrink:0}}>✕</button>
+              </div>
               {/* ── Séance accomplie (bien mis en évidence) ── */}
               <div onClick={function(){setForm(function(f){return Object.assign({},f,{done:!f.done});});}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"18px 16px",borderRadius:14,border:"2px solid "+(form.done?OR:BORD),background:form.done?"linear-gradient(135deg,"+OR+"22,"+OR+"08)":SURF2,cursor:"pointer",marginBottom:16,transition:"all .2s"}}>
                 <div>
@@ -2047,7 +2050,10 @@ function JournalScreen(p){
                 <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Note</label>
                 <textarea value={form.note} onChange={function(e){setForm(function(f){return Object.assign({},f,{note:e.target.value});});}} placeholder="Comment s'est passée la sortie ?" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"10px 12px",color:TXT,fontSize:14,outline:"none",minHeight:80,resize:"none",fontFamily:"inherit"}}/>
               </div>
-              <Btn label="Enregistrer" onClick={save} full/>
+              <div style={{display:"flex",gap:10}}>
+                <Btn label="Annuler" onClick={function(){setSel(null);}} variant="ghost" style={{flex:1}}/>
+                <Btn label="Enregistrer" onClick={save} style={{flex:2}}/>
+              </div>
             </div>
           </div>
         ):null}
