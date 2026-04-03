@@ -2478,9 +2478,11 @@ function ProfileScreen(p){
               <div style={{fontSize:13,color:SUB,marginTop:2}}>{LEVEL_LABELS[p.profile.level]||""}</div>
             </div>
           </div>
-          <button onClick={function(){setEditing(!editing);}} style={{padding:"7px 16px",borderRadius:20,background:editing?SURF2:OR+"22",border:"1px solid "+(editing?BORD:OR+"44"),color:editing?SUB:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
-            {editing?"Annuler":"Modifier"}
-          </button>
+          {editing&&(
+            <button onClick={function(){setEditing(false);setForm({name:p.profile.name||"",age:p.profile.age||"",weight:p.profile.weight||"",height:p.profile.height||"",sex:p.profile.sex||"M",sessWeek:p.profile.sessWeek||3,kmWeek:p.profile.kmWeek||25});}} style={{padding:"7px 16px",borderRadius:20,background:SURF2,border:"1px solid "+BORD,color:SUB,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              Annuler
+            </button>
+          )}
         </div>
 
         {/* ── PLAN BADGE ── */}
@@ -2522,8 +2524,12 @@ function ProfileScreen(p){
         </div>
 
         {!editing?(
-          /* ── VUE LECTURE ── */
-          <Card style={{marginBottom:16}}>
+          /* ── VUE LECTURE — clic pour éditer ── */
+          <Card onClick={function(){setEditing(true);}} style={{marginBottom:16,cursor:"pointer"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 18px 8px",borderBottom:"1px solid "+BORD}}>
+              <span style={{fontSize:11,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Mes informations</span>
+              <span style={{fontSize:11,color:OR,fontWeight:600}}>Modifier ✎</span>
+            </div>
             {[
               {label:"Prénom",           value:p.profile.name},
               {label:"Âge",              value:p.profile.age+" ans"},
