@@ -349,7 +349,7 @@ var PLANS=[
     cta:"Essayer 14 j gratuit"
   },
   {
-    id:"pro", name:"Pro", price:"7,99", per:"/mois", color:OR, tag:"Recommandé",
+    id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
     desc:"La préparation complète pour performer en compétition.",
     items:[
       "Tout Essential, plus :",
@@ -357,16 +357,8 @@ var PLANS=[
       "Allures et zones d'entraînement",
       "Stratégie de course et splits",
       "Nutrition complète + plan repas + recettes",
+      "Prédictions de temps et records",
       "Analyse de performance détaillée",
-    ],
-    cta:"Essayer 14 j gratuit"
-  },
-  {
-    id:"elite", name:"Elite", price:"14,99", per:"/mois", color:PU, tag:"Max",
-    desc:"L'arsenal complet pour les compétiteurs sérieux.",
-    items:[
-      "Tout Pro, plus :",
-      "Prédictions de temps et records personnalisées",
     ],
     cta:"Essayer 14 j gratuit"
   }
@@ -374,8 +366,7 @@ var PLANS=[
 
 function planLevel(profile){
   var p=(profile&&profile.plan)||"gratuit";
-  if(p==="elite")return 3;
-  if(p==="pro")return 2;
+  if(p==="elite"||p==="pro")return 2;
   if(p==="essential")return 1;
   return 0;
 }
