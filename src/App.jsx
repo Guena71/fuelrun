@@ -697,12 +697,17 @@ function GpsTrackerModal({onSave,onClose}){
   );
 }
 
-function LogoBar(){
+function LogoBar(p){
   return(
     <div style={{display:"flex",alignItems:"center",padding:"12px 24px 0"}}>
       <style>{CSS}</style>
       <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
       <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
+      {p.onSignOut&&(
+        <button onClick={p.onSignOut} title="Se déconnecter" style={{marginLeft:"auto",width:36,height:36,borderRadius:10,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={MUT} strokeWidth="2" strokeLinecap="round"/><polyline points="16 17 21 12 16 7" stroke={MUT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke={MUT} strokeWidth="2" strokeLinecap="round"/></svg>
+        </button>
+      )}
     </div>
   );
 }
@@ -1062,7 +1067,7 @@ function HomeScreen(p){
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
     <div style={{paddingBottom:8}}>
-      <LogoBar profile={p.profile} onProfile={function(){p.onGoToProfile&&p.onGoToProfile();}}/>
+      <LogoBar profile={p.profile} onProfile={function(){p.onGoToProfile&&p.onGoToProfile();}} onSignOut={p.onSignOut}/>
       {/* ── HEADER ── */}
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
@@ -2789,7 +2794,7 @@ export default function App(){
 
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});setTab("journal");}}/>;
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});setTab("journal");}} onSignOut={function(){signOut(auth);}}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}} onAddCustom={function(r){setRace(r);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
