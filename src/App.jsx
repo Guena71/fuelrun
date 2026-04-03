@@ -366,10 +366,8 @@ var PLANS=[
     desc:"L'arsenal complet pour les compétiteurs sérieux.",
     items:[
       "Tout Pro, plus :",
-      "5 profils (famille / équipe)",
       "Synchronisation Strava et Garmin",
       "Prédictions de temps et records",
-      "Coach dédié et support prioritaire",
     ],
     cta:"Essayer 14 j gratuit"
   }
