@@ -2365,7 +2365,7 @@ function ProfileScreen(p){
                 <span style={{fontSize:16}}>⭐</span>
                 <div><div style={{fontSize:12,color:MUT}}>Formule actuelle</div><div style={{fontSize:14,fontWeight:700,color:pl.color}}>{pl.name}</div></div>
               </div>
-              {pl.id==="gratuit"&&<button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>}
+              <button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 14px",borderRadius:8,background:pl.id==="gratuit"?OR:SURF2,border:"1px solid "+(pl.id==="gratuit"?OR:BORD),color:pl.id==="gratuit"?"#fff":SUB,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{pl.id==="gratuit"?"Upgrader":"Changer"}</button>
             </div>
           );
         })()}
