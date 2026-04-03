@@ -2637,6 +2637,8 @@ export default function App(){
     if(hour>=7&&hour<=10){lsSet("fr_last_notif",todayStr);new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});}
   },[profile]);
 
+  useEffect(function(){window.scrollTo(0,0);},[tab]);
+
   if(authState==="loading")return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
       <style>{CSS}</style>
@@ -2665,8 +2667,6 @@ export default function App(){
     setTab("home");
     setAuthState("onboarding");
   }
-
-  useEffect(function(){window.scrollTo(0,0);},[tab]);
 
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
