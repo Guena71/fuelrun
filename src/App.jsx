@@ -1186,9 +1186,7 @@ function HomeScreen(p){
                     <div style={{marginTop:10}}>
                       <button onClick={function(){
                         if(todayDone)return;
-                        var km=nextSess.km||0;
-                        p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[todayKey]:{done:true,km:String(km)}});});
-                        p.onAddSession&&p.onAddSession(km);
+                        p.onGoToJournal&&p.onGoToJournal(nextSess.km||0);
                       }} style={{width:"100%",padding:"9px",borderRadius:10,background:todayDone?GR+"18":OR,border:todayDone?"1px solid "+GR+"44":"none",color:todayDone?GR:"#fff",fontSize:12,fontWeight:700,cursor:todayDone?"default":"pointer",fontFamily:"inherit",letterSpacing:0.2}}>
                         {todayDone?"✓ Séance validée":"Valider cette séance"}
                       </button>
@@ -1956,7 +1954,8 @@ function JournalScreen(p){
   function hasSess(d){for(var wi=0;wi<planWeeks.length;wi++){for(var si=0;si<planWeeks[wi].sessions.length;si++){var s=planWeeks[wi].sessions[si];if(s.date&&s.date.toDateString()===d.toDateString()&&s.type!=="race")return true;}}return false;}
   var doneE=Object.entries(entries).filter(function(e){return e[1].done;});
   var totalKm=doneE.reduce(function(s,e){return s+(parseFloat(e[1].km)||0);},0);
-  function openDay(d){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||"",min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||"",track:e.track||null});}
+  function openDay(d,defaultKm){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||(defaultKm!=null?String(defaultKm):""),min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||"",track:e.track||null});}
+  useEffect(function(){if(p.preselect){openDay(p.preselect.date,p.preselect.km);p.onClearPreselect&&p.onClearPreselect();}},[]);
   function save(){var was=!entries[sel.key]||!entries[sel.key].done;setEntries(function(prev){return Object.assign({},prev,{[sel.key]:Object.assign({},form)});});if(form.done&&was&&p.onAddSession)p.onAddSession(parseFloat(form.km)||5);setSel(null);}
   var feels=["😤","😓","😐","🙂","💪"];
   return(
@@ -2704,6 +2703,7 @@ export default function App(){
   var [entries,setEntriesRaw]=useState(function(){return ls("fr_entries",{});});
   var [showGuide,setShowGuide]=useState(false);
   var [showPricing,setShowPricing]=useState(false);
+  var [journalPreselect,setJournalPreselect]=useState(null); // {date, km}
   var [toast,setToast]=useState(null); // {msg, type:"ok"|"err"}
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
   function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
@@ -2791,11 +2791,11 @@ export default function App(){
 
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});setTab("journal");}}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}} onAddCustom={function(r){setRace(r);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
-    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice}/>;
+    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice} preselect={journalPreselect} onClearPreselect={function(){setJournalPreselect(null);}}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
     if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
