@@ -2758,7 +2758,8 @@ export default function App(){
     if(hour>=7&&hour<=10){lsSet("fr_last_notif",todayStr);new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});}
   },[profile]);
 
-  useEffect(function(){window.scrollTo(0,0);},[tab]);
+  var scrollContainerRef=useRef(null);
+  useEffect(function(){if(scrollContainerRef.current)scrollContainerRef.current.scrollTop=0;},[tab]);
 
   if(authState==="loading")return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2805,7 +2806,7 @@ export default function App(){
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <style>{CSS}</style>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
+        <div ref={scrollContainerRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
         <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
           {NAV.map(function(n){var active=tab===n.id;var color=active?OR:MUT;return(
             <button key={n.id} onClick={function(){setTab(n.id);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
