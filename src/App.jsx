@@ -1706,7 +1706,7 @@ function CoursesScreen(p){
   var [tab,setTab]=useState(function(){return ls("fr_courses_tab","route");});
   function setTabPersist(v){lsSet("fr_courses_tab",v);setTab(v);}
   var [search,setSearch]=useState("");var [custom,setCustom]=useState([]);var [showAdd,setShowAdd]=useState(false);
-  var [n,setN]=useState("");var [d,setD]=useState("");var [dt,setDt]=useState("");var [tp,setTp]=useState("route");
+  var [n,setN]=useState("");var [d,setD]=useState("");var [dt,setDt]=useState("");var [tp,setTp]=useState(function(){return ls("fr_courses_tab","route");});
   var [userPos,setUserPos]=useState(null);var [locLoading,setLocLoading]=useState(false);var [locError,setLocError]=useState(null);var [nearMe,setNearMe]=useState(false);
   var [showCityFallback,setShowCityFallback]=useState(false);var [cityInput,setCityInput]=useState("");
 
@@ -1752,7 +1752,7 @@ function CoursesScreen(p){
     if(nearMe&&userPos){return haversineKm(userPos.lat,userPos.lng,a.lat,a.lng)-haversineKm(userPos.lat,userPos.lng,b.lat,b.lng);}
     return new Date(a.date)-new Date(b.date);
   });
-  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return [r].concat(prev);});p.onAddCustom?p.onAddCustom(r):p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
+  function addCustom(){if(!n||!d||!dt)return;var r={id:Date.now(),name:n,dist:parseFloat(d),type:tp,date:dt,city:"Personnalisé",custom:true};setCustom(function(prev){return [r].concat(prev);});setTabPersist(tp);p.onAddCustom?p.onAddCustom(r):p.setRace(r);setShowAdd(false);setN("");setD("");setDt("");}
   return(
     <div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
@@ -1791,8 +1791,8 @@ function CoursesScreen(p){
         })()}
         <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder="Rechercher une course ou une ville…" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"12px 16px",color:TXT,fontSize:14,outline:"none",marginBottom:12,fontFamily:"inherit"}}/>
         <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
-          <Chip label="Route" active={tab==="route"} onClick={function(){setTabPersist("route");}}/>
-          <Chip label="Trail" active={tab==="trail"} color={GR} onClick={function(){setTabPersist("trail");}}/>
+          <Chip label="Route" active={tab==="route"} onClick={function(){setTabPersist("route");setTp("route");}}/>
+          <Chip label="Trail" active={tab==="trail"} color={GR} onClick={function(){setTabPersist("trail");setTp("trail");}}/>
           <button onClick={function(){if(nearMe){setNearMe(false);setShowCityFallback(false);}else{requestLocation();}}} style={{display:"flex",alignItems:"center",gap:5,background:nearMe?OR+"22":"none",border:"1px solid "+(nearMe?OR:BORD),borderRadius:20,padding:"7px 14px",color:nearMe?OR:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
             {locLoading?"⏳":"📍"}{locLoading?"Localisation...":nearMe?"Près de moi ✓":"Près de moi"}
           </button>
