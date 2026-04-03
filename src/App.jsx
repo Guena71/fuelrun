@@ -1124,71 +1124,71 @@ function HomeScreen(p){
               </div>
 
               {/* Séance */}
-              <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:sessCol+"20",border:"1px solid "+sessCol+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🏃</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:3}}>Séance</div>
-                    {nextSess?(
-                      <div>
-                        <div style={{fontSize:15,fontWeight:800,color:TXT,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
-                        <div style={{fontSize:12,color:SUB,marginTop:2}}>
-                          {nextSess.type!=="race"?nextSess.km+" km":""}{nextSess.pace?" · "+nextSess.pace+"/km":""}
+              <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
+                <div style={{width:3,background:sessCol,flexShrink:0,borderRadius:"0 0 0 0"}}/>
+                <div style={{flex:1,padding:"14px 16px"}}>
+                  <div style={{fontSize:10,color:sessCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Séance</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <div>
+                      {nextSess?(
+                        <div>
+                          <div style={{fontSize:15,fontWeight:800,color:TXT,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
+                          <div style={{fontSize:12,color:SUB,marginTop:2}}>
+                            {nextSess.type!=="race"?nextSess.km+" km":""}{nextSess.pace?" · "+nextSess.pace+"/km":""}
+                          </div>
                         </div>
+                      ):(
+                        <div style={{fontSize:14,fontWeight:600,color:SUB}}>Repos — récupération active</div>
+                      )}
+                    </div>
+                    {nextSess&&nextSess.pace&&(
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div>
+                        <div style={{fontSize:9,color:MUT}}>durée est.</div>
                       </div>
-                    ):(
-                      <div style={{fontSize:14,fontWeight:600,color:SUB}}>Repos — récupération active</div>
                     )}
                   </div>
-                  {nextSess&&nextSess.pace&&(
-                    <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div>
-                      <div style={{fontSize:9,color:MUT}}>durée est.</div>
-                    </div>
-                  )}
                 </div>
               </div>
 
               {/* Nutrition */}
               {n&&(
-                <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:36,height:36,borderRadius:10,background:GR+"20",border:"1px solid "+GR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🥗</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:3}}>Nutrition</div>
-                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                        <span style={{fontSize:15,fontWeight:800,color:OR}}>{n.kcal} kcal</span>
-                        <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
-                      </div>
+                <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
+                  <div style={{width:3,background:GR,flexShrink:0}}/>
+                  <div style={{flex:1,padding:"14px 16px"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                      <div style={{fontSize:10,color:GR,fontWeight:700,textTransform:"uppercase",letterSpacing:1}}>Nutrition</div>
+                      {!isPro&&(
+                        <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"3px 8px",borderRadius:6,background:OR+"18",border:"1px solid "+OR+"33",cursor:"pointer"}}>
+                          <span style={{fontSize:9,fontWeight:700,color:OR}}>Plan repas Pro</span>
+                        </div>
+                      )}
                     </div>
-                    {!isPro&&(
-                      <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"4px 10px",borderRadius:8,background:OR+"18",border:"1px solid "+OR+"33",cursor:"pointer",flexShrink:0}}>
-                        <span style={{fontSize:10,fontWeight:700,color:OR}}>Plan repas Pro</span>
+                    <div style={{display:"flex",gap:8,alignItems:"baseline"}}>
+                      <span style={{fontSize:15,fontWeight:800,color:OR}}>{n.kcal} kcal</span>
+                      <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
+                    </div>
+                    {isPro&&n.meals.length>0&&(
+                      <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:0}}>
+                        {n.meals.slice(0,3).map(function(m,i){return(
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
+                            <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
+                            <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
+                            <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
+                          </div>
+                        );})}
                       </div>
                     )}
                   </div>
-                  {isPro&&n.meals.length>0&&(
-                    <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:4}}>
-                      {n.meals.slice(0,3).map(function(m,i){return(
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
-                          <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
-                          <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
-                          <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
-                        </div>
-                      );})}
-                    </div>
-                  )}
                 </div>
               )}
 
               {/* Coach */}
-              <div style={{padding:"14px 16px"}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:PU+"20",border:"1px solid "+PU+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>💬</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Conseil du coach</div>
-                    <div style={{fontSize:13,color:TXT,lineHeight:1.6}}>{tip}</div>
-                  </div>
+              <div style={{display:"flex"}}>
+                <div style={{width:3,background:PU,flexShrink:0}}/>
+                <div style={{flex:1,padding:"14px 16px"}}>
+                  <div style={{fontSize:10,color:PU,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Conseil du coach</div>
+                  <div style={{fontSize:13,color:TXT,lineHeight:1.6}}>{tip}</div>
                 </div>
               </div>
             </div>
