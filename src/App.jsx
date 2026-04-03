@@ -2666,6 +2666,8 @@ export default function App(){
     setAuthState("onboarding");
   }
 
+  useEffect(function(){window.scrollTo(0,0);},[tab]);
+
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset}/>;
