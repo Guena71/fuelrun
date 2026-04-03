@@ -2157,45 +2157,18 @@ function SuiviScreen(p){
           );
         })()}
 
-        {/* ── Enregistrer une sortie ── */}
-        <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
-          <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Enregistrer une sortie</div>
-          <div style={{display:"flex",gap:10}}>
-            {planLevel(p.profile)>=1?(
-              <label style={{flex:1,padding:"14px 10px",borderRadius:12,background:BL+"18",border:"1px solid "+BL+"44",color:BL,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
-                <span style={{fontSize:24}}>📎</span>Import GPX
-                <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
-                  var file=e.target.files&&e.target.files[0];if(!file)return;
-                  var reader=new FileReader();
-                  reader.onload=function(ev){
-                    var track=parseGpx(ev.target.result);
-                    if(track.length>1){
-                      var km=calcTrackKm(track);
-                      var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
-                      saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});
-                    }
-                  };reader.readAsText(file);e.target.value="";
-                }}/>
-              </label>
-            ):(
-              <button onClick={function(){setShowGpxUpgrade(true);}} style={{flex:1,padding:"14px 10px",borderRadius:12,background:SURF2,border:"1px solid "+BORD,color:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                <span style={{fontSize:24}}>🔒</span>Import GPX<span style={{fontSize:9,color:BL,fontWeight:700}}>Essential</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* ── Carte dernière sortie GPS ── */}
-        {lastTracked&&(
-          <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>Dernière sortie</div>
-              <div style={{fontSize:11,color:SUB}}>{fmtDate(new Date(lastTracked[0]))} · {lastTracked[1].km} km</div>
+        {/* ── Accès Journal ── */}
+        <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{width:"100%",marginBottom:14,padding:"14px 18px",borderRadius:14,background:"linear-gradient(135deg,"+OR+"22,"+OR+"0a)",border:"1.5px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",fontFamily:"inherit"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:40,height:40,borderRadius:11,background:OR+"22",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📓</div>
+            <div style={{textAlign:"left"}}>
+              <div style={{fontSize:14,fontWeight:700,color:TXT}}>Journal d'entraînement</div>
+              <div style={{fontSize:12,color:SUB,marginTop:2}}>Calendrier · Ressenti · RPE · Notes</div>
             </div>
-            <RunMap track={lastTracked[1].track} height={200}/>
-            {lastTracked[1].min&&<div style={{marginTop:8,fontSize:12,color:SUB,textAlign:"center"}}>Durée : {lastTracked[1].min} min · Allure moy. : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
           </div>
-        )}
+          <div style={{fontSize:20,color:OR,fontWeight:300}}>›</div>
+        </button>
+
         {/* ── Progression course ── */}
         {race&&(
           <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
@@ -2228,56 +2201,80 @@ function SuiviScreen(p){
             <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
               <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Charge d'entraînement · 7 jours</div>
               <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
-                <div style={{flex:1}}>
-                  <div style={{height:8,borderRadius:4,background:SURF2,overflow:"hidden"}}>
-                    <div style={{width:Math.round(norm*100)+"%",height:"100%",background:"linear-gradient(90deg,"+GR+","+col+")",borderRadius:4,transition:"width .5s"}}/>
-                  </div>
-                </div>
+                <div style={{flex:1}}><div style={{height:8,borderRadius:4,background:SURF2,overflow:"hidden"}}><div style={{width:Math.round(norm*100)+"%",height:"100%",background:"linear-gradient(90deg,"+GR+","+col+")",borderRadius:4,transition:"width .5s"}}/></div></div>
                 <div style={{fontSize:13,fontWeight:700,color:col,flexShrink:0,minWidth:80,textAlign:"right"}}>{lbl}</div>
               </div>
               <div style={{display:"flex",gap:8}}>
-                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
-                  <div style={{fontSize:16,fontWeight:700,color:OR}}>{Math.round(load)}</div>
-                  <div style={{fontSize:10,color:MUT,marginTop:3}}>Charge (UA)</div>
-                </div>
-                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
-                  <div style={{fontSize:16,fontWeight:700,color:BL}}>{avgRpe.toFixed(1)}</div>
-                  <div style={{fontSize:10,color:MUT,marginTop:3}}>RPE moyen</div>
-                </div>
-                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}>
-                  <div style={{fontSize:16,fontWeight:700,color:GR}}>{last7.length}</div>
-                  <div style={{fontSize:10,color:MUT,marginTop:3}}>Séances</div>
-                </div>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,color:OR}}>{Math.round(load)}</div><div style={{fontSize:10,color:MUT,marginTop:3}}>Charge (UA)</div></div>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,color:BL}}>{avgRpe.toFixed(1)}</div><div style={{fontSize:10,color:MUT,marginTop:3}}>RPE moyen</div></div>
+                <div style={{flex:1,background:SURF2,borderRadius:10,padding:"10px",textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,color:GR}}>{last7.length}</div><div style={{fontSize:10,color:MUT,marginTop:3}}>Séances</div></div>
               </div>
             </div>
           );
         })()}
 
-        {/* ── Activités récentes ── */}
+        {/* ── Mes sorties (GPX + activités récentes) ── */}
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,overflow:"hidden",marginBottom:14}}>
           <div style={{padding:"14px 16px",borderBottom:"1px solid "+BORD,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>Activités récentes</div>
-            <div style={{display:"flex",gap:12,alignItems:"center"}}>
-              <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{fontSize:11,color:SUB,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Voir le journal →</button>
-            </div>
+            <div style={{fontSize:13,fontWeight:700,color:TXT}}>Mes sorties</div>
+            <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{fontSize:11,color:OR,fontWeight:700,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Journal complet →</button>
           </div>
+          {/* Import GPX */}
+          <div style={{padding:"12px 16px",borderBottom:"1px solid "+BORD}}>
+            {planLevel(p.profile)>=1?(
+              <label style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:BL+"12",border:"1px solid "+BL+"33",cursor:"pointer"}}>
+                <span style={{fontSize:16}}>📎</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:BL}}>Importer un tracé GPX</div>
+                  <div style={{fontSize:11,color:MUT,marginTop:1}}>Garmin, Polar, Wahoo…</div>
+                </div>
+                <span style={{fontSize:12,color:BL,fontWeight:700}}>+</span>
+                <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
+                  var file=e.target.files&&e.target.files[0];if(!file)return;
+                  var reader=new FileReader();
+                  reader.onload=function(ev){
+                    var track=parseGpx(ev.target.result);
+                    if(track.length>1){var km=calcTrackKm(track);var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});}
+                  };reader.readAsText(file);e.target.value="";
+                }}/>
+              </label>
+            ):(
+              <div onClick={function(){setShowGpxUpgrade(true);}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD,cursor:"pointer"}}>
+                <span style={{fontSize:16}}>🔒</span>
+                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:MUT}}>Importer un tracé GPX</div><div style={{fontSize:11,color:MUT,marginTop:1}}>Garmin, Polar, Wahoo…</div></div>
+                <span style={{fontSize:10,fontWeight:700,color:BL,background:BL+"18",padding:"2px 8px",borderRadius:6}}>Essential</span>
+              </div>
+            )}
+          </div>
+          {/* Dernière carte GPS */}
+          {lastTracked&&(
+            <div style={{padding:"12px 16px",borderBottom:"1px solid "+BORD}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <div style={{fontSize:11,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Dernière sortie tracée</div>
+                <div style={{fontSize:11,color:SUB}}>{fmtDate(new Date(lastTracked[0]))} · {lastTracked[1].km} km</div>
+              </div>
+              <RunMap track={lastTracked[1].track} height={160}/>
+              {lastTracked[1].min&&<div style={{marginTop:6,fontSize:11,color:SUB,textAlign:"center"}}>Durée : {lastTracked[1].min} min · Allure : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
+            </div>
+          )}
+          {/* Liste activités */}
           {recent.length===0?(
             <div style={{padding:"24px 16px",textAlign:"center"}}>
-              <div style={{fontSize:13,color:SUB,marginBottom:8}}>Aucune sortie enregistrée</div>
-              <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"8px 18px",borderRadius:20,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Enregistrer ma première sortie</button>
+              <div style={{fontSize:13,color:SUB,marginBottom:10}}>Aucune sortie enregistrée</div>
+              <button onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"9px 20px",borderRadius:20,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Enregistrer ma première sortie</button>
             </div>
           ):(
             recent.map(function(e,i){
               var d=new Date(e[0]);var data=e[1];
               return(
                 <div key={i} onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"12px 16px",borderBottom:i<recent.length-1?"1px solid "+BORD:"none",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:OR+"18",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,color:OR,fontWeight:700}}>{Math.round(data.km||0)}</div>
+                  <div style={{width:38,height:38,borderRadius:10,background:OR+"18",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:13,color:OR,fontWeight:800}}>{Math.round(data.km||0)}<span style={{fontSize:8,fontWeight:500,marginLeft:1}}>km</span></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+data.min+" min":""}</div>
-                    <div style={{fontSize:11,color:MUT,marginTop:2}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}</div>
+                    <div style={{fontSize:11,color:MUT,marginTop:2}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}{data.rpe?" · RPE "+data.rpe:""}</div>
                   </div>
                   {data.feel!=null&&<div style={{fontSize:18}}>{"😤😓😐🙂💪".split("")[data.feel*2]||""}</div>}
-                  <div style={{fontSize:12,color:MUT}}>›</div>
+                  <div style={{fontSize:14,color:MUT}}>›</div>
                 </div>
               );
             })
