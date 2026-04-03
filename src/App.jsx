@@ -1125,9 +1125,9 @@ function HomeScreen(p){
 
               {/* Séance */}
               <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
-                <div style={{width:3,background:sessCol,flexShrink:0,borderRadius:"0 0 0 0"}}/>
+                <div style={{width:3,background:OR,flexShrink:0}}/>
                 <div style={{flex:1,padding:"14px 16px"}}>
-                  <div style={{fontSize:10,color:sessCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Séance</div>
+                  <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Séance</div>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <div>
                       {nextSess?(
@@ -1154,10 +1154,10 @@ function HomeScreen(p){
               {/* Nutrition */}
               {n&&(
                 <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
-                  <div style={{width:3,background:GR,flexShrink:0}}/>
+                  <div style={{width:3,background:OR,flexShrink:0}}/>
                   <div style={{flex:1,padding:"14px 16px"}}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                      <div style={{fontSize:10,color:GR,fontWeight:700,textTransform:"uppercase",letterSpacing:1}}>Nutrition</div>
+                      <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1}}>Nutrition</div>
                       {!isPro&&(
                         <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"3px 8px",borderRadius:6,background:OR+"18",border:"1px solid "+OR+"33",cursor:"pointer"}}>
                           <span style={{fontSize:9,fontWeight:700,color:OR}}>Plan repas Pro</span>
@@ -1185,9 +1185,9 @@ function HomeScreen(p){
 
               {/* Coach */}
               <div style={{display:"flex"}}>
-                <div style={{width:3,background:PU,flexShrink:0}}/>
+                <div style={{width:3,background:OR,flexShrink:0}}/>
                 <div style={{flex:1,padding:"14px 16px"}}>
-                  <div style={{fontSize:10,color:PU,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Conseil du coach</div>
+                  <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Conseil du coach</div>
                   <div style={{fontSize:13,color:TXT,lineHeight:1.6}}>{tip}</div>
                 </div>
               </div>
