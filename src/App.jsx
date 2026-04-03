@@ -1589,7 +1589,7 @@ function TrainingScreen(p){
     <><div><LogoBar/>
       <div style={{padding:"16px 16px 12px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-          <div style={{fontSize:18,fontWeight:700,color:TXT}}>{p.race.name}</div>
+          <div style={{fontSize:22,fontWeight:800,color:TXT,letterSpacing:"-0.3px"}}>{p.race.name}</div>
           <span style={{padding:"3px 10px",borderRadius:20,background:(p.race.type==="trail"?GR:BL)+"22",color:p.race.type==="trail"?GR:BL,fontSize:12,fontWeight:600}}>{weeksUntil(p.race.date)} sem.</span>
         </div>
         <div style={{fontSize:13,color:SUB,marginBottom:10}}>{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
@@ -1756,7 +1756,7 @@ function CoursesScreen(p){
   return(
     <div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
-        <div style={{fontSize:22,fontWeight:700,color:TXT,marginBottom:16}}>Courses</div>
+        <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px",marginBottom:16}}>Courses</div>
         {(function(){
           var sugg=suggestRaces(p.profile,races,tab);
           if(!sugg.length)return null;
@@ -1876,7 +1876,7 @@ function JournalScreen(p){
   return(
     <><div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
-        <div style={{fontSize:22,fontWeight:700,color:TXT,marginBottom:16}}>Journal</div>
+        <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px",marginBottom:16}}>Journal</div>
         <Card style={{marginBottom:14}}><div style={{display:"flex",padding:"14px 18px"}}><Stat value={doneE.length} label="séances" color={OR}/><div style={{width:1,background:BORD}}/><Stat value={Math.round(totalKm)+" km"} label="ce mois" color={BL}/></div></Card>
         <Card style={{padding:"18px 16px",marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
@@ -2020,7 +2020,7 @@ function SuiviScreen(p){
     <><div><LogoBar/>
       <div style={{padding:"20px 16px 80px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-          <div style={{fontSize:22,fontWeight:700,color:TXT}}>Suivi</div>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Suivi</div>
           <button onClick={share} style={{padding:"6px 14px",borderRadius:20,background:OR+"22",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Partager</button>
         </div>
 
@@ -2279,7 +2279,7 @@ function CoachScreen(p){
       <LogoBar/>
       <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0,overflowX:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{fontSize:22,fontWeight:700,color:TXT}}>Coach IA</div>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Coach IA</div>
           {remaining!==null&&<div style={{fontSize:11,fontWeight:600,color:remaining<=2?RE:remaining<=5?YE:MUT,background:SURF2,padding:"3px 8px",borderRadius:8,border:"1px solid "+BORD}}>{remaining} msg restants</div>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
