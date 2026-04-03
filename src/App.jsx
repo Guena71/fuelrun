@@ -2453,7 +2453,9 @@ function ProfileScreen(p){
   var [vdotResult,setVdotResult]=useState(null);
   var [showResetModal,setShowResetModal]=useState(false);
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
+  var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
+  function scrollToLevel(){if(levelRef.current)levelRef.current.scrollIntoView({behavior:"smooth",block:"center"});}
   function field(label,key,type,placeholder){
     return(
       <div style={{marginBottom:12}}>
@@ -2475,7 +2477,9 @@ function ProfileScreen(p){
             </div>
             <div>
               <div style={{fontSize:20,fontWeight:700,color:TXT}}>{p.profile.name||"Coureur"}</div>
-              <div style={{fontSize:13,color:SUB,marginTop:2}}>{LEVEL_LABELS[p.profile.level]||""}</div>
+              <div onClick={scrollToLevel} style={{fontSize:13,color:OR,marginTop:4,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:OR+"15",border:"1px solid "+OR+"33"}}>
+                {LEVEL_LABELS[p.profile.level]||""} <span style={{fontSize:10}}>✎</span>
+              </div>
             </div>
           </div>
           {editing&&(
@@ -2511,7 +2515,7 @@ function ProfileScreen(p){
         </div>
 
         {/* ── NIVEAU (toujours visible) ── */}
-        <div style={{marginBottom:14}}>
+        <div ref={levelRef} style={{marginBottom:14}}>
           <div style={{fontSize:12,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:8}}>Niveau</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {LEVELS.map(function(l){var on=(p.profile.level||"beginner")===l.id;return(
