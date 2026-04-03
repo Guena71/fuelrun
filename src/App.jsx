@@ -999,6 +999,9 @@ function AnimCount(p){
 function HomeScreen(p){
   var [showResetConfirm,setShowResetConfirm]=useState(false);
   var [weather,setWeather]=useState(null);
+  var [showRecipes,setShowRecipes]=useState(false);
+  var todayKey=new Date().toDateString();
+  var todayDone=!!(p.entries&&p.entries[todayKey]&&p.entries[todayKey].done);
   useEffect(function(){
     if(!navigator.geolocation)return;
     navigator.geolocation.getCurrentPosition(function(pos){
@@ -1148,6 +1151,18 @@ function HomeScreen(p){
                       </div>
                     )}
                   </div>
+                  {nextSess&&(
+                    <div style={{marginTop:10}}>
+                      <button onClick={function(){
+                        if(todayDone)return;
+                        var km=nextSess.km||0;
+                        p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[todayKey]:{done:true,km:String(km)}});});
+                        p.onAddSession&&p.onAddSession(km);
+                      }} style={{width:"100%",padding:"9px",borderRadius:10,background:todayDone?GR+"18":OR,border:todayDone?"1px solid "+GR+"44":"none",color:todayDone?GR:"#fff",fontSize:12,fontWeight:700,cursor:todayDone?"default":"pointer",fontFamily:"inherit",letterSpacing:0.2}}>
+                        {todayDone?"✓ Séance validée":"Valider cette séance"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1169,14 +1184,48 @@ function HomeScreen(p){
                       <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
                     </div>
                     {isPro&&n.meals.length>0&&(
-                      <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:0}}>
-                        {n.meals.slice(0,3).map(function(m,i){return(
-                          <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
-                            <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
-                            <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
-                            <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
+                      <div style={{marginTop:10}}>
+                        <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                          {n.meals.slice(0,3).map(function(m,i){return(
+                            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
+                              <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
+                              <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
+                              <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
+                            </div>
+                          );})}
+                        </div>
+                        {(RECIPES[sessType]||[]).length>0&&(
+                          <div style={{marginTop:8}}>
+                            <button onClick={function(){setShowRecipes(!showRecipes);}} style={{width:"100%",padding:"7px",borderRadius:8,background:SURF2,border:"1px solid "+BORD,color:SUB,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                              {showRecipes?"Masquer les recettes ↑":"Voir les recettes détaillées ↓"}
+                            </button>
+                            {showRecipes&&(RECIPES[sessType]||[]).map(function(r,ri){return(
+                              <div key={ri} style={{marginTop:8,background:SURF2,borderRadius:10,padding:"12px",border:"1px solid "+BORD}}>
+                                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                                  <div>
+                                    <div style={{fontSize:12,fontWeight:700,color:TXT}}>{r.name}</div>
+                                    <div style={{fontSize:10,color:MUT,marginTop:2}}>{r.slot} · {r.time} · {r.kcal} kcal</div>
+                                  </div>
+                                </div>
+                                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Ingrédients</div>
+                                <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:8}}>
+                                  {r.ingredients.map(function(ing,ii){return(
+                                    <div key={ii} style={{fontSize:11,color:SUB,display:"flex",gap:6}}>
+                                      <span style={{color:OR,flexShrink:0}}>·</span>{ing}
+                                    </div>
+                                  );})}
+                                </div>
+                                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Préparation</div>
+                                {r.steps.map(function(step,si){return(
+                                  <div key={si} style={{display:"flex",gap:8,marginBottom:4}}>
+                                    <span style={{fontSize:10,fontWeight:700,color:OR,flexShrink:0,width:14}}>{si+1}.</span>
+                                    <span style={{fontSize:11,color:TXT,lineHeight:1.5}}>{step}</span>
+                                  </div>
+                                );})}
+                              </div>
+                            );})}
                           </div>
-                        );})}
+                        )}
                       </div>
                     )}
                   </div>
@@ -2041,6 +2090,37 @@ function SuiviScreen(p){
           </div>
         </div>
 
+        {/* ── Graphique km/semaine ── */}
+        {(function(){
+          var maxKm=Math.max.apply(null,weeks.map(function(w){return w.km||0;}));
+          if(maxKm===0)return null;
+          return(
+            <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
+              <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:14}}>Volume · 8 semaines</div>
+              <div style={{display:"flex",alignItems:"flex-end",gap:3,height:80}}>
+                {weeks.map(function(w,i){
+                  var barH=Math.max(4,Math.round((w.km/maxKm)*60));
+                  var col=w.current?OR:w.km>=targetKm?GR:SURF2;
+                  var border=w.current?"2px solid "+OR:w.km>=targetKm?"2px solid "+GR:"1px solid "+BORD;
+                  return(
+                    <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                      {w.km>0&&<div style={{fontSize:8,color:w.current?OR:MUT,fontWeight:w.current?700:400,lineHeight:1}}>{w.km}</div>}
+                      <div style={{flex:1,display:"flex",alignItems:"flex-end",width:"100%"}}>
+                        <div style={{width:"100%",height:barH,background:col,border:border,borderRadius:"3px 3px 0 0",transition:"height .4s"}}/>
+                      </div>
+                      <div style={{fontSize:8,color:w.current?OR:MUT,fontWeight:w.current?600:400}}>{w.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:12,marginTop:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:OR}}/><span style={{fontSize:10,color:MUT}}>Semaine en cours</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:GR}}/><span style={{fontSize:10,color:MUT}}>Objectif atteint</span></div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── Enregistrer une sortie ── */}
         <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:12,fontWeight:600,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginBottom:12}}>Enregistrer une sortie</div>
@@ -2255,7 +2335,11 @@ function CoachScreen(p){
     var msg=input.trim();setInput("");setLoading(true);setError("");
     var newMsgs=messages.concat([{role:"user",content:msg}]);
     setMessages(newMsgs);
-    var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+"\nRéponds en français, 3-4 phrases max, naturel et personnalisé.";
+    var recentKm=0;var recentSess=0;if(p.entries){var cut7=new Date();cut7.setDate(cut7.getDate()-7);Object.entries(p.entries).forEach(function(e){if(e[1].done&&new Date(e[0])>=cut7){recentKm+=parseFloat(e[1].km)||0;recentSess++;}});}
+    var wellStr="";if(p.wellbeing){var wTot=0;var wVals=Object.values(p.wellbeing);for(var wi2=0;wi2<wVals.length;wi2++)wTot+=wVals[wi2];var wPct=wTot/(4*4);wellStr=wPct<=0.4?"en état de fatigue":wPct<=0.6?"légèrement fatigué":wPct<=0.8?"en bonne forme":"en super forme";}
+    var planCtx=p.race?buildPlan(p.race,p.profile):null;var planWCtx=getPlanWeeks(planCtx);var curWCtx=null;for(var cix=0;cix<planWCtx.length;cix++){if(planWCtx[cix].isCurrent){curWCtx=planWCtx[cix];break;}}if(!curWCtx){for(var cix2=0;cix2<planWCtx.length;cix2++){if(!planWCtx[cix2].isPast){curWCtx=planWCtx[cix2];break;}}}
+    var todaySessCtx=curWCtx&&curWCtx.sessions&&curWCtx.sessions.length>0?curWCtx.sessions[0]:null;
+    var sys="Tu es un coach running expert et bienveillant. Profil : "+(p.profile.name||"Coureur")+", "+(p.profile.age||"30")+" ans, "+(p.profile.weight||"70")+" kg, niveau "+(p.profile.level||"débutant")+"."+(p.race?" Objectif : "+p.race.name+", "+p.race.dist+" km dans "+weeksUntil(p.race.date)+" semaines.":"")+(todaySessCtx?" Séance du jour : "+todaySessCtx.label+" ("+todaySessCtx.km+" km à "+todaySessCtx.pace+"/km).":" Pas de séance planifiée aujourd'hui.")+"\n7 derniers jours : "+recentSess+" séance"+(recentSess!==1?"s":"")+", "+Math.round(recentKm)+" km."+(wellStr?" Coureur "+wellStr+".":" État non renseigné.")+"\nRéponds en français, 3-4 phrases max, naturel, précis, personnalisé.";
     var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
     fetch("/api/coach",{
       method:"POST",
@@ -2670,12 +2754,12 @@ export default function App(){
 
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset}/>;
+    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onSetEntries={setEntries} onAddSession={addSession}/>;
     if(tab==="training") return <TrainingScreen profile={profile} race={race} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
     if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}} onAddCustom={function(r){setRace(r);}}/>;
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice}/>;
-    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice}/>;
+    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
     if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
