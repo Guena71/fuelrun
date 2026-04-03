@@ -1607,7 +1607,7 @@ function TrainingScreen(p){
           <span style={{fontSize:14}}>{rd.icon}</span>
           <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,color:rd.color}}>{rd.label}</span><span style={{fontSize:12,color:SUB}}> · {rd.msg}</span></div>
         </div>
-        <button onClick={function(){if(planLevel(p.profile)<2){setShowStrategyUpgrade(true);}else{setShowStrategy(true);}}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:planLevel(p.profile)>=2?PU+"15":SURF2,border:"1px solid "+(planLevel(p.profile)>=2?PU+"44":BORD),color:planLevel(p.profile)>=2?PU:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+        <button onClick={function(){if(planLevel(p.profile)<2){setShowStrategyUpgrade(true);}else{setShowStrategy(true);}}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:planLevel(p.profile)>=2?OR+"15":SURF2,border:"1px solid "+(planLevel(p.profile)>=2?OR+"44":BORD),color:planLevel(p.profile)>=2?OR:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
           {planLevel(p.profile)<2&&<span style={{fontSize:12}}>🔒</span>}Stratégie de course · Splits{planLevel(p.profile)<2&&<span style={{fontSize:10,color:OR,fontWeight:700,marginLeft:4}}>Pro</span>}
         </button>
       </div>
