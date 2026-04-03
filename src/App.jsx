@@ -366,8 +366,7 @@ var PLANS=[
     desc:"L'arsenal complet pour les compétiteurs sérieux.",
     items:[
       "Tout Pro, plus :",
-      "Synchronisation Strava et Garmin",
-      "Prédictions de temps et records",
+      "Prédictions de temps et records personnalisées",
     ],
     cta:"Essayer 14 j gratuit"
   }
@@ -1947,8 +1946,6 @@ function SuiviScreen(p){
   var entries=p.entries||{};
   var race=p.race;
   var today=new Date();
-  var [showGps,setShowGps]=useState(false);
-  var [showGpsUpgrade,setShowGpsUpgrade]=useState(false);
   var [showGpxUpgrade,setShowGpxUpgrade]=useState(false);
 
   function saveTrack(res){
