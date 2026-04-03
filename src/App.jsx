@@ -1589,7 +1589,7 @@ function TrainingScreen(p){
     <><div><LogoBar/>
       <div style={{padding:"16px 16px 12px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-          <div style={{fontSize:22,fontWeight:800,color:TXT,letterSpacing:"-0.3px"}}>{p.race.name}</div>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>{p.race.name}</div>
           <span style={{padding:"3px 10px",borderRadius:20,background:(p.race.type==="trail"?GR:BL)+"22",color:p.race.type==="trail"?GR:BL,fontSize:12,fontWeight:600}}>{weeksUntil(p.race.date)} sem.</span>
         </div>
         <div style={{fontSize:13,color:SUB,marginBottom:10}}>{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
