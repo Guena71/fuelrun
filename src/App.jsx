@@ -1395,22 +1395,14 @@ function SessionCard(p){
 
             {/* ── NUTRITION + REPAS + RECETTES (accordéon) ── */}
             {(function(){
-              if(planLevel(p.profile)<2){return(
-                <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden",cursor:"pointer"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,fontWeight:600,color:MUT}}>Nutrition · Repas · Recettes</span></div>
-                    <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
-                  </div>
-                </div>
-              );}
-              var rows=recipes.length>0?recipes:n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal};});
-              var totalKcal=rows.reduce(function(s,r){return s+(r.kcal||0);},0);
+              var isPro=planLevel(p.profile)>=2;
+              var totalKcal=n.kcal||0;
               return(
             <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden"}}>
               <div onClick={function(){setNutOpen(!nutOpen);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2,cursor:"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:13}}>🥗</span>
-                  <span style={{fontSize:12,fontWeight:600,color:TXT}}>Nutrition · Repas · Recettes</span>
+                  <span style={{fontSize:12,fontWeight:600,color:TXT}}>Nutrition</span>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <span style={{fontSize:12,fontWeight:700,color:OR}}>{totalKcal} kcal</span>
@@ -1424,9 +1416,16 @@ function SessionCard(p){
                       return <div key={i} style={{flex:1,background:SURF2,borderRadius:8,padding:"7px 4px",textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:2}}>{m.label}</div></div>;
                     })}
                   </div>
-                  {(recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
-                    return <RecipeRow key={ri} row={row}/>;
-                  })}
+                  {isPro?(
+                    (recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
+                      return <RecipeRow key={ri} row={row}/>;
+                    })
+                  ):(
+                    <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{margin:"8px 12px 12px",padding:"10px 14px",borderRadius:10,background:OR+"10",border:"1px solid "+OR+"33",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,color:MUT}}>Plan repas · Recettes détaillées</span></div>
+                      <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
