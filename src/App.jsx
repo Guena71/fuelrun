@@ -2454,7 +2454,7 @@ function ProfileScreen(p){
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
   var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
-  function cycleLevel(){var ids=LEVELS.map(function(l){return l.id;});var cur=p.profile.level||"beginner";var idx=ids.indexOf(cur);var next=ids[(idx+1)%ids.length];p.onUpdate({level:next});}
+  function cycleLevel(){var ids=LEVELS.map(function(l){return l.id;});var cur=p.profile.level||"beginner";var idx=ids.indexOf(cur);var next=ids[(idx+1)%ids.length];p.onUpdate({level:next});if(p.onToast){var lbl=LEVELS.find(function(l){return l.id===next;});p.onToast((lbl?lbl.emoji+" "+lbl.label:"Niveau mis à jour")+" ✓");}}
   function field(label,key,type,placeholder){
     return(
       <div style={{marginBottom:12}}>
@@ -2814,7 +2814,7 @@ export default function App(){
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice} preselect={journalPreselect} onClearPreselect={function(){setJournalPreselect(null);}}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
 
