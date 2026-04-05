@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="192" rx="0" fill="url(#gtop)"/>
+  <rect width="512" height="512" rx="114" fill="#0a0a0a"/>
+  <rect width="512" height="512" rx="114" fill="url(#g)"/>
+  <!-- Runner body -->
+  <g fill="#FF5A1F">
+    <!-- Head -->
+    <circle cx="314" cy="138" r="34"/>
+    <!-- Torso -->
+    <path d="M278 182 Q256 234 246 288 L288 298 Q293 256 310 213 Z"/>
+    <!-- Front arm -->
+    <path d="M293 197 Q336 176 368 160 Q375 152 368 144 Q360 136 352 144 Q325 157 287 181 Z"/>
+    <!-- Back arm -->
+    <path d="M266 202 Q224 224 197 240 Q189 248 193 256 Q200 264 210 258 Q236 242 274 218 Z"/>
+    <!-- Front leg -->
+    <path d="M254 288 Q235 330 214 362 Q203 378 213 389 Q223 400 234 392 Q256 368 277 326 Z"/>
+    <!-- Back leg -->
+    <path d="M272 293 Q288 336 293 373 Q296 391 309 394 Q322 397 325 384 Q324 362 314 314 Z"/>
+  </g>
+  <!-- Motion lines -->
+  <g stroke="#FF5A1F" stroke-width="7" stroke-linecap="round" opacity="0.4">
+    <line x1="174" y1="192" x2="138" y2="192"/>
+    <line x1="165" y1="224" x2="122" y2="224"/>
+    <line x1="170" y1="256" x2="132" y2="256"/>
+  </g>
+  <!-- FuelRun wordmark -->
+  <text x="256" y="460" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-weight="800" font-size="64" fill="#FF5A1F" letter-spacing="-1">FuelRun</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a0800"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="gtop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a0800"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+</svg>
