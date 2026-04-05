@@ -1555,11 +1555,14 @@ function RaceStrategyModal(p){
   );
 }
 
+var FREE_PLAN_WEEKS=3;
+
 function TrainingScreen(p){
   var [selWeek,setSelWeek]=useState(null);
   var [forceNoPlan,setForceNoPlan]=useState(false);
   var [showStrategy,setShowStrategy]=useState(false);
   var [showStrategyUpgrade,setShowStrategyUpgrade]=useState(false);
+  var [showPlanUpgrade,setShowPlanUpgrade]=useState(false);
   var scrollRef=useRef(null);
   var races=useRaces();
   var raceId=p.race?p.race.id:null;
@@ -1716,44 +1719,70 @@ function TrainingScreen(p){
         </button>
       </div>
       <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px",touchAction:"pan-x"}}>
-        {planWeeks.map(function(wk,i){var isA=i===activeIdx;var pc=wk.phaseColor;return(
-          <div key={i} onClick={function(){setSelWeek(i);}} style={{flexShrink:0,width:54,textAlign:"center",padding:"10px 4px",borderRadius:12,border:"1.5px solid "+(isA?pc:BORD),background:isA?pc+"20":SURF,cursor:"pointer",position:"relative",opacity:wk.isPast?0.55:1}}>
-            {wk.isCurrent?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:OR,color:"#fff",fontSize:7,fontWeight:700,borderRadius:4,padding:"1px 5px",whiteSpace:"nowrap"}}>now</div>:null}
-            {i===planWeeks.length-1?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:10}}>🏁</div>:null}
-            <div style={{fontSize:8,color:isA?pc:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:3}}>{wk.phaseLabel.slice(0,3)}</div>
-            <div style={{fontSize:14,fontWeight:700,color:isA?pc:TXT}}>S{wk.num}</div>
-            <div style={{fontSize:9,color:isA?pc:MUT,marginTop:1}}>{wk.isRecup?"R":wk.km+"k"}</div>
+        {planWeeks.map(function(wk,i){
+          var isA=i===activeIdx;var pc=wk.phaseColor;
+          var locked=planLevel(p.profile)<1&&i>=FREE_PLAN_WEEKS;
+          return(
+          <div key={i} onClick={function(){locked?setShowPlanUpgrade(true):setSelWeek(i);}} style={{flexShrink:0,width:54,textAlign:"center",padding:"10px 4px",borderRadius:12,border:"1.5px solid "+(isA?pc:locked?BORD:BORD),background:isA?pc+"20":locked?SURF2:SURF,cursor:"pointer",position:"relative",opacity:locked?0.5:wk.isPast?0.55:1}}>
+            {wk.isCurrent&&!locked?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:OR,color:"#fff",fontSize:7,fontWeight:700,borderRadius:4,padding:"1px 5px",whiteSpace:"nowrap"}}>now</div>:null}
+            {i===planWeeks.length-1&&!locked?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:10}}>🏁</div>:null}
+            {locked?<div style={{fontSize:11,marginBottom:2}}>🔒</div>:<div style={{fontSize:8,color:isA?pc:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:3}}>{wk.phaseLabel.slice(0,3)}</div>}
+            <div style={{fontSize:14,fontWeight:700,color:locked?MUT:isA?pc:TXT}}>S{wk.num}</div>
+            <div style={{fontSize:9,color:locked?MUT:isA?pc:MUT,marginTop:1}}>{locked?"—":wk.isRecup?"R":wk.km+"k"}</div>
           </div>
         );})}
       </div>
       {w?(
         <div key={activeIdx} style={{padding:"0 16px"}}>
-          <Card style={{marginBottom:12}}>
-            <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div>
-                  <div style={{fontSize:12,color:w.phaseColor,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>{w.phaseLabel}{w.isRecup?" · Récupération":""}</div>
-                  <div style={{fontSize:20,fontWeight:700,color:TXT}}>Semaine {w.num}<span style={{fontSize:14,color:SUB,fontWeight:400}}> / {w.total}</span></div>
-                </div>
-                <div style={{textAlign:"right"}}><div style={{fontSize:13,fontWeight:600,color:TXT}}>{fmtS(w.weekStart)}</div><div style={{fontSize:12,color:SUB}}>au {fmtS(w.weekEnd)}</div></div>
+          {planLevel(p.profile)<1&&activeIdx>=FREE_PLAN_WEEKS?(
+            <div style={{textAlign:"center",padding:"40px 20px"}}>
+              <div style={{fontSize:40,marginBottom:16}}>🔒</div>
+              <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:8}}>Plan complet — Essential</div>
+              <div style={{fontSize:13,color:SUB,lineHeight:1.7,marginBottom:8}}>
+                Tu as accès aux <span style={{color:OR,fontWeight:700}}>{FREE_PLAN_WEEKS} premières semaines</span> gratuitement.<br/>
+                Passe en Essential pour débloquer les <span style={{color:BL,fontWeight:700}}>{planWeeks.length-FREE_PLAN_WEEKS} semaines restantes</span> et suivre ton plan jusqu'à la course.
               </div>
+              <div style={{fontSize:12,color:MUT,marginBottom:24}}>Semaine {activeIdx+1} sur {planWeeks.length}</div>
+              <Btn label="Passer à Essential — 4,99 €/mois" onClick={function(){p.onShowPricing&&p.onShowPricing();}} full/>
+              <button onClick={function(){setSelWeek(FREE_PLAN_WEEKS-1);}} style={{marginTop:12,background:"none",border:"none",color:MUT,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>← Revenir à la semaine {FREE_PLAN_WEEKS}</button>
             </div>
-            <div style={{display:"flex",padding:"14px 18px"}}>
-              <Stat value={w.km+" km"} label="volume" color={w.phaseColor}/>
-              <div style={{width:1,background:BORD}}/>
-              <Stat value={w.sessions.length} label="séances" color={BL}/>
-            </div>
-          </Card>
-          {w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} onShowPricing={p.onShowPricing}/>;})}
-          <div style={{display:"flex",gap:10,marginBottom:24,marginTop:4}}>
-            <Btn label="Précédente" onClick={function(){setSelWeek(Math.max(0,activeIdx-1));}} disabled={activeIdx===0} variant="ghost" style={{flex:1}} size="sm"/>
-            <Btn label="Suivante"  onClick={function(){setSelWeek(Math.min(planWeeks.length-1,activeIdx+1));}} disabled={activeIdx===planWeeks.length-1} variant="ghost" style={{flex:1}} size="sm"/>
-          </div>
+          ):(
+            <>
+              <Card style={{marginBottom:12}}>
+                <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div>
+                      <div style={{fontSize:12,color:w.phaseColor,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>{w.phaseLabel}{w.isRecup?" · Récupération":""}</div>
+                      <div style={{fontSize:20,fontWeight:700,color:TXT}}>Semaine {w.num}<span style={{fontSize:14,color:SUB,fontWeight:400}}> / {w.total}</span></div>
+                    </div>
+                    <div style={{textAlign:"right"}}><div style={{fontSize:13,fontWeight:600,color:TXT}}>{fmtS(w.weekStart)}</div><div style={{fontSize:12,color:SUB}}>au {fmtS(w.weekEnd)}</div></div>
+                  </div>
+                </div>
+                <div style={{display:"flex",padding:"14px 18px"}}>
+                  <Stat value={w.km+" km"} label="volume" color={w.phaseColor}/>
+                  <div style={{width:1,background:BORD}}/>
+                  <Stat value={w.sessions.length} label="séances" color={BL}/>
+                </div>
+              </Card>
+              {planLevel(p.profile)<1&&activeIdx===FREE_PLAN_WEEKS-1&&(
+                <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{marginBottom:12,padding:"10px 14px",borderRadius:12,background:BL+"12",border:"1px solid "+BL+"33",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:12,color:BL,fontWeight:600}}>📋 {planWeeks.length-FREE_PLAN_WEEKS} semaines de plan verrouillées</span>
+                  <span style={{fontSize:10,fontWeight:700,color:BL,background:BL+"22",padding:"2px 8px",borderRadius:6}}>Essential →</span>
+                </div>
+              )}
+              {w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} onShowPricing={p.onShowPricing}/>;})}
+              <div style={{display:"flex",gap:10,marginBottom:24,marginTop:4}}>
+                <Btn label="Précédente" onClick={function(){setSelWeek(Math.max(0,activeIdx-1));}} disabled={activeIdx===0} variant="ghost" style={{flex:1}} size="sm"/>
+                <Btn label="Suivante" onClick={function(){var next=activeIdx+1;if(planLevel(p.profile)<1&&next>=FREE_PLAN_WEEKS){setShowPlanUpgrade(true);}else{setSelWeek(Math.min(planWeeks.length-1,next));}}} disabled={activeIdx===planWeeks.length-1} variant="ghost" style={{flex:1}} size="sm"/>
+              </div>
+            </>
+          )}
         </div>
       ):null}
     </div>
     {showStrategy&&<RaceStrategyModal race={p.race} onClose={function(){setShowStrategy(false);}}/>}
     {showStrategyUpgrade&&<UpgradeModal feature="Stratégie de course · Splits" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowStrategyUpgrade(false);}} onUpgrade={function(){setShowStrategyUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
+    {showPlanUpgrade&&<UpgradeModal feature={"Plan complet · "+planWeeks.length+" semaines"} minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowPlanUpgrade(false);}} onUpgrade={function(){setShowPlanUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }
