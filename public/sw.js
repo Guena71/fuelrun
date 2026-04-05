@@ -13,6 +13,27 @@ self.addEventListener("activate",function(e){
   self.clients.claim();
 });
 
+self.addEventListener("push",function(e){
+  var data={title:"FuelRun",body:"Consulte ton plan du jour !",url:"/"};
+  try{data=Object.assign(data,JSON.parse(e.data.text()));}catch(err){}
+  e.waitUntil(self.registration.showNotification(data.title,{
+    body:data.body,
+    icon:"/icon-192.svg",
+    badge:"/icon-192.svg",
+    data:{url:data.url},
+    vibrate:[200,100,200],
+  }));
+});
+
+self.addEventListener("notificationclick",function(e){
+  e.notification.close();
+  var url=(e.notification.data&&e.notification.data.url)||"/";
+  e.waitUntil(clients.matchAll({type:"window"}).then(function(list){
+    for(var c of list){if(c.url.includes(self.location.origin)&&"focus" in c)return c.focus();}
+    if(clients.openWindow)return clients.openWindow(url);
+  }));
+});
+
 self.addEventListener("fetch",function(e){
   if(e.request.method!=="GET")return;
   var url=new URL(e.request.url);

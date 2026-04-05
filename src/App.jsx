@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
-import { auth, db, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, doc, setDoc, getDoc, deleteDoc } from "./firebase.js";
+import { auth, db, analytics, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, updatePassword, reauthenticateWithCredential, EmailAuthProvider, logEvent, doc, setDoc, getDoc, deleteDoc } from "./firebase.js";
 
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#222222",BORD="#383838";
@@ -419,6 +419,7 @@ function planLevel(profile){
 
 function UpgradeModal({feature,minPlanLabel,minPlanColor,onClose,onUpgrade}){
   var col=minPlanColor||OR;
+  useEffect(function(){logEvent(analytics,"upgrade_viewed",{feature:feature,plan:minPlanLabel});},[]);
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.82)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
       <div style={{background:SURF,borderRadius:22,padding:"32px 24px 24px",width:"100%",maxWidth:360,textAlign:"center",border:"1px solid "+BORD}}>
@@ -729,23 +730,66 @@ function LogoBar(p){
 }
 
 
+var TESTIMONIALS=[
+  {name:"Sophie M.",level:"Semi-marathon",text:"J'ai amélioré mon chrono de 12 min en 8 semaines. Le plan est vraiment adapté à mon niveau.",stars:5},
+  {name:"Thomas R.",level:"Marathon",text:"Le Coach IA répond à toutes mes questions à 23h avant une sortie longue. Indispensable.",stars:5},
+  {name:"Camille D.",level:"10 km",text:"Les recettes sont délicieuses et vraiment adaptées à l'effort. Je mange mieux et je cours mieux.",stars:5},
+];
+
+function StarRow({n}){
+  return <div style={{display:"flex",gap:2,justifyContent:"center",marginBottom:6}}>{[1,2,3,4,5].map(function(i){return <span key={i} style={{fontSize:13,color:i<=n?YE:BORD}}>★</span>;})}</div>;
+}
+
 function HeroScreen(p){
+  var [slide,setSlide]=useState(0);
+  useEffect(function(){var t=setInterval(function(){setSlide(function(s){return(s+1)%TESTIMONIALS.length;});},3500);return function(){clearInterval(t);};},[]);
+  var t=TESTIMONIALS[slide];
   return(
-    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
+    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
       <style>{CSS}</style>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40}}>
-        <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={160}/></div>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:14,paddingTop:40}}>
+        <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={140}/></div>
         <div style={{fontSize:38,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</div>
-        <div style={{fontSize:16,color:SUB,maxWidth:280,lineHeight:1.8}}>Entraînement · Nutrition · Performance</div>
-        <div style={{padding:"12px 20px",background:OR+"12",borderRadius:12,border:"1px solid "+OR+"30",maxWidth:320}}>
-          <div style={{fontSize:14,color:OR,fontWeight:600,fontStyle:"italic"}}>Pas besoin d'être rapide, l'important est de commencer !</div>
+        <div style={{fontSize:15,color:SUB,maxWidth:280,lineHeight:1.8}}>Ton coach running IA personnel</div>
+
+        {/* Stats */}
+        <div style={{display:"flex",gap:16,marginTop:4}}>
+          {[["3 200+","coureurs"],["4,8 ★","note moyenne"],["14 j","essai gratuit"]].map(function(s,i){
+            return(
+              <div key={i} style={{textAlign:"center"}}>
+                <div style={{fontSize:17,fontWeight:800,color:OR}}>{s[0]}</div>
+                <div style={{fontSize:10,color:MUT,marginTop:1}}>{s[1]}</div>
+              </div>
+            );
+          })}
         </div>
-        <div style={{marginTop:24,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
-          <Btn label="Commencer" onClick={p.onCommencer} size="lg" full/>
+
+        {/* Témoignage rotatif */}
+        <div style={{width:"100%",maxWidth:340,background:SURF2,border:"1px solid "+BORD,borderRadius:16,padding:"16px 18px",minHeight:110,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+          <StarRow n={t.stars}/>
+          <div style={{fontSize:13,color:TXT,lineHeight:1.6,fontStyle:"italic",marginBottom:8}}>"{t.text}"</div>
+          <div style={{fontSize:11,color:MUT}}>{t.name} · {t.level}</div>
+        </div>
+        <div style={{display:"flex",gap:6}}>{TESTIMONIALS.map(function(_,i){return <div key={i} style={{width:i===slide?16:6,height:6,borderRadius:3,background:i===slide?OR:BORD,transition:"width .3s"}}/>; })}</div>
+
+        {/* Features rapides */}
+        <div style={{width:"100%",maxWidth:340,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {[["🏃","Plan personnalisé"],["🧠","Coach IA 24h/24"],["🥗","Recettes sport"],["📊","Suivi de progression"]].map(function(f,i){
+            return(
+              <div key={i} style={{background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"10px 12px",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:18}}>{f[0]}</span>
+                <span style={{fontSize:12,color:SUB,fontWeight:500}}>{f[1]}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{marginTop:8,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
+          <Btn label="Commencer gratuitement" onClick={p.onCommencer} size="lg" full/>
           <Btn label="J'ai déjà un compte" onClick={p.onLogin} variant="ghost" size="md" full/>
         </div>
       </div>
-      <div style={{textAlign:"center",fontSize:11,color:MUT}}>En continuant, vous acceptez les conditions d'utilisation.</div>
+      <div style={{textAlign:"center",fontSize:11,color:MUT,marginTop:16}}>En continuant, vous acceptez les conditions d'utilisation.</div>
     </div>
   );
 }
@@ -872,7 +916,9 @@ function AuthScreen(){
     if(!email.trim()||!password.trim()){setError("Remplis tous les champs.");return;}
     setLoading(true);setError("");
     var fn=isLogin?signInWithEmailAndPassword:createUserWithEmailAndPassword;
-    fn(auth,email,password).catch(function(e){
+    fn(auth,email,password).then(function(){
+      logEvent(analytics,isLogin?"login":"sign_up",{method:"email"});
+    }).catch(function(e){
       var msg=e.code==="auth/email-already-in-use"?"Email déjà utilisé.":e.code==="auth/wrong-password"||e.code==="auth/invalid-credential"?"Mot de passe incorrect.":e.code==="auth/user-not-found"?"Compte introuvable.":e.code==="auth/weak-password"?"Mot de passe trop court (6 car. min).":"Erreur : "+e.message;
       setError(msg);setLoading(false);
     });
@@ -880,12 +926,16 @@ function AuthScreen(){
 
   function handleGoogle(){
     setLoading(true);setError("");
-    signInWithPopup(auth,googleProvider).catch(function(e){setError(e.message);setLoading(false);});
+    signInWithPopup(auth,googleProvider).then(function(r){
+      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"google"});
+    }).catch(function(e){setError(e.message);setLoading(false);});
   }
 
   function handleApple(){
     setLoading(true);setError("");
-    signInWithPopup(auth,appleProvider).catch(function(e){
+    signInWithPopup(auth,appleProvider).then(function(r){
+      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
+    }).catch(function(e){
       var msg=e.code==="auth/popup-closed-by-user"?"Connexion annulée.":e.code==="auth/cancelled-popup-request"?"Connexion annulée.":"Erreur Apple : "+e.message;
       setError(msg);setLoading(false);
     });
@@ -985,6 +1035,25 @@ function AuthScreen(){
 }
 
 function PricingScreen(p){
+  var [checkoutLoading,setCheckoutLoading]=useState(null);
+  var user=p.user||null;
+
+  function handlePlan(pl){
+    lsSet("fr_pending_plan",pl.id||"gratuit");
+    logEvent(analytics,"purchase_started",{plan:pl.id||"gratuit",price:pl.price});
+    if(pl.id==="gratuit"||!pl.id){p.onStart&&p.onStart();return;}
+    if(!user){p.onStart&&p.onStart();return;}
+    setCheckoutLoading(pl.id);
+    fetch("/api/create-checkout-session",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({plan:pl.id,uid:user.uid})
+    }).then(function(r){return r.json();}).then(function(data){
+      if(data.url){window.location.href=data.url;}
+      else{setCheckoutLoading(null);alert("Erreur : "+data.error);}
+    }).catch(function(){setCheckoutLoading(null);alert("Erreur réseau, réessaie.");});
+  }
+
   return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
       <style>{CSS}</style>
@@ -999,8 +1068,9 @@ function PricingScreen(p){
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {PLANS.map(function(pl,i){
+          var isLoading=checkoutLoading===pl.id;
           return(
-            <div key={i} onClick={function(){lsSet("fr_pending_plan",pl.id||"gratuit");p.onStart();}} style={{position:"relative",background:i===2?OR+"10":SURF2,border:"1.5px solid "+(i===2?OR:BORD),borderRadius:16,padding:"16px 18px",cursor:"pointer"}}>
+            <div key={i} onClick={function(){if(!checkoutLoading)handlePlan(pl);}} style={{position:"relative",background:i===2?OR+"10":SURF2,border:"1.5px solid "+(i===2?OR:BORD),borderRadius:16,padding:"16px 18px",cursor:checkoutLoading?"not-allowed":"pointer",opacity:checkoutLoading&&!isLoading?0.6:1}}>
               {pl.tag?<div style={{position:"absolute",top:-10,right:16,background:pl.color,color:"#fff",fontSize:10,fontWeight:700,borderRadius:6,padding:"2px 10px"}}>{pl.tag}</div>:null}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                 <div style={{fontSize:17,fontWeight:800,color:i===2?OR:TXT}}>{pl.name}</div>
@@ -1020,7 +1090,7 @@ function PricingScreen(p){
                 })}
               </div>
               <div style={{background:i===2?OR:SURF2,borderRadius:10,padding:"10px",textAlign:"center",border:i!==2?"1px solid "+BORD:"none"}}>
-                <span style={{fontSize:13,fontWeight:600,color:i===2?"#fff":SUB}}>{pl.cta}</span>
+                <span style={{fontSize:13,fontWeight:600,color:i===2?"#fff":SUB}}>{isLoading?"Redirection…":pl.cta}</span>
               </div>
             </div>
           );
@@ -2676,8 +2746,31 @@ function ProfileScreen(p){
   var [showDeleteModal,setShowDeleteModal]=useState(false);
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
   var [legalOpen,setLegalOpen]=useState(null);
+  var [showPwdModal,setShowPwdModal]=useState(false);
+  var [pwdCurrent,setPwdCurrent]=useState("");
+  var [pwdNew,setPwdNew]=useState("");
+  var [pwdConfirm,setPwdConfirm]=useState("");
+  var [pwdError,setPwdError]=useState("");
+  var [pwdLoading,setPwdLoading]=useState(false);
+  var [pwdDone,setPwdDone]=useState(false);
   var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
+  var isEmailUser=p.user&&p.user.providerData&&p.user.providerData.some(function(pd){return pd.providerId==="password";});
+  function handleChangePwd(){
+    if(!pwdCurrent||!pwdNew||!pwdConfirm){setPwdError("Remplis tous les champs.");return;}
+    if(pwdNew.length<6){setPwdError("Le nouveau mot de passe doit faire au moins 6 caractères.");return;}
+    if(pwdNew!==pwdConfirm){setPwdError("Les mots de passe ne correspondent pas.");return;}
+    setPwdLoading(true);setPwdError("");
+    var cred=EmailAuthProvider.credential(p.user.email,pwdCurrent);
+    reauthenticateWithCredential(p.user,cred).then(function(){
+      return updatePassword(p.user,pwdNew);
+    }).then(function(){
+      setPwdDone(true);setPwdLoading(false);
+    }).catch(function(e){
+      var msg=e.code==="auth/wrong-password"||e.code==="auth/invalid-credential"?"Mot de passe actuel incorrect.":"Erreur : "+e.message;
+      setPwdError(msg);setPwdLoading(false);
+    });
+  }
   function cycleLevel(){var ids=LEVELS.map(function(l){return l.id;});var cur=p.profile.level||"beginner";var idx=ids.indexOf(cur);var next=ids[(idx+1)%ids.length];p.onUpdate({level:next});if(p.onToast){var lbl=LEVELS.find(function(l){return l.id===next;});p.onToast((lbl?lbl.emoji+" "+lbl.label:"Niveau mis à jour")+" ✓");}}
   function field(label,key,type,placeholder){
     return(
@@ -2895,6 +2988,10 @@ function ProfileScreen(p){
           </label>
         </div>
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
+        {isEmailUser&&<button onClick={function(){setShowPwdModal(true);setPwdCurrent("");setPwdNew("");setPwdConfirm("");setPwdError("");setPwdDone(false);}} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer mon mot de passe</button>}
+        <button onClick={p.pushEnabled?p.onDisablePush:p.onEnablePush} style={{width:"100%",background:"none",border:"1px solid "+(p.pushEnabled?GR:BORD),borderRadius:12,padding:"13px",color:p.pushEnabled?GR:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          <span>{p.pushEnabled?"🔔":"🔕"}</span>{p.pushEnabled?"Notifications activées":"Activer les notifications"}
+        </button>
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
         <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
         <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Réinitialiser mon profil</button>
@@ -2918,6 +3015,37 @@ function ProfileScreen(p){
             <button onClick={function(){setShowResetModal(false);p.onReset();}} style={{width:"100%",padding:"14px",borderRadius:12,background:RE,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Confirmer et choisir une nouvelle course</button>
             <button onClick={function(){setShowResetModal(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
           </div>
+        </div>
+      </div>
+    )}
+    {showPwdModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowPwdModal(false);}}>
+        <div style={{background:SURF,borderRadius:20,padding:"28px 24px",width:"100%",maxWidth:380,animation:"fadeIn .2s ease"}}>
+          {pwdDone?(
+            <>
+              <div style={{fontSize:32,textAlign:"center",marginBottom:12}}>✅</div>
+              <div style={{fontSize:17,fontWeight:700,color:TXT,textAlign:"center",marginBottom:8}}>Mot de passe modifié</div>
+              <div style={{fontSize:13,color:SUB,textAlign:"center",marginBottom:24}}>Ton nouveau mot de passe est actif.</div>
+              <button onClick={function(){setShowPwdModal(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:OR,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Fermer</button>
+            </>
+          ):(
+            <>
+              <div style={{fontSize:17,fontWeight:700,color:TXT,marginBottom:20}}>Changer mon mot de passe</div>
+              {[["Mot de passe actuel",pwdCurrent,setPwdCurrent],["Nouveau mot de passe",pwdNew,setPwdNew],["Confirmer le nouveau",pwdConfirm,setPwdConfirm]].map(function(f,i){
+                return(
+                  <div key={i} style={{marginBottom:12}}>
+                    <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>{f[0]}</label>
+                    <input type="password" value={f[1]} onChange={function(e){f[2](e.target.value);setPwdError("");}} placeholder="••••••••" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"12px 14px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+                  </div>
+                );
+              })}
+              {pwdError&&<div style={{fontSize:13,color:RE,marginBottom:12,padding:"8px 12px",borderRadius:8,background:RE+"10"}}>{pwdError}</div>}
+              <div style={{display:"flex",gap:10,marginTop:4}}>
+                <button onClick={function(){setShowPwdModal(false);}} style={{flex:1,padding:"13px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+                <button onClick={handleChangePwd} disabled={pwdLoading} style={{flex:1,padding:"13px",borderRadius:12,background:OR,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{pwdLoading?"Enregistrement…":"Enregistrer"}</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )}
@@ -2968,6 +3096,22 @@ export default function App(){
   var [journalPreselect,setJournalPreselect]=useState(null); // {date, km}
   var [toast,setToast]=useState(null); // {msg, type:"ok"|"err"}
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
+
+  // ── Stripe return URL handling ──
+  useEffect(function(){
+    var params=new URLSearchParams(window.location.search);
+    var checkout=params.get("checkout");
+    if(checkout==="success"){
+      var plan=params.get("plan")||"pro";
+      showToast("Abonnement "+plan+" activé — 14 jours gratuits !","ok");
+      logEvent(analytics,"purchase",{plan:plan});
+      window.history.replaceState({},"",window.location.pathname);
+    }
+    if(checkout==="cancel"){
+      window.history.replaceState({},"",window.location.pathname);
+    }
+  },[]);
+
   function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
 
   // ── Firestore helpers ──
@@ -3007,18 +3151,45 @@ export default function App(){
   function setStats(fn){setStatsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;if(user)fsSave(user.uid,{stats:next});return next;});}
   function setWellbeing(wb){setWellbeingRaw(wb);if(user)fsSave(user.uid,{wellbeing:wb?{date:today,data:wb}:null});}
 
-  function addSession(km){setStats(function(s){return{sessions:s.sessions+1,km:s.km+km,streak:s.streak+1};});}
+  function addSession(km){setStats(function(s){return{sessions:s.sessions+1,km:s.km+km,streak:s.streak+1};});logEvent(analytics,"session_logged",{km:km});}
 
-  // ── Notifications ──
-  useEffect(function(){
-    if(!profile||!("Notification" in window))return;
-    if(Notification.permission==="default")Notification.requestPermission();
-    var lastNotif=ls("fr_last_notif","");
-    var todayStr=new Date().toISOString().slice(0,10);
-    if(lastNotif===todayStr||Notification.permission!=="granted")return;
-    var hour=new Date().getHours();
-    if(hour>=7&&hour<=10){lsSet("fr_last_notif",todayStr);new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});}
-  },[profile]);
+  // ── Web Push notifications ──
+  var VAPID_PUBLIC_KEY="BDnhMkrmir_7UMOVXnPOeMYv_e4h5lrvKLmb-I9VJyMUZPZDm7x9g1fqhFNZj7-csn6jAV6LuzCfJwRSpdLtO7k";
+  var [pushEnabled,setPushEnabled]=useState(ls("fr_push_enabled",false));
+
+  function urlBase64ToUint8Array(base64String){
+    var padding="=".repeat((4-base64String.length%4)%4);
+    var base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+    var raw=window.atob(base64);
+    var arr=new Uint8Array(raw.length);
+    for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);
+    return arr;
+  }
+
+  async function enablePush(){
+    if(!("serviceWorker" in navigator)||!("PushManager" in window)){showToast("Notifications non supportées sur ce navigateur","err");return;}
+    try{
+      var perm=await Notification.requestPermission();
+      if(perm!=="granted"){showToast("Autorise les notifications dans les paramètres","err");return;}
+      var reg=await navigator.serviceWorker.ready;
+      var sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+      await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:user.uid,subscription:sub.toJSON()})});
+      lsSet("fr_push_enabled",true);setPushEnabled(true);
+      showToast("Notifications activées ✓","ok");
+      logEvent(analytics,"push_enabled");
+    }catch(e){showToast("Erreur : "+e.message,"err");}
+  }
+
+  async function disablePush(){
+    try{
+      var reg=await navigator.serviceWorker.ready;
+      var sub=await reg.pushManager.getSubscription();
+      if(sub)await sub.unsubscribe();
+      if(user)await fetch("/api/subscribe",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:user.uid})});
+      lsSet("fr_push_enabled",false);setPushEnabled(false);
+      showToast("Notifications désactivées","ok");
+    }catch(e){showToast("Erreur : "+e.message,"err");}
+  }
 
 
   if(authState==="loading")return(
@@ -3066,7 +3237,7 @@ export default function App(){
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice} preselect={journalPreselect} onClearPreselect={function(){setJournalPreselect(null);}}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} onDeleteAccount={handleDeleteAccount} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} onDeleteAccount={handleDeleteAccount} user={user} onShowPricing={goPrice} pushEnabled={pushEnabled} onEnablePush={enablePush} onDisablePush={disablePush} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
 
@@ -3087,7 +3258,7 @@ export default function App(){
       </div>
       {showPricing&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:450,overflowY:"auto"}}>
-          <PricingScreen onClose={function(){setShowPricing(false);}} onStart={function(){
+          <PricingScreen user={user} onClose={function(){setShowPricing(false);}} onStart={function(){
             var chosen=ls("fr_pending_plan","gratuit");
             var updated=Object.assign({},profile,{plan:chosen});
             setProfile(updated);

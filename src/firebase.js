@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "firebase/firestore";
+import { getAnalytics, logEvent } from "firebase/analytics";
 
 var firebaseConfig = {
   apiKey:            "AIzaSyCuk3aJprZXGAzSFkZ7evNrVFOqcfUwZT8",
@@ -15,6 +16,7 @@ var firebaseConfig = {
 var app = initializeApp(firebaseConfig);
 export var auth = getAuth(app);
 export var db = getFirestore(app);
+export var analytics = getAnalytics(app);
 export var googleProvider = new GoogleAuthProvider();
 export var appleProvider = new OAuthProvider('apple.com');
-export { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, doc, setDoc, getDoc, deleteDoc };
+export { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, updatePassword, reauthenticateWithCredential, EmailAuthProvider, logEvent, doc, setDoc, getDoc, deleteDoc };
