@@ -329,13 +329,13 @@ var PLANS=[
     desc:"Commence à t'entraîner, découvre les fonctionnalités.",
     items:[
       "Essais inclus :",
-      "3 premières semaines de plan offertes",
-      "Recettes & nutrition complète 14 j offerts",
+      "3 premières semaines de plan d'entraînement offertes",
+      "Recettes et nutrition complète pendant 14 jours offerts",
       "Après l'essai :",
       "1 objectif de course",
-      "Nutrition du jour (kcal + macros)",
+      "Nutrition du jour (calories et macros)",
       "Journal des séances",
-      "5 messages Coach IA / jour",
+      "5 messages Coach Intelligence Artificielle par jour",
     ],
     cta:"Commencer gratuitement"
   },
@@ -343,29 +343,29 @@ var PLANS=[
     id:"essential", name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Le suivi complet pour progresser régulièrement.",
     items:[
-      "14 jours gratuits, puis 4,99 €/mois :",
+      "14 jours gratuits, puis 4,99 € par mois :",
       "Courses et objectifs illimités",
-      "Plan d'entraînement complet (toutes semaines)",
-      "Journal + RPE + suivi fatigue",
-      "Nutrition du jour — toutes tes courses",
-      "30 messages Coach IA / jour",
-      "Import tracés GPX (Garmin, Polar…)",
+      "Plan d'entraînement complet sur toutes les semaines",
+      "Journal avec suivi de la fatigue et de l'effort perçu",
+      "Nutrition du jour pour toutes tes courses",
+      "30 messages Coach Intelligence Artificielle par jour",
+      "Import de tracés GPS (Garmin, Polar, Wahoo…)",
     ],
-    cta:"Essayer 14 j gratuit"
+    cta:"Essayer 14 jours gratuit"
   },
   {
     id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
     desc:"La préparation complète pour performer en compétition.",
     items:[
-      "14 jours gratuits, puis 9,99 €/mois :",
+      "14 jours gratuits, puis 9,99 € par mois :",
       "Tout Essential, plus :",
-      "Coach IA illimité 24h/24",
-      "Allures personnalisées & zones d'entraînement",
-      "Stratégie de course et splits",
-      "Recettes premium + plans repas sur-mesure",
-      "Prédictions de temps et analyse de performance",
+      "Coach Intelligence Artificielle illimité 24h sur 24",
+      "Allures personnalisées et zones d'entraînement",
+      "Stratégie de course et temps par kilomètre",
+      "Recettes premium et plans repas sur-mesure",
+      "Prédictions de temps et analyse de performance détaillée",
     ],
-    cta:"Essayer 14 j gratuit"
+    cta:"Essayer 14 jours gratuit"
   }
 ];
 
@@ -425,8 +425,8 @@ function UpgradeModal({feature,minPlanLabel,minPlanColor,onClose,onUpgrade}){
         <div style={{fontSize:44,marginBottom:14}}>🔒</div>
         <div style={{fontSize:18,fontWeight:800,color:TXT,marginBottom:8}}>{feature}</div>
         <div style={{fontSize:13,color:SUB,marginBottom:8,lineHeight:1.7}}>Cette fonctionnalité est disponible à partir du plan <span style={{color:col,fontWeight:700}}>{minPlanLabel}</span>.</div>
-        <div style={{fontSize:12,color:col,fontWeight:600,marginBottom:20,padding:"8px 12px",borderRadius:8,background:col+"15",border:"1px solid "+col+"30"}}>14 jours gratuits · Sans carte bancaire</div>
-        <button onClick={onUpgrade} style={{width:"100%",padding:"14px",borderRadius:12,background:col,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Essayer 14 j gratuit</button>
+        <div style={{fontSize:12,color:col,fontWeight:600,marginBottom:20,padding:"8px 12px",borderRadius:8,background:col+"15",border:"1px solid "+col+"30"}}>14 jours gratuits · Sans carte bancaire requise</div>
+        <button onClick={onUpgrade} style={{width:"100%",padding:"14px",borderRadius:12,background:col,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Essayer 14 jours gratuit</button>
         <button onClick={onClose} style={{width:"100%",padding:"11px",borderRadius:12,background:"transparent",border:"1px solid "+BORD,color:SUB,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Plus tard</button>
       </div>
     </div>
