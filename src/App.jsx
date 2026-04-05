@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
-import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
+import { auth, db, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, doc, setDoc, getDoc } from "./firebase.js";
 
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#222222",BORD="#383838";
@@ -749,12 +749,121 @@ function HeroScreen(p){
 
 
 
+var LEGAL_CGU=`CONDITIONS GÉNÉRALES D'UTILISATION
+
+Dernière mise à jour : avril 2026
+
+1. OBJET
+FuelRun est une application de coaching sportif personnalisé pour la course à pied. Les présentes CGU régissent l'utilisation de l'application par tout utilisateur inscrit.
+
+2. ACCÈS AU SERVICE
+L'application est accessible depuis tout appareil connecté à Internet. L'utilisateur s'engage à fournir des informations exactes lors de son inscription et à maintenir la confidentialité de ses identifiants.
+
+3. FORMULES ET ABONNEMENTS
+• Gratuit : accès limité (3 semaines de plan, essai recettes 14 jours)
+• Essentiel (4,99 €/mois) : plan complet, nutrition de base
+• Pro (9,99 €/mois) : toutes fonctionnalités, coach IA illimité, recettes premium
+• Elite (19,99 €/mois) : coaching personnalisé avancé
+
+Les abonnements sont sans engagement et résiliables à tout moment depuis les paramètres. Aucun remboursement ne sera effectué pour une période déjà facturée.
+
+4. PROPRIÉTÉ INTELLECTUELLE
+Tous les contenus de FuelRun (plans d'entraînement, recettes, textes, design) sont la propriété exclusive de FuelRun. Toute reproduction sans autorisation est interdite.
+
+5. RESPONSABILITÉ
+FuelRun est un outil d'aide à l'entraînement. Il ne remplace pas un avis médical professionnel. L'utilisateur pratique à ses propres risques. FuelRun ne saurait être tenu responsable de blessures ou dommages résultant de l'utilisation du service.
+
+6. MODIFICATION DES CGU
+FuelRun se réserve le droit de modifier les présentes CGU. Les utilisateurs seront informés par notification dans l'application.
+
+7. DROIT APPLICABLE
+Les présentes CGU sont soumises au droit français. Tout litige relève de la compétence des tribunaux français.
+
+Contact : contact@fuelrun.app`;
+
+var LEGAL_PRIVACY=`POLITIQUE DE CONFIDENTIALITÉ
+
+Dernière mise à jour : avril 2026
+
+1. RESPONSABLE DU TRAITEMENT
+FuelRun — contact@fuelrun.app
+
+2. DONNÉES COLLECTÉES
+Dans le cadre de l'utilisation de l'application, FuelRun collecte :
+• Données de compte : adresse e-mail, méthode d'authentification
+• Profil sportif : prénom, âge, poids, taille, sexe, niveau de pratique
+• Données d'entraînement : séances, distances, temps, statistiques
+• Données de course : objectifs, résultats
+• Données techniques : identifiant anonyme Firebase, logs d'erreur
+
+3. FINALITÉS DU TRAITEMENT
+Les données sont utilisées pour :
+• Personnaliser le plan d'entraînement et les recommandations nutritionnelles
+• Calculer les statistiques et le suivi de progression
+• Assurer le fonctionnement du service et la synchronisation multi-appareils
+• Répondre aux demandes de support
+
+4. BASE LÉGALE
+Le traitement est fondé sur l'exécution du contrat (service souscrit) et, pour les communications, sur votre consentement.
+
+5. HÉBERGEMENT ET SOUS-TRAITANTS
+Les données sont hébergées sur Firebase (Google LLC, USA) dans le cadre du programme EU-US Data Privacy Framework, offrant un niveau de protection adéquat.
+
+6. DURÉE DE CONSERVATION
+Les données sont conservées pendant toute la durée d'utilisation du compte. En cas de suppression du compte, les données sont effacées sous 30 jours.
+
+7. VOS DROITS (RGPD)
+Conformément au RGPD, vous disposez des droits suivants :
+• Droit d'accès à vos données
+• Droit de rectification
+• Droit à l'effacement ("droit à l'oubli")
+• Droit à la portabilité (export JSON disponible dans l'application)
+• Droit d'opposition au traitement
+
+Pour exercer vos droits, contactez : contact@fuelrun.app
+
+8. SÉCURITÉ
+L'accès aux données est protégé par authentification Firebase. Les données en transit sont chiffrées (HTTPS/TLS).
+
+9. COOKIES
+L'application utilise le stockage local (localStorage) uniquement pour les préférences utilisateur et le cache applicatif. Aucun cookie publicitaire n'est utilisé.
+
+Contact DPO : contact@fuelrun.app`;
+
+function LegalModal(p){
+  if(!p.open)return null;
+  var content=p.open==="cgu"?LEGAL_CGU:LEGAL_PRIVACY;
+  var title=p.open==="cgu"?"Conditions Générales d'Utilisation":"Politique de Confidentialité";
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.85)",display:"flex",flexDirection:"column"}}>
+      <div style={{background:SURF,flex:1,display:"flex",flexDirection:"column",marginTop:48,borderRadius:"24px 24px 0 0",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 20px 16px",borderBottom:"1px solid "+BORD,flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:TXT}}>{title}</div>
+          <button onClick={p.onClose} style={{background:SURF2,border:"none",color:TXT,fontSize:20,width:32,height:32,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>×</button>
+        </div>
+        <div style={{overflowY:"auto",flex:1,padding:"20px"}}>
+          {content.split("\n").map(function(line,i){
+            var isSec=line.match(/^\d+\./);
+            var isBullet=line.startsWith("•");
+            return line===""
+              ?<div key={i} style={{height:8}}/>
+              :<div key={i} style={{fontSize:isSec?14:13,fontWeight:isSec?700:400,color:isSec?TXT:isBullet?SUB:SUB,marginBottom:isSec?6:3,paddingLeft:isBullet?12:0,lineHeight:1.6}}>{line}</div>;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen(){
   var [isLogin,setIsLogin]=useState(false);
   var [email,setEmail]=useState("");
   var [password,setPassword]=useState("");
   var [error,setError]=useState("");
   var [loading,setLoading]=useState(false);
+  var [forgotMode,setForgotMode]=useState(false);
+  var [forgotSent,setForgotSent]=useState(false);
+  var [legal,setLegal]=useState(null);
 
   function handleEmail(){
     if(!email.trim()||!password.trim()){setError("Remplis tous les champs.");return;}
@@ -771,6 +880,57 @@ function AuthScreen(){
     signInWithPopup(auth,googleProvider).catch(function(e){setError(e.message);setLoading(false);});
   }
 
+  function handleApple(){
+    setLoading(true);setError("");
+    signInWithPopup(auth,appleProvider).catch(function(e){
+      var msg=e.code==="auth/popup-closed-by-user"?"Connexion annulée.":e.code==="auth/cancelled-popup-request"?"Connexion annulée.":"Erreur Apple : "+e.message;
+      setError(msg);setLoading(false);
+    });
+  }
+
+  function handleForgot(){
+    if(!email.trim()){setError("Entre ton e-mail ci-dessus.");return;}
+    setLoading(true);setError("");
+    sendPasswordResetEmail(auth,email).then(function(){
+      setForgotSent(true);setLoading(false);
+    }).catch(function(e){
+      var msg=e.code==="auth/user-not-found"?"Aucun compte avec cet e-mail.":"Erreur : "+e.message;
+      setError(msg);setLoading(false);
+    });
+  }
+
+  if(forgotMode){
+    return(
+      <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
+        <style>{CSS}</style>
+        <LogoBar/>
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",paddingTop:32}}>
+          {forgotSent?(
+            <>
+              <div style={{fontSize:48,textAlign:"center",marginBottom:16}}>📧</div>
+              <div style={{fontSize:22,fontWeight:800,color:TXT,textAlign:"center",marginBottom:8}}>E-mail envoyé !</div>
+              <div style={{fontSize:14,color:SUB,textAlign:"center",marginBottom:32}}>Vérifie ta boîte de réception et clique sur le lien pour réinitialiser ton mot de passe.</div>
+              <Btn label="Retour à la connexion" onClick={function(){setForgotMode(false);setForgotSent(false);setIsLogin(true);}} size="lg" full/>
+            </>
+          ):(
+            <>
+              <button onClick={function(){setForgotMode(false);setError("");}} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:0,marginBottom:24}}>← Retour</button>
+              <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>Mot de passe oublié</div>
+              <div style={{fontSize:14,color:SUB,marginBottom:28}}>On t'envoie un lien de réinitialisation.</div>
+              <div style={{marginBottom:error?12:24}}>
+                <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>E-mail</label>
+                <input value={email} onChange={function(e){setEmail(e.target.value);setError("");}} placeholder="votre@email.com" type="email" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              {error?<div style={{fontSize:13,color:RE,marginBottom:16,padding:"10px 14px",borderRadius:10,background:RE+"10",border:"1px solid "+RE+"30"}}>{error}</div>:null}
+              <Btn label={loading?"Envoi…":"Envoyer le lien"} onClick={handleForgot} size="lg" full/>
+            </>
+          )}
+        </div>
+        <LegalModal open={legal} onClose={function(){setLegal(null);}}/>
+      </div>
+    );
+  }
+
   return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
       <style>{CSS}</style>
@@ -784,7 +944,7 @@ function AuthScreen(){
           Continuer avec Google
         </button>
 
-        <button onClick={function(){alert("Connexion Apple bientôt disponible.");}} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:"#fff",border:"1px solid #ddd",color:"#000",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+        <button onClick={handleApple} disabled={loading} style={{width:"100%",padding:"13px",borderRadius:12,background:"#fff",border:"1px solid #ddd",color:"#000",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
           <svg width="18" height="18" viewBox="0 0 814 1000"><path fill="#000" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.3-142.7-108.4c-33.7-55.7-52.3-117-52.3-175.2 0-201.3 130-307.1 257.7-307.1 69.1 0 126.4 45.3 170.1 45.3 42.1 0 108.2-47.2 183.1-47.2zm-126.7-153.2c34.4-39.7 60.3-95.2 60.3-150.6 0-7.8-.6-15.6-2-22.3-57.1 2.2-124.2 38.2-164.8 81.2-31.1 33.1-60.1 88.3-60.1 144.5 0 8.5 1.3 17 1.9 19.8 3.3.5 8.6 1.3 14 1.3 51.5.1 116.3-34.9 150.7-74z"/></svg>
           Continuer avec Apple
         </button>
@@ -797,10 +957,11 @@ function AuthScreen(){
           <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>E-mail</label>
           <input value={email} onChange={function(e){setEmail(e.target.value);setError("");}} placeholder="votre@email.com" type="email" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
         </div>
-        <div style={{marginBottom:error?12:24}}>
+        <div style={{marginBottom:4}}>
           <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Mot de passe</label>
           <input value={password} onChange={function(e){setPassword(e.target.value);setError("");}} onKeyDown={function(e){if(e.key==="Enter")handleEmail();}} placeholder="••••••••" type="password" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"13px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
         </div>
+        {isLogin?<div style={{textAlign:"right",marginBottom:error?8:16}}><span onClick={function(){setForgotMode(true);setForgotSent(false);setError("");}} style={{fontSize:12,color:OR,cursor:"pointer",fontWeight:500}}>Mot de passe oublié ?</span></div>:<div style={{marginBottom:error?8:16}}/>}
         {error?<div style={{fontSize:13,color:RE,marginBottom:16,padding:"10px 14px",borderRadius:10,background:RE+"10",border:"1px solid "+RE+"30"}}>{error}</div>:null}
 
         <Btn label={loading?"Chargement…":isLogin?"Se connecter":"Créer mon compte"} onClick={handleEmail} size="lg" full/>
@@ -808,7 +969,14 @@ function AuthScreen(){
           {isLogin?"Pas encore de compte ? ":"Déjà un compte ? "}
           <span onClick={function(){setIsLogin(!isLogin);setError("");}} style={{color:OR,fontWeight:600,cursor:"pointer"}}>{isLogin?"S'inscrire":"Se connecter"}</span>
         </div>
+        <div style={{textAlign:"center",marginTop:28,fontSize:11,color:MUT,lineHeight:1.6}}>
+          En continuant, tu acceptes nos{" "}
+          <span onClick={function(){setLegal("cgu");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>CGU</span>
+          {" "}et notre{" "}
+          <span onClick={function(){setLegal("confidentialite");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Politique de confidentialité</span>
+        </div>
       </div>
+      <LegalModal open={legal} onClose={function(){setLegal(null);}}/>
     </div>
   );
 }
