@@ -2476,9 +2476,9 @@ function ProfileScreen(p){
             </div>
             <div>
               <div style={{fontSize:20,fontWeight:700,color:TXT}}>{p.profile.name||"Coureur"}</div>
-              <div onClick={cycleLevel} style={{fontSize:13,color:OR,marginTop:4,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:OR+"15",border:"1px solid "+OR+"33"}}>
+              <button onClick={function(){cycleLevel();}} style={{fontSize:13,color:OR,marginTop:4,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:OR+"15",border:"1px solid "+OR+"33",fontFamily:"inherit"}}>
                 {LEVEL_LABELS[p.profile.level]||""} <span style={{fontSize:10}}>↻</span>
-              </div>
+              </button>
             </div>
           </div>
           {editing&&(
