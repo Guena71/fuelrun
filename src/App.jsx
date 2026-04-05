@@ -1076,10 +1076,11 @@ function HomeScreen(p){
           <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
           <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35"}}>
+            <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35",cursor:"pointer",fontFamily:"inherit"}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:OR}}/>
               <span style={{fontSize:11,color:OR,fontWeight:600}}>{LEVEL_LABELS[p.profile.level]||""}</span>
-            </div>
+              <span style={{fontSize:10,color:OR}}>✎</span>
+            </button>
             <button onClick={function(){setShowResetConfirm(true);}} style={{padding:"5px 12px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser ton profil</button>
           </div>
         </div>
