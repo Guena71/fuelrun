@@ -1,4 +1,4 @@
-var CACHE="fuelrun-v3";
+var CACHE="fuelrun-v4";
 var SHELL=["/","index.html","/manifest.json","/icon-192.svg","/icon-512.svg"];
 
 self.addEventListener("install",function(e){
@@ -16,18 +16,17 @@ self.addEventListener("activate",function(e){
 self.addEventListener("fetch",function(e){
   if(e.request.method!=="GET")return;
   var url=new URL(e.request.url);
-  // API calls always go to network
   if(url.pathname.startsWith("/api/"))return;
+  // Network-first: always try network, fall back to cache offline
   e.respondWith(
-    caches.match(e.request).then(function(cached){
-      var network=fetch(e.request).then(function(res){
-        if(res.ok){
-          var clone=res.clone();
-          caches.open(CACHE).then(function(c){c.put(e.request,clone);});
-        }
-        return res;
-      }).catch(function(){return cached;});
-      return cached||network;
+    fetch(e.request).then(function(res){
+      if(res.ok){
+        var clone=res.clone();
+        caches.open(CACHE).then(function(c){c.put(e.request,clone);});
+      }
+      return res;
+    }).catch(function(){
+      return caches.match(e.request);
     })
   );
 });
