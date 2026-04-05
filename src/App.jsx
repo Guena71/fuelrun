@@ -398,6 +398,16 @@ function regUrl(race){
   return "https://www.klikego.com/recherche?terms="+encodeURIComponent(race.name);
 }
 
+var RECIPES_TRIAL_DAYS=14;
+function getRecipesTrial(){
+  var key="fr_recipes_trial_start";
+  var stored=localStorage.getItem(key);
+  if(!stored){var now=Date.now();localStorage.setItem(key,now);return{active:true,daysLeft:RECIPES_TRIAL_DAYS};}
+  var elapsed=Math.floor((Date.now()-parseInt(stored,10))/(1000*60*60*24));
+  var left=Math.max(0,RECIPES_TRIAL_DAYS-elapsed);
+  return{active:left>0,daysLeft:left};
+}
+
 function planLevel(profile){
   var p=(profile&&profile.plan)||"gratuit";
   if(p==="elite"||p==="pro")return 2;
@@ -1138,6 +1148,7 @@ function HomeScreen(p){
         {(function(){
           var n=p.race&&curWeek?calcNutrition(p.profile,sessType):null;
           var isPro=planLevel(p.profile)>=2;
+          var homeTrial=isPro?{active:true,daysLeft:99}:getRecipesTrial();
           var coachTips={
             easy:"Zone 2, tu dois pouvoir parler confortablement. C'est cette allure qui construit ta base aérobie.",
             long:"Démarre doucement et garde de l'énergie pour les derniers kms. Hydrate-toi toutes les 20 min.",
@@ -1208,8 +1219,14 @@ function HomeScreen(p){
                       <span style={{fontSize:15,fontWeight:800,color:OR}}>{n.kcal} kcal</span>
                       <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
                     </div>
-                    {isPro&&n.meals.length>0&&(
+                    {(isPro||homeTrial.active)&&n.meals.length>0&&(
                       <div style={{marginTop:10}}>
+                        {!isPro&&homeTrial.active&&(
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"5px 0",marginBottom:6}}>
+                            <span style={{fontSize:10,color:YE,fontWeight:600}}>⏳ Accès essai — {homeTrial.daysLeft} jour{homeTrial.daysLeft>1?"s":""} restant{homeTrial.daysLeft>1?"s":""}</span>
+                            <span onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{fontSize:10,color:OR,fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>Passer Pro</span>
+                          </div>
+                        )}
                         <div style={{display:"flex",flexDirection:"column",gap:0}}>
                           {n.meals.slice(0,3).map(function(m,i){return(
                             <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
@@ -1226,12 +1243,8 @@ function HomeScreen(p){
                             </button>
                             {showRecipes&&(RECIPES[sessType]||[]).map(function(r,ri){return(
                               <div key={ri} style={{marginTop:8,background:SURF2,borderRadius:10,padding:"12px",border:"1px solid "+BORD}}>
-                                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                                  <div>
-                                    <div style={{fontSize:12,fontWeight:700,color:TXT}}>{r.name}</div>
-                                    <div style={{fontSize:10,color:MUT,marginTop:2}}>{r.slot} · {r.time} · {r.kcal} kcal</div>
-                                  </div>
-                                </div>
+                                <div style={{fontSize:12,fontWeight:700,color:TXT,marginBottom:2}}>{r.name}</div>
+                                <div style={{fontSize:10,color:MUT,marginBottom:8}}>{r.slot} · {r.time} · {r.kcal} kcal</div>
                                 <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Ingrédients</div>
                                 <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:8}}>
                                   {r.ingredients.map(function(ing,ii){return(
@@ -1251,6 +1264,12 @@ function HomeScreen(p){
                             );})}
                           </div>
                         )}
+                      </div>
+                    )}
+                    {!isPro&&!homeTrial.active&&(
+                      <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{marginTop:8,padding:"8px 12px",borderRadius:8,background:OR+"10",border:"1px solid "+OR+"30",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:11}}>🔒</span><span style={{fontSize:11,color:MUT}}>Plan repas · Recettes — essai terminé</span></div>
+                        <span style={{fontSize:10,fontWeight:700,color:OR}}>Pro →</span>
                       </div>
                     )}
                   </div>
@@ -1399,6 +1418,8 @@ function SessionCard(p){
             {/* ── NUTRITION + REPAS + RECETTES (accordéon) ── */}
             {(function(){
               var isPro=planLevel(p.profile)>=2;
+              var trial=isPro?{active:true,daysLeft:99}:getRecipesTrial();
+              var canSeeRecipes=isPro||trial.active;
               var totalKcal=n.kcal||0;
               return(
             <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden"}}>
@@ -1406,6 +1427,7 @@ function SessionCard(p){
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:13}}>🥗</span>
                   <span style={{fontSize:12,fontWeight:600,color:TXT}}>Nutrition</span>
+                  {!isPro&&trial.active&&<span style={{fontSize:9,fontWeight:700,color:GR,background:GR+"18",padding:"2px 6px",borderRadius:5}}>Essai {trial.daysLeft}j</span>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <span style={{fontSize:12,fontWeight:700,color:OR}}>{totalKcal} kcal</span>
@@ -1419,14 +1441,23 @@ function SessionCard(p){
                       return <div key={i} style={{flex:1,background:SURF2,borderRadius:8,padding:"7px 4px",textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:2}}>{m.label}</div></div>;
                     })}
                   </div>
-                  {isPro?(
-                    (recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
-                      return <RecipeRow key={ri} row={row}/>;
-                    })
+                  {canSeeRecipes?(
+                    <>
+                      {!isPro&&<div style={{margin:"8px 12px 0",padding:"8px 12px",borderRadius:8,background:YE+"12",border:"1px solid "+YE+"33",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        <span style={{fontSize:11,color:YE,fontWeight:600}}>⏳ Accès gratuit encore {trial.daysLeft} jour{trial.daysLeft>1?"s":""}</span>
+                        <span onClick={function(e){e.stopPropagation();p.onShowPricing&&p.onShowPricing();}} style={{fontSize:10,fontWeight:700,color:OR,cursor:"pointer",textDecoration:"underline"}}>Passer Pro</span>
+                      </div>}
+                      {(recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
+                        return <RecipeRow key={ri} row={row}/>;
+                      })}
+                    </>
                   ):(
-                    <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{margin:"8px 12px 12px",padding:"10px 14px",borderRadius:10,background:OR+"10",border:"1px solid "+OR+"33",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,color:MUT}}>Plan repas · Recettes détaillées</span></div>
-                      <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
+                    <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{margin:"8px 12px 12px",padding:"12px 14px",borderRadius:10,background:OR+"10",border:"1px solid "+OR+"33",cursor:"pointer"}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,fontWeight:600,color:TXT}}>Plan repas · Recettes détaillées</span></div>
+                        <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
+                      </div>
+                      <div style={{fontSize:11,color:MUT}}>Ton essai de {RECIPES_TRIAL_DAYS} jours est terminé. Passe en Pro pour garder l'accès.</div>
                     </div>
                   )}
                 </div>
