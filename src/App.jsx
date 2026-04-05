@@ -3173,7 +3173,7 @@ export default function App(){
       if(perm!=="granted"){showToast("Autorise les notifications dans les paramètres","err");return;}
       var reg=await navigator.serviceWorker.ready;
       var sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
-      await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:user.uid,subscription:sub.toJSON()})});
+      await setDoc(doc(db,"push_subscriptions",user.uid),{uid:user.uid,subscription:sub.toJSON(),updatedAt:Date.now()});
       lsSet("fr_push_enabled",true);setPushEnabled(true);
       showToast("Notifications activées ✓","ok");
       logEvent(analytics,"push_enabled");
@@ -3185,7 +3185,7 @@ export default function App(){
       var reg=await navigator.serviceWorker.ready;
       var sub=await reg.pushManager.getSubscription();
       if(sub)await sub.unsubscribe();
-      if(user)await fetch("/api/subscribe",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:user.uid})});
+      if(user)await deleteDoc(doc(db,"push_subscriptions",user.uid));
       lsSet("fr_push_enabled",false);setPushEnabled(false);
       showToast("Notifications désactivées","ok");
     }catch(e){showToast("Erreur : "+e.message,"err");}
