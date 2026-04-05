@@ -335,7 +335,7 @@ var PLANS=[
       "1 objectif de course",
       "Nutrition du jour (calories et macros)",
       "Journal des séances",
-      "5 messages Coach Intelligence Artificielle par jour",
+      "5 messages Coach IA par jour",
     ],
     cta:"Commencer gratuitement"
   },
@@ -348,7 +348,7 @@ var PLANS=[
       "Plan d'entraînement complet sur toutes les semaines",
       "Journal avec suivi de la fatigue et de l'effort perçu",
       "Nutrition du jour pour toutes tes courses",
-      "30 messages Coach Intelligence Artificielle par jour",
+      "30 messages Coach IA par jour",
       "Import de tracés GPS (Garmin, Polar, Wahoo…)",
     ],
     cta:"Essayer 14 jours gratuit"
@@ -359,7 +359,7 @@ var PLANS=[
     items:[
       "14 jours gratuits, puis 9,99 € par mois :",
       "Tout Essential, plus :",
-      "Coach Intelligence Artificielle illimité 24h sur 24",
+      "Coach IA illimité 24h sur 24",
       "Allures personnalisées et zones d'entraînement",
       "Stratégie de course et temps par kilomètre",
       "Recettes premium et plans repas sur-mesure",
