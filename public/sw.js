@@ -1,4 +1,4 @@
-var CACHE="fuelrun-v1";
+var CACHE="fuelrun-v3";
 var SHELL=["/","index.html","/manifest.json","/icon-192.svg","/icon-512.svg"];
 
 self.addEventListener("install",function(e){
