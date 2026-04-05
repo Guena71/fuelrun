@@ -326,13 +326,15 @@ var RACES=[
 var PLANS=[
   {
     id:"gratuit", name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
-    desc:"Les bases pour débuter et suivre ta première course.",
+    desc:"Commence à t'entraîner, découvre les fonctionnalités.",
     items:[
+      "Essais inclus :",
+      "3 premières semaines de plan offertes",
+      "Recettes & nutrition complète 14 j offerts",
+      "Après l'essai :",
       "1 objectif de course",
-      "Plan d'entraînement basique",
+      "Nutrition du jour (kcal + macros)",
       "Journal des séances",
-      "Nutrition du jour pour ta course (kcal + macros)",
-      "Météo et conseils parcours",
       "5 messages Coach IA / jour",
     ],
     cta:"Commencer gratuitement"
@@ -341,13 +343,13 @@ var PLANS=[
     id:"essential", name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Le suivi complet pour progresser régulièrement.",
     items:[
+      "14 jours gratuits, puis 4,99 €/mois :",
       "Courses et objectifs illimités",
-      "Plans d'entraînement personnalisés",
+      "Plan d'entraînement complet (toutes semaines)",
       "Journal + RPE + suivi fatigue",
-      "Nutrition du jour (kcal + macros) — toutes tes courses",
+      "Nutrition du jour — toutes tes courses",
       "30 messages Coach IA / jour",
       "Import tracés GPX (Garmin, Polar…)",
-      "Météo et conseils parcours",
     ],
     cta:"Essayer 14 j gratuit"
   },
@@ -355,13 +357,13 @@ var PLANS=[
     id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
     desc:"La préparation complète pour performer en compétition.",
     items:[
+      "14 jours gratuits, puis 9,99 €/mois :",
       "Tout Essential, plus :",
       "Coach IA illimité 24h/24",
-      "Allures et zones d'entraînement",
+      "Allures personnalisées & zones d'entraînement",
       "Stratégie de course et splits",
-      "Nutrition complète + plan repas + recettes",
-      "Prédictions de temps et records",
-      "Analyse de performance détaillée",
+      "Recettes premium + plans repas sur-mesure",
+      "Prédictions de temps et analyse de performance",
     ],
     cta:"Essayer 14 j gratuit"
   }
@@ -422,8 +424,9 @@ function UpgradeModal({feature,minPlanLabel,minPlanColor,onClose,onUpgrade}){
       <div style={{background:SURF,borderRadius:22,padding:"32px 24px 24px",width:"100%",maxWidth:360,textAlign:"center",border:"1px solid "+BORD}}>
         <div style={{fontSize:44,marginBottom:14}}>🔒</div>
         <div style={{fontSize:18,fontWeight:800,color:TXT,marginBottom:8}}>{feature}</div>
-        <div style={{fontSize:13,color:SUB,marginBottom:24,lineHeight:1.7}}>Cette fonctionnalité est disponible à partir du plan <span style={{color:col,fontWeight:700}}>{minPlanLabel}</span>.</div>
-        <button onClick={onUpgrade} style={{width:"100%",padding:"14px",borderRadius:12,background:col,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Voir les formules</button>
+        <div style={{fontSize:13,color:SUB,marginBottom:8,lineHeight:1.7}}>Cette fonctionnalité est disponible à partir du plan <span style={{color:col,fontWeight:700}}>{minPlanLabel}</span>.</div>
+        <div style={{fontSize:12,color:col,fontWeight:600,marginBottom:20,padding:"8px 12px",borderRadius:8,background:col+"15",border:"1px solid "+col+"30"}}>14 jours gratuits · Sans carte bancaire</div>
+        <button onClick={onUpgrade} style={{width:"100%",padding:"14px",borderRadius:12,background:col,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Essayer 14 j gratuit</button>
         <button onClick={onClose} style={{width:"100%",padding:"11px",borderRadius:12,background:"transparent",border:"1px solid "+BORD,color:SUB,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Plus tard</button>
       </div>
     </div>
