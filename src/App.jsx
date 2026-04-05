@@ -3,8 +3,8 @@ import L from "leaflet";
 import { auth, db, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase.js";
 
 
-var BG="#0a0a0a",SURF="#161616",SURF2="#1f1f1f",BORD="#2a2a2a";
-var TXT="#f0f0f0",SUB="#888",MUT="#444";
+var BG="#0a0a0a",SURF="#161616",SURF2="#222222",BORD="#383838";
+var TXT="#f0f0f0",SUB="#a0a0a0",MUT="#686868";
 var OR="#FF5A1F",GR="#22C55E",BL="#3B82F6",PU="#A855F7",YE="#F59E0B",RE="#EF4444";
 
 var CSS=[
