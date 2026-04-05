@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
-import { auth, db, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, doc, setDoc, getDoc } from "./firebase.js";
+import { auth, db, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, deleteUser, doc, setDoc, getDoc, deleteDoc } from "./firebase.js";
 
 
 var BG="#0a0a0a",SURF="#161616",SURF2="#222222",BORD="#383838";
@@ -2670,7 +2670,9 @@ function ProfileScreen(p){
   var [vdotTime,setVdotTime]=useState("");
   var [vdotResult,setVdotResult]=useState(null);
   var [showResetModal,setShowResetModal]=useState(false);
+  var [showDeleteModal,setShowDeleteModal]=useState(false);
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
+  var [legalOpen,setLegalOpen]=useState(null);
   var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
   function cycleLevel(){var ids=LEVELS.map(function(l){return l.id;});var cur=p.profile.level||"beginner";var idx=ids.indexOf(cur);var next=ids[(idx+1)%ids.length];p.onUpdate({level:next});if(p.onToast){var lbl=LEVELS.find(function(l){return l.id===next;});p.onToast((lbl?lbl.emoji+" "+lbl.label:"Niveau mis à jour")+" ✓");}}
@@ -2892,7 +2894,13 @@ function ProfileScreen(p){
         {p.user&&<div style={{marginBottom:10,padding:"10px 14px",borderRadius:10,background:SURF2,border:"1px solid "+BORD}}><div style={{fontSize:11,color:MUT,marginBottom:2}}>Connecté avec</div><div style={{fontSize:13,color:TXT,fontWeight:600}}>{p.user.email||p.user.displayName||"Compte Google"}</div></div>}
         <button onClick={p.onSignOut} style={{width:"100%",background:"none",border:"1px solid "+BORD,borderRadius:12,padding:"13px",color:SUB,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Se déconnecter</button>
         <button onClick={p.onNewRace} style={{width:"100%",background:"none",border:"1px solid "+OR+"44",borderRadius:12,padding:"13px",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Changer d'objectif course</button>
-        <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:RE,border:"none",borderRadius:12,padding:"13px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Réinitialiser mon profil</button>
+        <button onClick={function(){setShowResetModal(true);}} style={{width:"100%",background:"none",border:"1px solid "+RE+"44",borderRadius:12,padding:"13px",color:RE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>Réinitialiser mon profil</button>
+        <button onClick={function(){setShowDeleteModal(true);}} style={{width:"100%",background:RE,border:"none",borderRadius:12,padding:"13px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Supprimer mon compte</button>
+        <div style={{textAlign:"center",marginTop:20,marginBottom:4,fontSize:11,color:MUT,lineHeight:1.8}}>
+          <span onClick={function(){setLegalOpen("cgu");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>CGU</span>
+          {"  ·  "}
+          <span onClick={function(){setLegalOpen("confidentialite");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Confidentialité</span>
+        </div>
       </div>
     </div>
 
@@ -2910,7 +2918,21 @@ function ProfileScreen(p){
         </div>
       </div>
     )}
+    {showDeleteModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowDeleteModal(false);}}>
+        <div style={{background:SURF,borderRadius:20,padding:"28px 24px",width:"100%",maxWidth:380,animation:"fadeIn .2s ease"}}>
+          <div style={{fontSize:24,textAlign:"center",marginBottom:12}}>🗑️</div>
+          <div style={{fontSize:18,fontWeight:700,color:TXT,textAlign:"center",marginBottom:8}}>Supprimer mon compte ?</div>
+          <div style={{fontSize:13,color:SUB,textAlign:"center",lineHeight:1.6,marginBottom:24}}>Toutes tes données (profil, plan, séances) seront définitivement effacées. Cette action est irréversible.</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <button onClick={function(){setShowDeleteModal(false);p.onDeleteAccount&&p.onDeleteAccount();}} style={{width:"100%",padding:"14px",borderRadius:12,background:RE,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Oui, supprimer définitivement</button>
+            <button onClick={function(){setShowDeleteModal(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+          </div>
+        </div>
+      </div>
+    )}
     {showVdotUpgrade&&<UpgradeModal feature="Calibrer mes allures" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowVdotUpgrade(false);}} onUpgrade={function(){setShowVdotUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
+    <LegalModal open={legalOpen} onClose={function(){setLegalOpen(null);}}/>
     </>
   );
 }
@@ -3025,6 +3047,14 @@ export default function App(){
     setAuthState("onboarding");
   }
 
+  function handleDeleteAccount(){
+    if(!user)return;
+    var uid=user.uid;
+    deleteDoc(doc(db,"users",uid)).catch(function(){});
+    Object.keys(localStorage).filter(function(k){return k.startsWith("fr_");}).forEach(function(k){localStorage.removeItem(k);});
+    deleteUser(user).catch(function(){signOut(auth);});
+  }
+
   function renderTab(){
     var goPrice=function(){setShowPricing(true);};
     if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});setTab("journal");}} onSignOut={function(){signOut(auth);}}/>;
@@ -3033,7 +3063,7 @@ export default function App(){
     if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
     if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice} preselect={journalPreselect} onClearPreselect={function(){setJournalPreselect(null);}}/>;
     if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
+    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} onDeleteAccount={handleDeleteAccount} user={user} onShowPricing={goPrice} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
     return null;
   }
 
