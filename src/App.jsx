@@ -27,7 +27,7 @@ var CSS=[
 var MONTHS_F=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 var MONTHS_S=["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
 var WDAYS=["L","M","M","J","V","S","D"];
-var TODAY=new Date(2026,2,24);
+var TODAY=new Date(new Date().setHours(0,0,0,0));
 
 function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
 function startOfWeek(d){var r=new Date(d);var day=r.getDay()===0?6:r.getDay()-1;r.setDate(r.getDate()-day);r.setHours(0,0,0,0);return r;}
@@ -881,7 +881,8 @@ function Onboarding(p){
     setSelected(r);setShowCustom(false);setCn("");setCd("");setCdt("");
   }
   var canNext=step===0?!!name.trim():step===1?!!level:true;
-  var allRaces=RACES.concat(custom);
+  var todayStr=new Date().toISOString().slice(0,10);
+  var allRaces=RACES.concat(custom).filter(function(r){return r.date>=todayStr;});
   var filtered=allRaces.filter(function(r){
     if(r.type!==tab)return false;
     if(!search)return true;
