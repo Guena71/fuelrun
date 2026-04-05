@@ -2344,14 +2344,14 @@ function CoachScreen(p){
   var [histLoaded,setHistLoaded]=useState(false);
   var [error,setError]=useState("");
   var [showCoachUpgrade,setShowCoachUpgrade]=useState(false);
-  var bottomRef=useRef(null);
+  var msgsRef=useRef(null);
   var todayKey=new Date().toISOString().slice(0,10);
   var countKey="fr_coach_count_"+todayKey;
   var [dailyCount,setDailyCount]=useState(function(){return ls(countKey,0);});
   var lvl=planLevel(p.profile);
   var maxMsg=lvl>=2?Infinity:lvl>=1?30:5;
   var remaining=maxMsg===Infinity?null:Math.max(0,maxMsg-dailyCount);
-  useEffect(function(){if(bottomRef.current)bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages]);
+  useEffect(function(){if(msgsRef.current)msgsRef.current.scrollTop=msgsRef.current.scrollHeight;},[messages]);
 
   // ── Charger l'historique depuis Firestore au premier rendu ──
   useEffect(function(){
@@ -2416,10 +2416,9 @@ function CoachScreen(p){
         </div>
         {error?<div style={{marginTop:8,fontSize:12,color:RE}}>{error}</div>:null}
       </div>
-      <div style={{flex:1,overflowY:"auto",overflowX:"hidden",padding:"16px 16px 8px"}}>
+      <div ref={msgsRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",padding:"16px 16px 8px"}}>
         {messages.map(function(m,i){var isUser=m.role==="user";return(<div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start",marginBottom:12,gap:8}}>{!isUser?<div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}}>🏃</div>:null}<div style={{maxWidth:"78%",background:isUser?OR:SURF,borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",fontSize:14,color:isUser?"#fff":TXT,lineHeight:1.6,border:isUser?"none":"1px solid "+BORD,wordBreak:"break-word",overflowWrap:"break-word"}}>{m.content}</div></div>);})}
         {loading?(<div style={{display:"flex",gap:8,marginBottom:12}}><div style={{width:28,height:28,borderRadius:"50%",background:OR+"20",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🏃</div><div style={{background:SURF,borderRadius:"16px 16px 16px 4px",padding:"12px 14px",border:"1px solid "+BORD,display:"flex",gap:4}}>{[0,1,2].map(function(i){return <div key={i} style={{width:7,height:7,borderRadius:"50%",background:OR,animation:"pulse 1.2s "+(i*0.2)+"s infinite"}}/>;})}</div></div>):null}
-        <div ref={bottomRef}/>
       </div>
       <div style={{padding:"8px 16px 16px",borderTop:"1px solid "+BORD,flexShrink:0}}>
         {messages.length<=1&&!loading?(
@@ -2455,7 +2454,7 @@ function ProfileScreen(p){
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
   var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
-  function scrollToLevel(){if(levelRef.current)levelRef.current.scrollIntoView({behavior:"smooth",block:"center"});}
+  function cycleLevel(){var ids=LEVELS.map(function(l){return l.id;});var cur=p.profile.level||"beginner";var idx=ids.indexOf(cur);var next=ids[(idx+1)%ids.length];p.onUpdate({level:next});}
   function field(label,key,type,placeholder){
     return(
       <div style={{marginBottom:12}}>
@@ -2477,8 +2476,8 @@ function ProfileScreen(p){
             </div>
             <div>
               <div style={{fontSize:20,fontWeight:700,color:TXT}}>{p.profile.name||"Coureur"}</div>
-              <div onClick={scrollToLevel} style={{fontSize:13,color:OR,marginTop:4,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:OR+"15",border:"1px solid "+OR+"33"}}>
-                {LEVEL_LABELS[p.profile.level]||""} <span style={{fontSize:10}}>✎</span>
+              <div onClick={cycleLevel} style={{fontSize:13,color:OR,marginTop:4,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:OR+"15",border:"1px solid "+OR+"33"}}>
+                {LEVEL_LABELS[p.profile.level]||""} <span style={{fontSize:10}}>↻</span>
               </div>
             </div>
           </div>
@@ -2777,8 +2776,6 @@ export default function App(){
     if(hour>=7&&hour<=10){lsSet("fr_last_notif",todayStr);new Notification("FuelRun",{body:"Consulte ton plan et prépare ta séance du jour !",icon:"/favicon.svg"});}
   },[profile]);
 
-  var scrollContainerRef=useRef(null);
-  useEffect(function(){if(scrollContainerRef.current)scrollContainerRef.current.scrollTop=0;},[tab]);
 
   if(authState==="loading")return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2825,7 +2822,7 @@ export default function App(){
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <style>{CSS}</style>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div ref={scrollContainerRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
+        <div key={tab} style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
         <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
           {NAV.map(function(n){var active=tab===n.id;var color=active?OR:MUT;return(
             <button key={n.id} onClick={function(){setTab(n.id);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
