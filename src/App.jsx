@@ -730,66 +730,23 @@ function LogoBar(p){
 }
 
 
-var TESTIMONIALS=[
-  {name:"Sophie M.",level:"Semi-marathon",text:"J'ai amélioré mon chrono de 12 min en 8 semaines. Le plan est vraiment adapté à mon niveau.",stars:5},
-  {name:"Thomas R.",level:"Marathon",text:"Le Coach IA répond à toutes mes questions à 23h avant une sortie longue. Indispensable.",stars:5},
-  {name:"Camille D.",level:"10 km",text:"Les recettes sont délicieuses et vraiment adaptées à l'effort. Je mange mieux et je cours mieux.",stars:5},
-];
-
-function StarRow({n}){
-  return <div style={{display:"flex",gap:2,justifyContent:"center",marginBottom:6}}>{[1,2,3,4,5].map(function(i){return <span key={i} style={{fontSize:13,color:i<=n?YE:BORD}}>★</span>;})}</div>;
-}
-
 function HeroScreen(p){
-  var [slide,setSlide]=useState(0);
-  useEffect(function(){var t=setInterval(function(){setSlide(function(s){return(s+1)%TESTIMONIALS.length;});},3500);return function(){clearInterval(t);};},[]);
-  var t=TESTIMONIALS[slide];
   return(
-    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
+    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
       <style>{CSS}</style>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:14,paddingTop:40}}>
-        <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={140}/></div>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40}}>
+        <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={160}/></div>
         <div style={{fontSize:38,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</div>
-        <div style={{fontSize:15,color:SUB,maxWidth:280,lineHeight:1.8}}>Ton coach running IA personnel</div>
-
-        {/* Stats */}
-        <div style={{display:"flex",gap:16,marginTop:4}}>
-          {[["3 200+","coureurs"],["4,8 ★","note moyenne"],["14 j","essai gratuit"]].map(function(s,i){
-            return(
-              <div key={i} style={{textAlign:"center"}}>
-                <div style={{fontSize:17,fontWeight:800,color:OR}}>{s[0]}</div>
-                <div style={{fontSize:10,color:MUT,marginTop:1}}>{s[1]}</div>
-              </div>
-            );
-          })}
+        <div style={{fontSize:16,color:SUB,maxWidth:280,lineHeight:1.8}}>Entraînement · Nutrition · Performance</div>
+        <div style={{padding:"12px 20px",background:OR+"12",borderRadius:12,border:"1px solid "+OR+"30",maxWidth:320}}>
+          <div style={{fontSize:14,color:OR,fontWeight:600,fontStyle:"italic"}}>Pas besoin d'être rapide, l'important est de commencer !</div>
         </div>
-
-        {/* Témoignage rotatif */}
-        <div style={{width:"100%",maxWidth:340,background:SURF2,border:"1px solid "+BORD,borderRadius:16,padding:"16px 18px",minHeight:110,display:"flex",flexDirection:"column",justifyContent:"center"}}>
-          <StarRow n={t.stars}/>
-          <div style={{fontSize:13,color:TXT,lineHeight:1.6,fontStyle:"italic",marginBottom:8}}>"{t.text}"</div>
-          <div style={{fontSize:11,color:MUT}}>{t.name} · {t.level}</div>
-        </div>
-        <div style={{display:"flex",gap:6}}>{TESTIMONIALS.map(function(_,i){return <div key={i} style={{width:i===slide?16:6,height:6,borderRadius:3,background:i===slide?OR:BORD,transition:"width .3s"}}/>; })}</div>
-
-        {/* Features rapides */}
-        <div style={{width:"100%",maxWidth:340,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          {[["🏃","Plan personnalisé"],["🧠","Coach IA 24h/24"],["🥗","Recettes sport"],["📊","Suivi de progression"]].map(function(f,i){
-            return(
-              <div key={i} style={{background:SURF2,border:"1px solid "+BORD,borderRadius:12,padding:"10px 12px",display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:18}}>{f[0]}</span>
-                <span style={{fontSize:12,color:SUB,fontWeight:500}}>{f[1]}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div style={{marginTop:8,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
-          <Btn label="Commencer gratuitement" onClick={p.onCommencer} size="lg" full/>
+        <div style={{marginTop:24,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
+          <Btn label="Commencer" onClick={p.onCommencer} size="lg" full/>
           <Btn label="J'ai déjà un compte" onClick={p.onLogin} variant="ghost" size="md" full/>
         </div>
       </div>
-      <div style={{textAlign:"center",fontSize:11,color:MUT,marginTop:16}}>En continuant, vous acceptez les conditions d'utilisation.</div>
+      <div style={{textAlign:"center",fontSize:11,color:MUT}}>En continuant, vous acceptez les conditions d'utilisation.</div>
     </div>
   );
 }
