@@ -300,6 +300,8 @@ export default function App(){
             }/>
             <Route path="/suivi" element={
               <SuiviScreen profile={profile} race={race} stats={stats} entries={entries}
+                stravaProfile={stravaProfile}
+                onStravaSync={syncStrava}
                 onSetEntries={setEntries}
                 onAddSession={addSession}
                 onOpenJournal={function(){navigate("/journal");}}

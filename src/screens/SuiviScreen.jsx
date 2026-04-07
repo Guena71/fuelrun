@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SURF2, BORD, MUT, OR, GR, BL } from "../data/constants.js";
+import { stravaAuthUrl } from "../utils/strava.js";
 import { weeksUntil, fmtDate, fmtPaceSec } from "../utils/date.js";
 import { planLevel } from "../utils/nutrition.js";
 import { parseGpx, calcTrackKm, RunMap } from "../components/gps.jsx";
@@ -160,6 +161,33 @@ export function SuiviScreen(p){
             </div>
           );
         })()}
+
+        {!p.stravaProfile?(
+          <a href={stravaAuthUrl()}
+            className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl mb-3.5 no-underline"
+            style={{background:"#FC4C02",border:"none"}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+            <div className="flex-1">
+              <div className="text-[14px] font-bold text-white">Connecter Strava</div>
+              <div className="text-[11px]" style={{color:"rgba(255,255,255,0.8)"}}>Importe tes courses automatiquement</div>
+            </div>
+            <div className="text-white text-[18px]">›</div>
+          </a>
+        ):(
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl mb-3.5 bg-surf border border-bord">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:"#FC4C02"}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-[12px] font-semibold text-txt">Strava connecté{p.stravaProfile.athleteName?" · "+p.stravaProfile.athleteName:""}</div>
+            </div>
+            <button onClick={p.onStravaSync}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-bold border-none cursor-pointer font-[inherit]"
+              style={{background:"#FC4C02"+"22",color:"#FC4C02"}}>
+              🔄 Sync
+            </button>
+          </div>
+        )}
 
         <div className="bg-surf border border-bord rounded-2xl overflow-hidden mb-3.5">
           <div className="px-4 py-3.5 border-b border-bord flex justify-between items-center">
