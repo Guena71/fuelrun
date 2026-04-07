@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
 import { BG, SURF, BORD, OR, GR, RE, CSS } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
@@ -18,11 +19,11 @@ import { CoachScreen } from "./screens/CoachScreen.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
 
 var NAV=[
-  {id:"home",     label:"Accueil", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 3l9 8v9a1 1 0 01-1 1h-5v-5h-6v5H4a1 1 0 01-1-1v-9z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/></svg>;}},
-  {id:"courses",  label:"Courses", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.7 2 6 4.7 6 8c0 5.3 6 13 6 13s6-7.7 6-13c0-3.3-2.7-6-6-6z" stroke={c} strokeWidth="1.8"/><circle cx="12" cy="8" r="2" stroke={c} strokeWidth="1.8"/></svg>;}},
-  {id:"training", label:"Plan",    icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke={c} strokeWidth="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>;}},
-  {id:"suivi",    label:"Suivi",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;}},
-  {id:"coach",    label:"Coach",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 2H4a1 1 0 00-1 1v12a1 1 0 001 1h3l3 4 3-4h7a1 1 0 001-1V3a1 1 0 00-1-1z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="9" cy="9" r="1" fill={c}/><circle cx="12" cy="9" r="1" fill={c}/><circle cx="15" cy="9" r="1" fill={c}/></svg>;}},
+  {path:"/home",     label:"Accueil", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 3l9 8v9a1 1 0 01-1 1h-5v-5h-6v5H4a1 1 0 01-1-1v-9z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/></svg>;}},
+  {path:"/courses",  label:"Courses", icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.7 2 6 4.7 6 8c0 5.3 6 13 6 13s6-7.7 6-13c0-3.3-2.7-6-6-6z" stroke={c} strokeWidth="1.8"/><circle cx="12" cy="8" r="2" stroke={c} strokeWidth="1.8"/></svg>;}},
+  {path:"/training", label:"Plan",    icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke={c} strokeWidth="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>;}},
+  {path:"/suivi",    label:"Suivi",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;}},
+  {path:"/coach",    label:"Coach",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 2H4a1 1 0 00-1 1v12a1 1 0 001 1h3l3 4 3-4h7a1 1 0 001-1V3a1 1 0 00-1-1z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="9" cy="9" r="1" fill={c}/><circle cx="12" cy="9" r="1" fill={c}/><circle cx="15" cy="9" r="1" fill={c}/></svg>;}},
 ];
 
 function Splash(){
@@ -33,11 +34,12 @@ function Splash(){
 }
 
 export default function App(){
+  var navigate=useNavigate();
+  var location=useLocation();
   var [authState,setAuthState]=useState("loading");
   var [user,setUser]=useState(null);
   var [profile,setProfileRaw]=useState(null);
   var [race,setRaceRaw]=useState(null);
-  var [tab,setTab]=useState("home");
   var [stats,setStatsRaw]=useState({sessions:0,km:0,streak:0});
   var today=new Date().toISOString().slice(0,10);
   var [wellbeing,setWellbeingRaw]=useState(null);
@@ -49,6 +51,7 @@ export default function App(){
   var [toast,setToast]=useState(null);
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
 
+  // Stripe return URL handling
   useEffect(function(){
     var params=new URLSearchParams(window.location.search);
     var checkout=params.get("checkout");
@@ -56,10 +59,10 @@ export default function App(){
       var plan=params.get("plan")||"pro";
       showToast("Abonnement "+plan+" activé — 14 jours gratuits !","ok");
       logEvent(analytics,"purchase",{plan:plan});
-      window.history.replaceState({},"",window.location.pathname);
+      navigate(location.pathname,{replace:true});
     }
     if(checkout==="cancel"){
-      window.history.replaceState({},"",window.location.pathname);
+      navigate(location.pathname,{replace:true});
     }
   },[]);
 
@@ -113,9 +116,9 @@ export default function App(){
   var VAPID_PUBLIC_KEY="BDnhMkrmir_7UMOVXnPOeMYv_e4h5lrvKLmb-I9VJyMUZPZDm7x9g1fqhFNZj7-csn6jAV6LuzCfJwRSpdLtO7k";
   var [pushEnabled,setPushEnabled]=useState(ls("fr_push_enabled",false));
 
-  function urlBase64ToUint8Array(base64String){
-    var padding="=".repeat((4-base64String.length%4)%4);
-    var base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  function urlBase64ToUint8Array(b64){
+    var padding="=".repeat((4-b64.length%4)%4);
+    var base64=(b64+padding).replace(/-/g,"+").replace(/_/g,"/");
     var raw=window.atob(base64);
     var arr=new Uint8Array(raw.length);
     for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);
@@ -147,6 +150,7 @@ export default function App(){
     }catch(e){showToast("Erreur : "+e.message,"err");}
   }
 
+  // ── Loading ──
   if(authState==="loading")return(
     <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
       <style>{CSS}</style>
@@ -163,7 +167,8 @@ export default function App(){
     var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek,plan:ls("fr_pending_plan","gratuit")};
     setProfile(prof);setRace(d.race);
     if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
-    setAuthState("app");if(d.race)setTab("training");
+    setAuthState("app");
+    navigate(d.race?"/training":"/home",{replace:true});
     if(!ls("fr_guide_done",false))setTimeout(function(){setShowGuide(true);},800);
   }}/>;}
 
@@ -172,7 +177,6 @@ export default function App(){
   function handleReset(){
     if(user)fsSave(user.uid,{profile:null,race:null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
     setProfileRaw(null);setRaceRaw(null);setStatsRaw({sessions:0,km:0,streak:0});
-    setTab("home");
     setAuthState("onboarding");
   }
 
@@ -185,46 +189,112 @@ export default function App(){
   }
 
   var goPrice=function(){setShowPricing(true);};
-
-  function renderTab(){
-    if(tab==="home")     return <HomeScreen profile={profile} race={race} stats={stats} onCheckin={function(){setShowCheckin(true);}} wellbeing={wellbeing} onShowPricing={goPrice} onGoToProfile={function(){setTab("profile");}} onReset={handleReset} entries={entries} onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});setTab("journal");}} onSignOut={function(){signOut(auth);}}/>;
-    if(tab==="training") return <TrainingScreen profile={profile} race={race} setRace={setRace} onGoToCourses={function(){setTab("courses");}} onShowPricing={goPrice}/>;
-    if(tab==="courses")  return <CoursesScreen profile={profile} race={race} setRace={function(r){setRace(r);if(r)setTimeout(function(){setTab("training");},300);}} onAddCustom={function(r){setRace(r);}}/>;
-    if(tab==="suivi")    return <SuiviScreen profile={profile} race={race} stats={stats} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onOpenJournal={function(){setTab("journal");}} onShowPricing={goPrice}/>;
-    if(tab==="journal")  return <JournalScreen race={race} profile={profile} entries={entries} onSetEntries={setEntries} onAddSession={addSession} onShowPricing={goPrice} preselect={journalPreselect} onClearPreselect={function(){setJournalPreselect(null);}}/>;
-    if(tab==="coach")    return <CoachScreen profile={profile} race={race} user={user} onShowPricing={goPrice} entries={entries} wellbeing={wellbeing}/>;
-    if(tab==="profile")  return <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} onBack={function(){setTab("home");}} onToast={showToast} onUpdate={function(form){var updated=Object.assign({},profile,form);setProfile(updated);}} onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});setTab("courses");}} onReset={handleReset} onSignOut={function(){signOut(auth);}} onDeleteAccount={handleDeleteAccount} user={user} onShowPricing={goPrice} pushEnabled={pushEnabled} onEnablePush={enablePush} onDisablePush={disablePush} onImport={function(data){setProfile(data.profile);if(data.race)setRace(data.race);if(data.stats)setStatsRaw(data.stats);if(data.entries)setEntries(data.entries);if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});showToast("Import réussi ✓","ok");}} onSaveError={function(msg){showToast(msg,"err");}}/>;
-    return null;
-  }
+  var curPath=location.pathname;
 
   return(
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <style>{CSS}</style>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div key={tab} style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>{renderTab()}</div>
-        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
-          {NAV.map(function(n){var active=tab===n.id;var color=active?OR:"#686868";return(
-            <button key={n.id} onClick={function(){setTab(n.id);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
-              {n.icon(color)}
-              <span style={{fontSize:9,fontWeight:active?600:400,color:color,letterSpacing:0.2}}>{n.label}</span>
-              {active?<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,background:OR,borderRadius:"0 0 3px 3px"}}/>:null}
-            </button>
-          );})}
+        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/home" replace/>}/>
+            <Route path="/home" element={
+              <HomeScreen profile={profile} race={race} stats={stats} entries={entries} wellbeing={wellbeing}
+                onCheckin={function(){setShowCheckin(true);}}
+                onShowPricing={goPrice}
+                onGoToProfile={function(){navigate("/profile");}}
+                onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});navigate("/journal");}}
+                onSignOut={function(){signOut(auth);}}
+              />
+            }/>
+            <Route path="/courses" element={
+              <CoursesScreen profile={profile} race={race}
+                setRace={function(r){setRace(r);if(r)setTimeout(function(){navigate("/training");},300);}}
+                onAddCustom={function(r){setRace(r);}}
+              />
+            }/>
+            <Route path="/training" element={
+              <TrainingScreen profile={profile} race={race} setRace={setRace}
+                onGoToCourses={function(){navigate("/courses");}}
+                onShowPricing={goPrice}
+              />
+            }/>
+            <Route path="/suivi" element={
+              <SuiviScreen profile={profile} race={race} stats={stats} entries={entries}
+                onSetEntries={setEntries}
+                onAddSession={addSession}
+                onOpenJournal={function(){navigate("/journal");}}
+                onShowPricing={goPrice}
+              />
+            }/>
+            <Route path="/journal" element={
+              <JournalScreen race={race} profile={profile} entries={entries}
+                onSetEntries={setEntries}
+                onAddSession={addSession}
+                onShowPricing={goPrice}
+                preselect={journalPreselect}
+                onClearPreselect={function(){setJournalPreselect(null);}}
+              />
+            }/>
+            <Route path="/coach" element={
+              <CoachScreen profile={profile} race={race} user={user} entries={entries} wellbeing={wellbeing}
+                onShowPricing={goPrice}
+              />
+            }/>
+            <Route path="/profile" element={
+              <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} user={user}
+                pushEnabled={pushEnabled}
+                onBack={function(){navigate("/home");}}
+                onToast={showToast}
+                onUpdate={function(form){setProfile(Object.assign({},profile,form));}}
+                onNewRace={function(){setRace(null);if(user)fsSave(user.uid,{race:null});navigate("/courses");}}
+                onReset={handleReset}
+                onSignOut={function(){signOut(auth);}}
+                onDeleteAccount={handleDeleteAccount}
+                onShowPricing={goPrice}
+                onEnablePush={enablePush}
+                onDisablePush={disablePush}
+                onImport={function(data){
+                  setProfile(data.profile);
+                  if(data.race)setRace(data.race);
+                  if(data.stats)setStatsRaw(data.stats);
+                  if(data.entries)setEntries(data.entries);
+                  if(user)fsSave(user.uid,{profile:data.profile,race:data.race||null,stats:data.stats||{sessions:0,km:0,streak:0},entries:data.entries||{}});
+                  showToast("Import réussi ✓","ok");
+                }}
+                onSaveError={function(msg){showToast(msg,"err");}}
+              />
+            }/>
+            <Route path="*" element={<Navigate to="/home" replace/>}/>
+          </Routes>
         </div>
+
+        {/* ── Bottom nav bar (visible uniquement sur les routes principales) ── */}
+        {NAV.some(function(n){return n.path===curPath;})&&(
+          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
+            {NAV.map(function(n){var active=curPath===n.path;var color=active?OR:"#686868";return(
+              <button key={n.path} onClick={function(){navigate(n.path);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
+                {n.icon(color)}
+                <span style={{fontSize:9,fontWeight:active?600:400,color:color,letterSpacing:0.2}}>{n.label}</span>
+                {active?<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,background:OR,borderRadius:"0 0 3px 3px"}}/>:null}
+              </button>
+            );})}
+          </div>
+        )}
       </div>
+
       {showPricing&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:450,overflowY:"auto"}}>
           <PricingScreen user={user} onClose={function(){setShowPricing(false);}} onStart={function(){
             var chosen=ls("fr_pending_plan","gratuit");
-            var updated=Object.assign({},profile,{plan:chosen});
-            setProfile(updated);
+            setProfile(Object.assign({},profile,{plan:chosen}));
             setShowPricing(false);
             showToast("Formule mise à jour ✓","ok");
           }}/>
         </div>
       )}
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
-      {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(t){setTab(t);}}/>:null}
+      {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(path){navigate(path);}}/>:null}
       {toast&&(
         <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",zIndex:600,pointerEvents:"none",width:"calc(100% - 48px)",maxWidth:382}}>
           <div style={{background:toast.type==="err"?RE:GR,color:"#fff",borderRadius:12,padding:"12px 18px",fontSize:13,fontWeight:600,textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,.4)",animation:"slideUp .25s ease"}}>
