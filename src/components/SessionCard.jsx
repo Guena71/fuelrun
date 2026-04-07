@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
+import { SURF2, BORD, TXT, MUT, OR, GR, BL, YE } from "../data/constants.js";
 import { RECIPES } from "../data/meals.js";
 import { TYPE_COLORS } from "../data/training.js";
 import { calcNutrition, planLevel, getRecipesTrial, RECIPES_TRIAL_DAYS } from "../utils/nutrition.js";
@@ -11,21 +11,37 @@ function RecipeRow(p){
   var r=p.row;
   var [open,setOpen]=useState(false);
   return(
-    <div style={{borderTop:"1px solid "+BORD}}>
-      <div onClick={r.ingredients?function(){setOpen(!open);}:undefined} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 14px",cursor:r.ingredients?"pointer":"default"}}>
-        <div style={{fontSize:11,fontWeight:700,color:OR,width:68,flexShrink:0}}>{r.slot}</div>
-        <div style={{flex:1,fontSize:12,fontWeight:500,color:TXT}}>{r.name}</div>
-        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-          <span style={{fontSize:11,color:MUT}}>{r.kcal} kcal</span>
-          {r.ingredients?<div style={{width:20,height:20,borderRadius:6,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:SUB,transform:open?"rotate(180deg)":"rotate(0deg)",flexShrink:0}}>▼</div>:null}
+    <div className="border-t border-bord">
+      <div onClick={r.ingredients?function(){setOpen(!open);}:undefined}
+        className="flex items-center gap-2.5 px-3.5 py-[9px]"
+        style={{cursor:r.ingredients?"pointer":"default"}}>
+        <div className="text-[11px] font-bold text-brand w-[68px] shrink-0">{r.slot}</div>
+        <div className="flex-1 text-[12px] font-medium text-txt">{r.name}</div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] text-mut">{r.kcal} kcal</span>
+          {r.ingredients&&(
+            <div className="w-5 h-5 rounded-[6px] bg-surf2 border border-bord flex items-center justify-center text-[9px] text-sub shrink-0"
+              style={{transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
+          )}
         </div>
       </div>
       {open&&r.ingredients&&(
-        <div style={{padding:"0 14px 10px",borderTop:"1px solid "+BORD}}>
-          <div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6,marginTop:8}}>Ingrédients</div>
-          {r.ingredients.map(function(ing,i){return(<div key={i} style={{display:"flex",gap:6,paddingBottom:3}}><div style={{width:4,height:4,borderRadius:"50%",background:OR,flexShrink:0,marginTop:5}}/><span style={{fontSize:12,color:TXT}}>{ing}</span></div>);})}
-          {r.steps&&<div style={{fontSize:10,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6,marginTop:8}}>Préparation</div>}
-          {r.steps&&r.steps.map(function(st,i){return(<div key={i} style={{display:"flex",gap:8,marginBottom:4}}><div style={{width:16,height:16,borderRadius:"50%",background:OR+"22",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:OR,flexShrink:0}}>{i+1}</div><span style={{fontSize:12,color:SUB,lineHeight:1.5}}>{st}</span></div>);})}
+        <div className="px-3.5 pb-2.5 border-t border-bord">
+          <div className="text-[10px] text-mut font-bold uppercase tracking-[0.5px] mb-1.5 mt-2">Ingrédients</div>
+          {r.ingredients.map(function(ing,i){return(
+            <div key={i} className="flex gap-1.5 pb-[3px]">
+              <div className="w-1 h-1 rounded-full bg-brand shrink-0 mt-[5px]"/>
+              <span className="text-[12px] text-txt">{ing}</span>
+            </div>
+          );})}
+          {r.steps&&<div className="text-[10px] text-mut font-bold uppercase tracking-[0.5px] mb-1.5 mt-2">Préparation</div>}
+          {r.steps&&r.steps.map(function(st,i){return(
+            <div key={i} className="flex gap-2 mb-1">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0"
+                style={{background:OR+"22",border:"1px solid "+OR+"44",color:OR}}>{i+1}</div>
+              <span className="text-[12px] text-sub leading-snug">{st}</span>
+            </div>
+          );})}
         </div>
       )}
     </div>
@@ -44,39 +60,50 @@ export function SessionCard(p){
   var recipes=RECIPES[s.type]||[];
   var isPast=s.date&&s.date<new Date(new Date().setHours(0,0,0,0));
   return(
-    <Card style={{marginBottom:10,border:done?"1.5px solid "+GR:p.isNext?"1.5px solid "+sc:"1px solid "+BORD,opacity:(isPast&&!done)?0.5:1}}>
+    <Card style={{
+      marginBottom:10,
+      border:done?"1.5px solid "+GR:p.isNext?"1.5px solid "+sc:"1px solid "+BORD,
+      opacity:(isPast&&!done)?0.5:1
+    }}>
       {p.isNext&&(
-        <div style={{background:"linear-gradient(90deg,"+sc+"cc,"+sc+"88)",padding:"5px 14px",display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:10}}>⚡</span>
-          <span style={{fontSize:10,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:0.8}}>Prochaine séance</span>
+        <div className="flex items-center gap-1.5 px-3.5 py-[5px]"
+          style={{background:"linear-gradient(90deg,"+sc+"cc,"+sc+"88)"}}>
+          <span className="text-[10px]">⚡</span>
+          <span className="text-[10px] font-bold text-white uppercase tracking-[0.8px]">Prochaine séance</span>
         </div>
       )}
-      <div style={{padding:"14px 16px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
-          <div style={{width:44,height:44,borderRadius:11,background:sc+(p.isNext?"44":"20"),border:"1px solid "+sc+"44",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <div style={{fontSize:9,color:sc,fontWeight:700}}>{s.dayLabel}</div>
-            <div style={{fontSize:9,color:sc}}>{s.date?s.date.getDate()+"/"+(s.date.getMonth()+1):""}</div>
+      <div className="px-4 py-3.5">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={function(){setOpen(!open);}}>
+          <div className="w-11 h-11 rounded-[11px] flex flex-col items-center justify-center shrink-0"
+            style={{background:sc+(p.isNext?"44":"20"),border:"1px solid "+sc+"44"}}>
+            <div className="text-[9px] font-bold" style={{color:sc}}>{s.dayLabel}</div>
+            <div className="text-[9px]" style={{color:sc}}>{s.date?s.date.getDate()+"/"+(s.date.getMonth()+1):""}</div>
           </div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:p.isNext?700:600,color:p.isNext?sc:TXT,marginBottom:3}}>{s.label}</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {s.type!=="race"?<span style={{fontSize:12,color:SUB}}>{s.km} km</span>:null}
-              {s.pace?<span style={{fontSize:12,color:SUB}}>· {s.pace}/km</span>:null}
-              {(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}
+          <div className="flex-1">
+            <div className="text-sm font-semibold mb-[3px]" style={{fontWeight:p.isNext?700:600,color:p.isNext?sc:TXT}}>{s.label}</div>
+            <div className="flex gap-2 flex-wrap">
+              {s.type!=="race"&&<span className="text-[12px] text-sub">{s.km} km</span>}
+              {s.pace&&<span className="text-[12px] text-sub">· {s.pace}/km</span>}
+              {s.type!=="race"&&s.pace&&<span className="text-[12px] font-semibold" style={{color:sc}}>· {durStr(s.pace,s.km)}</span>}
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-            <button onClick={toggleDone} style={{width:28,height:28,borderRadius:8,background:done?GR+"22":SURF2,border:"1px solid "+(done?GR:BORD),display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:done?GR:MUT}}>{done?"✓":"○"}</button>
-            <div style={{width:24,height:24,borderRadius:8,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:SUB,transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={toggleDone}
+              className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer text-[12px]"
+              style={{background:done?GR+"22":SURF2,border:"1px solid "+(done?GR:BORD),color:done?GR:MUT}}>
+              {done?"✓":"○"}
+            </button>
+            <div className="w-6 h-6 rounded-lg bg-surf2 border border-bord flex items-center justify-center text-[10px] text-sub"
+              style={{transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
           </div>
         </div>
 
         {open&&(
-          <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid "+BORD}}>
+          <div className="mt-3 pt-3 border-t border-bord">
             {s.desc&&(
-              <div style={{background:sc+"10",border:"1px solid "+sc+"25",borderRadius:12,padding:"12px 14px",marginBottom:12}}>
-                <div style={{fontSize:10,color:sc,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>Consignes</div>
-                <div style={{fontSize:13,color:TXT,lineHeight:1.7}}>{s.desc}</div>
+              <div className="rounded-xl px-3.5 py-3 mb-3" style={{background:sc+"10",border:"1px solid "+sc+"25"}}>
+                <div className="text-[10px] font-bold uppercase tracking-[0.8px] mb-1.5" style={{color:sc}}>Consignes</div>
+                <div className="text-[13px] text-txt leading-relaxed">{s.desc}</div>
               </div>
             )}
             {(function(){
@@ -85,42 +112,63 @@ export function SessionCard(p){
               var canSeeRecipes=isPro||trial.active;
               var totalKcal=n.kcal||0;
               return(
-                <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden"}}>
-                  <div onClick={function(){setNutOpen(!nutOpen);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2,cursor:"pointer"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontSize:13}}>🥗</span>
-                      <span style={{fontSize:12,fontWeight:600,color:TXT}}>Nutrition</span>
-                      {!isPro&&trial.active&&<span style={{fontSize:9,fontWeight:700,color:GR,background:GR+"18",padding:"2px 6px",borderRadius:5}}>Essai {trial.daysLeft}j</span>}
+                <div className="rounded-xl border border-bord overflow-hidden">
+                  <div onClick={function(){setNutOpen(!nutOpen);}}
+                    className="flex items-center justify-between px-3.5 py-2.5 bg-surf2 cursor-pointer">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[13px]">🥗</span>
+                      <span className="text-[12px] font-semibold text-txt">Nutrition</span>
+                      {!isPro&&trial.active&&(
+                        <span className="text-[9px] font-bold text-success px-1.5 py-0.5 rounded-[5px]"
+                          style={{background:GR+"18"}}>Essai {trial.daysLeft}j</span>
+                      )}
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:12,fontWeight:700,color:OR}}>{totalKcal} kcal</span>
-                      <div style={{width:22,height:22,borderRadius:7,background:"#0a0a0a",border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:SUB,transform:nutOpen?"rotate(180deg)":"rotate(0deg)",flexShrink:0}}>▼</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-bold text-brand">{totalKcal} kcal</span>
+                      <div className="w-[22px] h-[22px] rounded-[7px] bg-bg border border-bord flex items-center justify-center text-[9px] text-sub shrink-0"
+                        style={{transform:nutOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
                     </div>
                   </div>
                   {nutOpen&&(
                     <div>
-                      <div style={{display:"flex",gap:6,padding:"10px 12px",borderTop:"1px solid "+BORD}}>
+                      <div className="flex gap-1.5 px-3 py-2.5 border-t border-bord">
                         {[{label:"Glucides",value:n.carbs+"g",color:BL},{label:"Protéines",value:n.prot+"g",color:GR},{label:"Lipides",value:n.fat+"g",color:YE}].map(function(m,i){
-                          return <div key={i} style={{flex:1,background:SURF2,borderRadius:8,padding:"7px 4px",textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:2}}>{m.label}</div></div>;
+                          return(
+                            <div key={i} className="flex-1 bg-surf2 rounded-lg py-[7px] px-1 text-center">
+                              <div className="text-[13px] font-bold" style={{color:m.color}}>{m.value}</div>
+                              <div className="text-[9px] text-mut mt-0.5">{m.label}</div>
+                            </div>
+                          );
                         })}
                       </div>
                       {canSeeRecipes?(
                         <>
-                          {!isPro&&<div style={{margin:"8px 12px 0",padding:"8px 12px",borderRadius:8,background:YE+"12",border:"1px solid "+YE+"33",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                            <span style={{fontSize:11,color:YE,fontWeight:600}}>⏳ Accès gratuit encore {trial.daysLeft} jour{trial.daysLeft>1?"s":""}</span>
-                            <span onClick={function(e){e.stopPropagation();p.onShowPricing&&p.onShowPricing();}} style={{fontSize:10,fontWeight:700,color:OR,cursor:"pointer",textDecoration:"underline"}}>Passer Pro</span>
-                          </div>}
-                          {(recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
-                            return <RecipeRow key={ri} row={row}/>;
-                          })}
+                          {!isPro&&(
+                            <div className="mx-3 mt-2 px-3 py-2 rounded-lg flex items-center justify-between"
+                              style={{background:YE+"12",border:"1px solid "+YE+"33"}}>
+                              <span className="text-[11px] font-semibold" style={{color:YE}}>⏳ Accès gratuit encore {trial.daysLeft} jour{trial.daysLeft>1?"s":""}</span>
+                              <span onClick={function(e){e.stopPropagation();p.onShowPricing&&p.onShowPricing();}}
+                                className="text-[10px] font-bold text-brand cursor-pointer underline">Passer Pro</span>
+                            </div>
+                          )}
+                          {(recipes.length>0
+                            ?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};})
+                            :n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})
+                          ).map(function(row,ri){return <RecipeRow key={ri} row={row}/>;}) }
                         </>
                       ):(
-                        <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{margin:"8px 12px 12px",padding:"12px 14px",borderRadius:10,background:OR+"10",border:"1px solid "+OR+"33",cursor:"pointer"}}>
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                            <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:13}}>🔒</span><span style={{fontSize:12,fontWeight:600,color:TXT}}>Plan repas · Recettes détaillées</span></div>
-                            <span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Pro →</span>
+                        <div onClick={function(){p.onShowPricing&&p.onShowPricing();}}
+                          className="mx-3 my-2 px-3.5 py-3 rounded-[10px] cursor-pointer"
+                          style={{background:OR+"10",border:"1px solid "+OR+"33"}}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[13px]">🔒</span>
+                              <span className="text-[12px] font-semibold text-txt">Plan repas · Recettes détaillées</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-brand px-2 py-[2px] rounded-[6px]"
+                              style={{background:OR+"18"}}>Pro →</span>
                           </div>
-                          <div style={{fontSize:11,color:MUT}}>Ton essai de {RECIPES_TRIAL_DAYS} jours est terminé. Passe en Pro pour garder l'accès.</div>
+                          <div className="text-[11px] text-mut">Ton essai de {RECIPES_TRIAL_DAYS} jours est terminé. Passe en Pro pour garder l'accès.</div>
                         </div>
                       )}
                     </div>

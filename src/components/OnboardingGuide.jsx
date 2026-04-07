@@ -15,23 +15,31 @@ export function OnboardingGuide(p){
   var current=GUIDE_STEPS[step];
   var tabIndex=NAV_IDS.indexOf(current.tab);
   var tabPct=tabIndex>=0?(tabIndex+0.5)/NAV_IDS.length*100:50;
-  function next(){if(step<GUIDE_STEPS.length-1){setStep(step+1);p.onTab(GUIDE_STEPS[step+1].tab);}else{p.onDone();}}
+  function next(){if(step<GUIDE_STEPS.length-1){setStep(step+1);p.onTab("/"+GUIDE_STEPS[step+1].tab);}else{p.onDone();}}
   return(
-    <div style={{position:"fixed",inset:0,zIndex:500,pointerEvents:"none"}}>
-      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)",pointerEvents:"auto"}} onClick={p.onDone}/>
-      <div style={{position:"absolute",bottom:90,left:"clamp(8px, calc("+tabPct+"% - 130px), calc(100% - 268px))",maxWidth:260,width:"calc(100% - 16px)",pointerEvents:"auto",animation:"fadeIn .3s ease"}}>
-        <div style={{background:OR,borderRadius:14,padding:"14px 16px",boxShadow:"0 8px 32px rgba(0,0,0,.4)"}}>
-          <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{current.title}</div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6,marginBottom:14}}>{current.desc}</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <button onClick={p.onDone} style={{fontSize:11,color:"rgba(255,255,255,.7)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Passer</button>
-            <button onClick={next} style={{padding:"7px 16px",borderRadius:20,background:"#fff",border:"none",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{step<GUIDE_STEPS.length-1?"Suivant →":"Terminer"}</button>
+    <div className="fixed inset-0 z-[500] pointer-events-none">
+      <div className="absolute inset-0 bg-black/55 pointer-events-auto" onClick={p.onDone}/>
+      <div className="pointer-events-auto anim-fadeIn" style={{
+        position:"absolute",bottom:90,
+        left:"clamp(8px, calc("+tabPct+"% - 130px), calc(100% - 268px))",
+        maxWidth:260,width:"calc(100% - 16px)"
+      }}>
+        <div className="bg-brand rounded-2xl p-4 shadow-[0_8px_32px_rgba(0,0,0,.4)]">
+          <div className="text-[13px] font-bold text-white mb-1.5">{current.title}</div>
+          <div className="text-[12px] text-white/85 leading-relaxed mb-3.5">{current.desc}</div>
+          <div className="flex justify-between items-center">
+            <button onClick={p.onDone} className="text-[11px] text-white/70 bg-transparent border-none cursor-pointer font-[inherit]">Passer</button>
+            <button onClick={next} className="px-4 py-[7px] rounded-[20px] bg-white border-none text-brand text-[12px] font-bold cursor-pointer font-[inherit]">
+              {step<GUIDE_STEPS.length-1?"Suivant →":"Terminer"}
+            </button>
           </div>
         </div>
         <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+OR,margin:"0 auto"}}/>
       </div>
-      <div style={{position:"absolute",bottom:76,left:"50%",transform:"translateX(-50%)",display:"flex",gap:5,pointerEvents:"auto"}}>
-        {GUIDE_STEPS.map(function(_,i){return <div key={i} style={{width:i===step?18:6,height:6,borderRadius:3,background:i===step?"#fff":"rgba(255,255,255,.3)",transition:"width .3s"}}/>;}) }
+      <div className="absolute bottom-[76px] left-1/2 -translate-x-1/2 flex gap-[5px] pointer-events-auto">
+        {GUIDE_STEPS.map(function(_,i){
+          return <div key={i} style={{width:i===step?18:6,height:6,borderRadius:3,background:i===step?"#fff":"rgba(255,255,255,.3)",transition:"width .3s"}}/>;
+        })}
       </div>
     </div>
   );

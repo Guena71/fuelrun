@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { BG, SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
+import { BG, BORD, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { QUOTES } from "../data/quotes.js";
 import { RECIPES } from "../data/meals.js";
 import { TYPE_COLORS } from "../data/training.js";
@@ -44,26 +44,29 @@ export function HomeScreen(p){
   var quote=QUOTES[quoteIdx];
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
-    <div style={{paddingBottom:8}}>
+    <div className="pb-2">
       <LogoBar profile={p.profile} onProfile={function(){p.onGoToProfile&&p.onGoToProfile();}} onSignOut={p.onSignOut}/>
-      <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
-        <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
-        <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
-        <div style={{marginBottom:24}}>
-          <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
-          <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
-          <div style={{marginTop:10}}>
-            <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35",cursor:"pointer",fontFamily:"inherit"}}>
-              <span style={{fontSize:11,color:OR,fontWeight:600}}>Modifier ton profil</span>
-              <span style={{fontSize:10,color:OR}}>✎</span>
+      <div className="relative overflow-hidden px-5 pt-4 pb-0"
+        style={{background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)"}}>
+        <div className="absolute top-[-60px] right-[-60px] w-60 h-60 rounded-full pointer-events-none" style={{background:OR,opacity:0.05}}/>
+        <div className="absolute bottom-[-30px] left-[-30px] w-[140px] h-[140px] rounded-full pointer-events-none" style={{background:BL,opacity:0.04}}/>
+        <div className="mb-6">
+          <div className="text-[12px] font-semibold uppercase tracking-[1.2px] mb-1.5" style={{color:OR}}>{greeting}</div>
+          <div className="text-[30px] font-extrabold text-txt tracking-[-0.5px] leading-none">{p.profile.name||"Champion"}</div>
+          <div className="mt-2.5">
+            <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}}
+              className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-[20px] cursor-pointer font-[inherit]"
+              style={{background:OR+"18",border:"1px solid "+OR+"35"}}>
+              <span className="text-[11px] font-semibold" style={{color:OR}}>Modifier ton profil</span>
+              <span className="text-[10px]" style={{color:OR}}>✎</span>
             </button>
           </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
+        <div className="grid grid-cols-3 gap-2.5 mb-2.5">
           {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
-            return(<div key={i} style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",borderRadius:14,padding:"14px 10px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
-              <div style={{fontSize:24,fontWeight:800,lineHeight:1}}><AnimCount value={st.value} color={st.color}/></div>
-              <div style={{fontSize:9,color:MUT,marginTop:5,fontWeight:500,textTransform:"uppercase",letterSpacing:0.5}}>{st.label}</div>
+            return(<div key={i} className="rounded-2xl px-2.5 py-3.5 text-center" style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.07)"}}>
+              <div className="text-[24px] font-extrabold leading-none"><AnimCount value={st.value} color={st.color}/></div>
+              <div className="text-[9px] text-mut mt-[5px] font-medium uppercase tracking-[0.5px]">{st.label}</div>
             </div>);
           })}
         </div>
@@ -72,37 +75,39 @@ export function HomeScreen(p){
             var txt="J'ai parcouru "+Math.round(p.stats.km)+" km en "+p.stats.sessions+" séance"+(p.stats.sessions>1?"s":"")+" avec FuelRun !"+(p.race?" Je prépare "+p.race.name+" !":"")+" Rejoins-moi sur l'app.";
             if(navigator.share){navigator.share({title:"FuelRun",text:txt,url:window.location.href});}
             else{navigator.clipboard&&navigator.clipboard.writeText(txt);}
-          }} style={{width:"100%",marginBottom:10,padding:"10px",borderRadius:12,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:TXT,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",letterSpacing:0.3}}>
+          }} className="w-full mb-2.5 px-2.5 py-2.5 rounded-xl text-txt text-[12px] font-semibold cursor-pointer font-[inherit] tracking-[0.3px]"
+            style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)"}}>
             Partager mes stats
           </button>
         )}
-        <div style={{padding:"14px 16px",borderRadius:14,background:OR+"12",border:"1px solid "+OR+"25",textAlign:"center"}}>
-          <div style={{fontSize:13,color:TXT,lineHeight:1.7,fontStyle:"italic",fontWeight:500}}>"{quote.text}"</div>
-          <div style={{fontSize:11,color:OR,fontWeight:700,marginTop:8,letterSpacing:0.3}}>{'\u2014'} {quote.author} {'\u2014'}</div>
+        <div className="px-4 py-3.5 rounded-2xl text-center mb-0"
+          style={{background:OR+"12",border:"1px solid "+OR+"25"}}>
+          <div className="text-[13px] text-txt leading-[1.7] italic font-medium">"{quote.text}"</div>
+          <div className="text-[11px] font-bold mt-2 tracking-[0.3px]" style={{color:OR}}>{'\u2014'} {quote.author} {'\u2014'}</div>
         </div>
       </div>
 
-      <div style={{padding:"14px 16px 0"}}>
+      <div className="px-4 pt-3.5">
         {p.race&&planWeeks.length>0&&(
-          <div style={{borderRadius:16,background:SURF,border:"1px solid "+BORD,marginBottom:14,padding:"14px 16px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div className="rounded-2xl bg-surf border border-bord mb-3.5 px-4 py-3.5">
+            <div className="flex items-center justify-between mb-2.5">
               <div>
-                <div style={{fontSize:10,color:raceCol,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Objectif</div>
-                <div style={{fontSize:14,fontWeight:700,color:TXT,lineHeight:1.2}}>{p.race.name}</div>
-                <div style={{fontSize:11,color:SUB,marginTop:2}}>{p.race.city} · 🏁 {fmtS(new Date(p.race.date))}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[1px] mb-[3px]" style={{color:raceCol}}>Objectif</div>
+                <div className="text-[14px] font-bold text-txt leading-tight">{p.race.name}</div>
+                <div className="text-[11px] text-sub mt-0.5">{p.race.city} · 🏁 {fmtS(new Date(p.race.date))}</div>
               </div>
-              <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
-                <div style={{fontSize:24,fontWeight:800,color:raceCol,lineHeight:1}}>{p.race.dist}<span style={{fontSize:11,fontWeight:500,color:MUT,marginLeft:2}}>km</span></div>
-                <div style={{fontSize:9,color:MUT,textTransform:"uppercase",letterSpacing:0.5}}>{p.race.type==="trail"?"Trail":"Route"}</div>
+              <div className="text-right shrink-0 ml-3">
+                <div className="text-[24px] font-extrabold leading-none" style={{color:raceCol}}>{p.race.dist}<span className="text-[11px] font-medium text-mut ml-0.5">km</span></div>
+                <div className="text-[9px] text-mut uppercase tracking-[0.5px]">{p.race.type==="trail"?"Trail":"Route"}</div>
               </div>
             </div>
-            <div style={{height:5,background:raceCol+"18",borderRadius:6,overflow:"hidden",marginBottom:5}}>
-              <div style={{width:raceProgress+"%",height:"100%",background:"linear-gradient(90deg,"+raceCol+"99,"+raceCol+")",borderRadius:6}}/>
+            <div className="h-[5px] rounded-[6px] overflow-hidden mb-[5px]" style={{background:raceCol+"18"}}>
+              <div className="h-full rounded-[6px]" style={{width:raceProgress+"%",background:"linear-gradient(90deg,"+raceCol+"99,"+raceCol+")"}}/>
             </div>
-            <div style={{display:"flex",justifyContent:"space-between"}}>
-              <span style={{fontSize:10,color:MUT}}>Sem. 1</span>
-              <span style={{fontSize:10,color:raceCol,fontWeight:600}}>{raceProgress}% · dans {raceWeeks} sem.</span>
-              <span style={{fontSize:10,color:MUT}}>Sem. {planWeeks.length}</span>
+            <div className="flex justify-between">
+              <span className="text-[10px] text-mut">Sem. 1</span>
+              <span className="text-[10px] font-semibold" style={{color:raceCol}}>{raceProgress}% · dans {raceWeeks} sem.</span>
+              <span className="text-[10px] text-mut">Sem. {planWeeks.length}</span>
             </div>
           </div>
         )}
@@ -121,40 +126,41 @@ export function HomeScreen(p){
           };
           var tip=coachTips[sessType]||"Écoute ton corps aujourd'hui. La régularité prime sur l'intensité.";
           return(
-            <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
-              <div style={{padding:"12px 16px",background:"linear-gradient(135deg,"+OR+"10,transparent)",borderBottom:"1px solid "+BORD}}>
-                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2}}>Aujourd'hui</div>
+            <div className="rounded-[18px] bg-surf border border-bord mb-3.5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-bord" style={{background:"linear-gradient(135deg,"+OR+"10,transparent)"}}>
+                <div className="text-[10px] font-bold uppercase tracking-[1.2px]" style={{color:OR}}>Aujourd'hui</div>
               </div>
-              <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
-                <div style={{width:3,background:OR,flexShrink:0}}/>
-                <div style={{flex:1,padding:"14px 16px"}}>
-                  <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Séance</div>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div className="flex border-b border-bord">
+                <div className="w-[3px] shrink-0" style={{background:OR}}/>
+                <div className="flex-1 px-4 py-3.5">
+                  <div className="text-[10px] text-mut font-bold uppercase tracking-[1px] mb-1.5">Séance</div>
+                  <div className="flex items-center justify-between">
                     <div>
                       {nextSess?(
                         <div>
-                          <div style={{fontSize:15,fontWeight:800,color:TXT,letterSpacing:"-0.2px"}}>{nextSess.label}</div>
-                          <div style={{fontSize:12,color:SUB,marginTop:2}}>
+                          <div className="text-[15px] font-extrabold text-txt tracking-[-0.2px]">{nextSess.label}</div>
+                          <div className="text-[12px] text-sub mt-0.5">
                             {nextSess.type!=="race"?nextSess.km+" km":""}{nextSess.pace?" · "+nextSess.pace+"/km":""}
                           </div>
                         </div>
                       ):(
-                        <div style={{fontSize:14,fontWeight:600,color:SUB}}>Repos — récupération active</div>
+                        <div className="text-[14px] font-semibold text-sub">Repos — récupération active</div>
                       )}
                     </div>
                     {nextSess&&nextSess.pace&&(
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:18,fontWeight:800,color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div>
-                        <div style={{fontSize:9,color:MUT}}>durée est.</div>
+                      <div className="text-right">
+                        <div className="text-[18px] font-extrabold" style={{color:sessCol}}>{durStr(nextSess.pace,nextSess.km)}</div>
+                        <div className="text-[9px] text-mut">durée est.</div>
                       </div>
                     )}
                   </div>
                   {nextSess&&(
-                    <div style={{marginTop:10}}>
+                    <div className="mt-2.5">
                       <button onClick={function(){
                         if(todayDone)return;
                         p.onGoToJournal&&p.onGoToJournal(nextSess.km||0);
-                      }} style={{width:"100%",padding:"9px",borderRadius:10,background:todayDone?GR+"18":OR,border:todayDone?"1px solid "+GR+"44":"none",color:todayDone?GR:"#fff",fontSize:12,fontWeight:700,cursor:todayDone?"default":"pointer",fontFamily:"inherit",letterSpacing:0.2}}>
+                      }} className="w-full py-2.5 rounded-[10px] text-[12px] font-bold font-[inherit] tracking-[0.2px]"
+                        style={{background:todayDone?GR+"18":OR,border:todayDone?"1px solid "+GR+"44":"none",color:todayDone?GR:"#fff",cursor:todayDone?"default":"pointer"}}>
                         {todayDone?"✓ Séance validée":"Valider cette séance"}
                       </button>
                     </div>
@@ -162,60 +168,61 @@ export function HomeScreen(p){
                 </div>
               </div>
               {n&&(
-                <div style={{display:"flex",borderBottom:"1px solid "+BORD}}>
-                  <div style={{width:3,background:OR,flexShrink:0}}/>
-                  <div style={{flex:1,padding:"14px 16px"}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                      <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1}}>Nutrition</div>
+                <div className="flex border-b border-bord">
+                  <div className="w-[3px] shrink-0" style={{background:OR}}/>
+                  <div className="flex-1 px-4 py-3.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="text-[10px] text-mut font-bold uppercase tracking-[1px]">Nutrition</div>
                       {!isPro&&(
-                        <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"3px 8px",borderRadius:6,background:OR+"18",border:"1px solid "+OR+"33",cursor:"pointer"}}>
-                          <span style={{fontSize:9,fontWeight:700,color:OR}}>Plan repas Pro</span>
+                        <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} className="px-2 py-[3px] rounded-[6px] cursor-pointer" style={{background:OR+"18",border:"1px solid "+OR+"33"}}>
+                          <span className="text-[9px] font-bold" style={{color:OR}}>Plan repas Pro</span>
                         </div>
                       )}
                     </div>
-                    <div style={{display:"flex",gap:8,alignItems:"baseline"}}>
-                      <span style={{fontSize:15,fontWeight:800,color:OR}}>{n.kcal} kcal</span>
-                      <span style={{fontSize:11,color:MUT}}>G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
+                    <div className="flex gap-2 items-baseline">
+                      <span className="text-[15px] font-extrabold" style={{color:OR}}>{n.kcal} kcal</span>
+                      <span className="text-[11px] text-mut">G {n.carbs}g · P {n.prot}g · L {n.fat}g</span>
                     </div>
                     {(isPro||homeTrial.active)&&n.meals.length>0&&(
-                      <div style={{marginTop:10}}>
+                      <div className="mt-2.5">
                         {!isPro&&homeTrial.active&&(
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"5px 0",marginBottom:6}}>
-                            <span style={{fontSize:10,color:YE,fontWeight:600}}>⏳ Accès essai — {homeTrial.daysLeft} jour{homeTrial.daysLeft>1?"s":""} restant{homeTrial.daysLeft>1?"s":""}</span>
-                            <span onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{fontSize:10,color:OR,fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>Passer Pro</span>
+                          <div className="flex items-center justify-between py-[5px] mb-1.5">
+                            <span className="text-[10px] font-semibold" style={{color:YE}}>⏳ Accès essai — {homeTrial.daysLeft} jour{homeTrial.daysLeft>1?"s":""} restant{homeTrial.daysLeft>1?"s":""}</span>
+                            <span onClick={function(){p.onShowPricing&&p.onShowPricing();}} className="text-[10px] font-bold cursor-pointer underline" style={{color:OR}}>Passer Pro</span>
                           </div>
                         )}
-                        <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                        <div className="flex flex-col gap-0">
                           {n.meals.slice(0,3).map(function(m,i){return(
-                            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid "+BORD:"none"}}>
-                              <span style={{fontSize:10,fontWeight:600,color:MUT,width:64,flexShrink:0}}>{m.time}</span>
-                              <span style={{flex:1,fontSize:12,color:TXT}}>{m.food}</span>
-                              <span style={{fontSize:11,fontWeight:600,color:OR,flexShrink:0}}>{m.kcal} kcal</span>
+                            <div key={i} className="flex items-center gap-2 py-1.5" style={{borderTop:i>0?"1px solid "+BORD:"none"}}>
+                              <span className="text-[10px] font-semibold text-mut w-16 shrink-0">{m.time}</span>
+                              <span className="flex-1 text-[12px] text-txt">{m.food}</span>
+                              <span className="text-[11px] font-semibold shrink-0" style={{color:OR}}>{m.kcal} kcal</span>
                             </div>
                           );})}
                         </div>
                         {(RECIPES[sessType]||[]).length>0&&(
-                          <div style={{marginTop:8}}>
-                            <button onClick={function(){setShowRecipes(!showRecipes);}} style={{width:"100%",padding:"7px",borderRadius:8,background:SURF2,border:"1px solid "+BORD,color:SUB,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                          <div className="mt-2">
+                            <button onClick={function(){setShowRecipes(!showRecipes);}}
+                              className="w-full py-[7px] rounded-lg bg-surf2 border border-bord text-sub text-[11px] font-semibold cursor-pointer font-[inherit]">
                               {showRecipes?"Masquer les recettes ↑":"Voir les recettes détaillées ↓"}
                             </button>
                             {showRecipes&&(RECIPES[sessType]||[]).map(function(r,ri){return(
-                              <div key={ri} style={{marginTop:8,background:SURF2,borderRadius:10,padding:"12px",border:"1px solid "+BORD}}>
-                                <div style={{fontSize:12,fontWeight:700,color:TXT,marginBottom:2}}>{r.name}</div>
-                                <div style={{fontSize:10,color:MUT,marginBottom:8}}>{r.slot} · {r.time} · {r.kcal} kcal</div>
-                                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Ingrédients</div>
-                                <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:8}}>
+                              <div key={ri} className="mt-2 bg-surf2 rounded-[10px] p-3 border border-bord">
+                                <div className="text-[12px] font-bold text-txt mb-0.5">{r.name}</div>
+                                <div className="text-[10px] text-mut mb-2">{r.slot} · {r.time} · {r.kcal} kcal</div>
+                                <div className="text-[10px] font-bold uppercase tracking-[0.8px] mb-1" style={{color:OR}}>Ingrédients</div>
+                                <div className="flex flex-col gap-0.5 mb-2">
                                   {r.ingredients.map(function(ing,ii){return(
-                                    <div key={ii} style={{fontSize:11,color:SUB,display:"flex",gap:6}}>
-                                      <span style={{color:OR,flexShrink:0}}>·</span>{ing}
+                                    <div key={ii} className="text-[11px] text-sub flex gap-1.5">
+                                      <span className="shrink-0" style={{color:OR}}>·</span>{ing}
                                     </div>
                                   );})}
                                 </div>
-                                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4}}>Préparation</div>
+                                <div className="text-[10px] font-bold uppercase tracking-[0.8px] mb-1" style={{color:OR}}>Préparation</div>
                                 {r.steps.map(function(step,si){return(
-                                  <div key={si} style={{display:"flex",gap:8,marginBottom:4}}>
-                                    <span style={{fontSize:10,fontWeight:700,color:OR,flexShrink:0,width:14}}>{si+1}.</span>
-                                    <span style={{fontSize:11,color:TXT,lineHeight:1.5}}>{step}</span>
+                                  <div key={si} className="flex gap-2 mb-1">
+                                    <span className="text-[10px] font-bold shrink-0 w-[14px]" style={{color:OR}}>{si+1}.</span>
+                                    <span className="text-[11px] text-txt leading-[1.5]">{step}</span>
                                   </div>
                                 );})}
                               </div>
@@ -225,42 +232,46 @@ export function HomeScreen(p){
                       </div>
                     )}
                     {!isPro&&!homeTrial.active&&(
-                      <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{marginTop:8,padding:"8px 12px",borderRadius:8,background:OR+"10",border:"1px solid "+OR+"30",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:11}}>🔒</span><span style={{fontSize:11,color:MUT}}>Plan repas · Recettes — essai terminé</span></div>
-                        <span style={{fontSize:10,fontWeight:700,color:OR}}>Pro →</span>
+                      <div onClick={function(){p.onShowPricing&&p.onShowPricing();}}
+                        className="mt-2 px-3 py-2 rounded-lg cursor-pointer flex items-center justify-between"
+                        style={{background:OR+"10",border:"1px solid "+OR+"30"}}>
+                        <div className="flex items-center gap-1.5"><span className="text-[11px]">🔒</span><span className="text-[11px] text-mut">Plan repas · Recettes — essai terminé</span></div>
+                        <span className="text-[10px] font-bold" style={{color:OR}}>Pro →</span>
                       </div>
                     )}
                   </div>
                 </div>
               )}
-              <div style={{display:"flex"}}>
-                <div style={{width:3,background:OR,flexShrink:0}}/>
-                <div style={{flex:1,padding:"14px 16px"}}>
-                  <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Conseil du coach</div>
-                  <div style={{fontSize:13,color:TXT,lineHeight:1.6}}>{tip}</div>
+              <div className="flex">
+                <div className="w-[3px] shrink-0" style={{background:OR}}/>
+                <div className="flex-1 px-4 py-3.5">
+                  <div className="text-[10px] text-mut font-bold uppercase tracking-[1px] mb-1.5">Conseil du coach</div>
+                  <div className="text-[13px] text-txt leading-[1.6]">{tip}</div>
                 </div>
               </div>
             </div>
           );
         })()}
 
-        <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
+        <div className="rounded-[18px] bg-surf border border-bord mb-3.5 overflow-hidden">
           {p.wellbeing?(
-            <div style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",background:wba.bg,borderBottom:"1px solid "+wba.color+"20"}}>
-              <div style={{width:44,height:44,borderRadius:12,background:wba.color+"25",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{wba.icon}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:wba.color}}>{wba.text}</div>
-                <div style={{fontSize:12,color:SUB,marginTop:2}}>{wba.sub}</div>
+            <div className="flex items-center gap-3.5 px-[18px] py-4 border-b" style={{background:wba.bg,borderBottomColor:wba.color+"20"}}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0" style={{background:wba.color+"25"}}>
+                {wba.icon}
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-bold" style={{color:wba.color}}>{wba.text}</div>
+                <div className="text-[12px] text-sub mt-0.5">{wba.sub}</div>
               </div>
             </div>
           ):(
-            <div onClick={p.onCheckin} style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",borderBottom:"1px solid "+BORD,cursor:"pointer"}}>
-              <div style={{width:44,height:44,borderRadius:12,background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🌡️</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600,color:TXT}}>Comment tu te sens ?</div>
-                <div style={{fontSize:12,color:SUB,marginTop:2}}>Check-in rapide · 30 sec</div>
+            <div onClick={p.onCheckin} className="flex items-center gap-3.5 px-[18px] py-4 border-b border-bord cursor-pointer">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0" style={{background:OR+"18"}}>🌡️</div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold text-txt">Comment tu te sens ?</div>
+                <div className="text-[12px] text-sub mt-0.5">Check-in rapide · 30 sec</div>
               </div>
-              <div style={{width:30,height:30,borderRadius:"50%",background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",color:OR,fontSize:16,flexShrink:0}}>›</div>
+              <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[16px] shrink-0" style={{background:OR+"18",color:OR}}>›</div>
             </div>
           )}
         </div>
@@ -268,13 +279,13 @@ export function HomeScreen(p){
         {weather&&(function(){
           var adv=weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0);
           return(
-            <div style={{borderRadius:14,background:SURF,border:"1px solid "+BORD,padding:"14px 16px",marginBottom:14}}>
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                <div style={{fontSize:34,lineHeight:1,flexShrink:0}}>{adv.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:10,color:adv.color,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Météo · Conseil séance</div>
-                  <div style={{fontSize:13,fontWeight:600,color:TXT,marginBottom:4}}>{adv.desc} · {Math.round(weather.temperature_2m||0)}°C{weather.windspeed_10m>10?" · "+Math.round(weather.windspeed_10m)+" km/h":""}</div>
-                  <div style={{fontSize:12,color:SUB,lineHeight:1.5}}>{adv.tip}</div>
+            <div className="rounded-2xl bg-surf border border-bord px-4 py-3.5 mb-3.5">
+              <div className="flex items-center gap-3.5">
+                <div className="text-[34px] leading-none shrink-0">{adv.icon}</div>
+                <div className="flex-1">
+                  <div className="text-[10px] font-bold uppercase tracking-[1px] mb-[3px]" style={{color:adv.color}}>Météo · Conseil séance</div>
+                  <div className="text-[13px] font-semibold text-txt mb-1">{adv.desc} · {Math.round(weather.temperature_2m||0)}°C{weather.windspeed_10m>10?" · "+Math.round(weather.windspeed_10m)+" km/h":""}</div>
+                  <div className="text-[12px] text-sub leading-[1.5]">{adv.tip}</div>
                 </div>
               </div>
             </div>

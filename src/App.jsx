@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
-import { BG, SURF, BORD, OR, GR, RE, CSS } from "./data/constants.js";
+import { OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
 import { RunnerHero } from "./components/RunnerHero.jsx";
 import { CheckinModal } from "./components/CheckinModal.jsx";
@@ -152,11 +152,10 @@ export default function App(){
 
   // ── Loading ──
   if(authState==="loading")return(
-    <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <style>{CSS}</style>
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
+    <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
         <RunnerHero size={64}/>
-        <div style={{fontSize:14,color:"#686868"}}>Chargement…</div>
+        <div className="text-sm text-mut">Chargement…</div>
       </div>
     </div>
   );
@@ -192,10 +191,9 @@ export default function App(){
   var curPath=location.pathname;
 
   return(
-    <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
-      <style>{CSS}</style>
-      <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>
+    <div className="bg-bg min-h-screen flex justify-center overflow-x-hidden max-w-[100vw]">
+      <div className="w-full max-w-[430px] bg-bg h-screen flex flex-col overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden touch-pan-y pb-20">
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace/>}/>
             <Route path="/home" element={
@@ -269,14 +267,14 @@ export default function App(){
           </Routes>
         </div>
 
-        {/* ── Bottom nav bar (visible uniquement sur les routes principales) ── */}
+        {/* ── Bottom nav bar ── */}
         {NAV.some(function(n){return n.path===curPath;})&&(
-          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:4}}>
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-surf border-t border-bord flex z-50 pb-1">
             {NAV.map(function(n){var active=curPath===n.path;var color=active?OR:"#686868";return(
-              <button key={n.path} onClick={function(){navigate(n.path);}} style={{flex:1,padding:"8px 2px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",background:"none",border:"none",position:"relative"}}>
+              <button key={n.path} onClick={function(){navigate(n.path);}} className="flex-1 flex flex-col items-center gap-[3px] pt-2 pb-1 cursor-pointer bg-transparent border-none relative">
                 {n.icon(color)}
                 <span style={{fontSize:9,fontWeight:active?600:400,color:color,letterSpacing:0.2}}>{n.label}</span>
-                {active?<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,background:OR,borderRadius:"0 0 3px 3px"}}/>:null}
+                {active&&<div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2.5px] bg-brand rounded-b-sm"/>}
               </button>
             );})}
           </div>
@@ -284,7 +282,7 @@ export default function App(){
       </div>
 
       {showPricing&&(
-        <div style={{position:"fixed",inset:0,background:BG,zIndex:450,overflowY:"auto"}}>
+        <div className="fixed inset-0 bg-bg z-[450] overflow-y-auto">
           <PricingScreen user={user} onClose={function(){setShowPricing(false);}} onStart={function(){
             var chosen=ls("fr_pending_plan","gratuit");
             setProfile(Object.assign({},profile,{plan:chosen}));
@@ -296,8 +294,9 @@ export default function App(){
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
       {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(path){navigate(path);}}/>:null}
       {toast&&(
-        <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",zIndex:600,pointerEvents:"none",width:"calc(100% - 48px)",maxWidth:382}}>
-          <div style={{background:toast.type==="err"?RE:GR,color:"#fff",borderRadius:12,padding:"12px 18px",fontSize:13,fontWeight:600,textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,.4)",animation:"slideUp .25s ease"}}>
+        <div className="fixed bottom-[82px] left-1/2 -translate-x-1/2 z-[600] pointer-events-none w-[calc(100%-48px)] max-w-[382px]">
+          <div className="text-white rounded-xl px-[18px] py-3 text-[13px] font-semibold text-center shadow-[0_4px_20px_rgba(0,0,0,.4)] anim-slideUp"
+            style={{background:toast.type==="err"?RE:GR}}>
             {toast.msg}
           </div>
         </div>
