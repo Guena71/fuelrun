@@ -177,12 +177,22 @@ export function TrainingScreen(p){
         </div>
         <div className="text-[13px] text-sub mb-2.5">{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
         <div className="bg-surf2 rounded-xl px-3.5 py-3 mb-2.5 border border-bord">
-          <div className="flex gap-4 mb-2">
-            <div className="flex-1 text-center"><div className="text-[20px] font-extrabold" style={{color:OR}}>{planWeeks.length}</div><div className="text-[10px] text-mut mt-0.5">sem. de plan</div></div>
-            <div className="w-px bg-bord"/>
-            <div className="flex-1 text-center"><div className="text-[20px] font-extrabold" style={{color:plan.idealWeeks>plan.availWeeks?YE:GR}}>{plan.idealWeeks}</div><div className="text-[10px] text-mut mt-0.5">sem. idéales</div></div>
-            <div className="w-px bg-bord"/>
-            <div className="flex-1 text-center"><div className="text-[20px] font-extrabold text-info">{plan.availWeeks}</div><div className="text-[10px] text-mut mt-0.5">sem. dispo</div></div>
+          <div className="flex gap-3 mb-2.5">
+            <div className="flex-1 rounded-lg px-3 py-2.5 text-center" style={{background:OR+"15",border:"1px solid "+OR+"33"}}>
+              <div className="text-[22px] font-extrabold" style={{color:OR}}>{planWeeks.length}</div>
+              <div className="text-[10px] font-semibold mt-0.5" style={{color:OR}}>Plan proposé</div>
+              <div className="text-[9px] text-mut mt-0.5">{planWeeks.length} semaines</div>
+            </div>
+            <div className="flex-1 rounded-lg px-3 py-2.5 text-center" style={{background:(plan.idealWeeks>plan.availWeeks?YE:GR)+"15",border:"1px solid "+(plan.idealWeeks>plan.availWeeks?YE:GR)+"33"}}>
+              <div className="text-[22px] font-extrabold" style={{color:plan.idealWeeks>plan.availWeeks?YE:GR}}>{plan.idealWeeks}</div>
+              <div className="text-[10px] font-semibold mt-0.5" style={{color:plan.idealWeeks>plan.availWeeks?YE:GR}}>Semaines idéales</div>
+              <div className="text-[9px] text-mut mt-0.5">pour cette course</div>
+            </div>
+            <div className="flex-1 rounded-lg px-3 py-2.5 text-center" style={{background:BL+"15",border:"1px solid "+BL+"33"}}>
+              <div className="text-[22px] font-extrabold text-info">{weeksUntil(p.race.date)}</div>
+              <div className="text-[10px] font-semibold text-info mt-0.5">Semaines restantes</div>
+              <div className="text-[9px] text-mut mt-0.5">avant la course</div>
+            </div>
           </div>
           <div className="text-[11px] text-sub text-center border-t border-bord pt-2">Début recommandé : <span className="text-txt font-semibold">{fmtDate(plan.planStart)}</span></div>
         </div>
