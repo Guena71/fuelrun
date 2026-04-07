@@ -283,6 +283,7 @@ export default function App(){
                 onShowPricing={goPrice}
                 onGoToProfile={function(){navigate("/profile");}}
                 onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});navigate("/journal");}}
+                onGoToSuivi={function(){navigate("/suivi");}}
                 onSignOut={function(){signOut(auth);}}
               />
             }/>

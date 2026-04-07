@@ -63,7 +63,7 @@ export function HomeScreen(p){
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2.5 mb-2.5">
-          {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Streak",value:p.stats.streak,color:YE}].map(function(st,i){
+          {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Jours 🔥",value:p.stats.streak,color:YE}].map(function(st,i){
             return(<div key={i} className="rounded-2xl px-2.5 py-3.5 text-center" style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.07)"}}>
               <div className="text-[24px] font-extrabold leading-none"><AnimCount value={st.value} color={st.color}/></div>
               <div className="text-[9px] text-mut mt-[5px] font-medium uppercase tracking-[0.5px]">{st.label}</div>
@@ -92,7 +92,7 @@ export function HomeScreen(p){
           <div className="rounded-2xl bg-surf border border-bord mb-3.5 px-4 py-3.5">
             <div className="flex items-center justify-between mb-2.5">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-[1px] mb-[3px]" style={{color:raceCol}}>Objectif</div>
+                <div className="text-[10px] font-bold uppercase tracking-[1px] mb-[3px]" style={{color:raceCol}}>Mon prochain objectif</div>
                 <div className="text-[14px] font-bold text-txt leading-tight">{p.race.name}</div>
                 <div className="text-[11px] text-sub mt-0.5">{p.race.city} · 🏁 {fmtS(new Date(p.race.date))}</div>
               </div>
@@ -117,18 +117,48 @@ export function HomeScreen(p){
           var isPro=planLevel(p.profile)>=2;
           var homeTrial=isPro?{active:true,daysLeft:99}:getRecipesTrial();
           var coachTips={
-            easy:"Zone 2, tu dois pouvoir parler confortablement. C'est cette allure qui construit ta base aérobie.",
-            long:"Démarre doucement et garde de l'énergie pour les derniers kms. Hydrate-toi toutes les 20 min.",
-            interval:"Échauffement 15 min impératif. Récupère bien entre les répétitions — la qualité prime.",
-            tempo:"Allure inconfortable mais contrôlée. Ne pars pas trop vite les 5 premières minutes.",
-            recovery:"Très basse intensité, petite foulée. L'objectif : circuler le sang, pas performer.",
-            race:"C'est le jour J ! Démarre plus lentement que prévu. Fais confiance à ton plan.",
+            easy:[
+              "Zone 2 : tu dois pouvoir tenir une conversation complète sans t'essouffler. Si tu halètes, ralentis. C'est cette allure lente et régulière qui développe ton moteur aérobie sur le long terme.",
+              "La sortie facile est la reine de l'entraînement. 80% de ton volume doit se faire ici. Ne cède pas à la tentation d'aller plus vite — tu construis tes fondations aujourd'hui.",
+              "Pense à ta foulée : attaque mi-pied, cadence autour de 170-180 pas/min. Une foulée courte et rapide fatigue moins que de grandes enjambées. Essaie de te sentir léger.",
+              "Profite de cette sortie pour travailler ta respiration : inspire 3 foulées, expire 2. Ce rythme stabilise ta fréquence cardiaque et optimise l'apport en oxygène.",
+            ],
+            long:[
+              "Démarre 20% plus lentement que ton allure habituelle. Le but des 10 premiers km : rester en zone 2. Les derniers km se courent avec l'énergie que tu as préservée au départ.",
+              "Hydratation toutes les 20 min, même si tu n'as pas soif. La déshydratation arrive avant la sensation de soif. Prévois aussi une source de glucides si tu dépasses 1h30 de course.",
+              "La sortie longue améliore ta capacité à brûler les graisses comme carburant. Plus tu accumules ces sorties, plus tu seras efficace en fin de course. C'est un investissement, pas une séance spectaculaire.",
+              "Divise mentalement ta sortie en 3 tiers. Premier tiers : très facile. Deuxième tiers : confortable. Dernier tiers : tu peux augmenter légèrement si tu te sens bien. Jamais l'inverse.",
+            ],
+            interval:[
+              "Échauffement obligatoire : 15 min en zone 2 minimum avant la première répétition. Un muscle froid blessé est hors service pour 3 semaines. La récup entre les séries est aussi importante que l'effort.",
+              "Pendant les répétitions, vise 95% de ton effort maximal — pas 100%. À 100% tu accumules de la fatigue sans bénéfice supplémentaire. La régularité entre les répétitions prime sur la vitesse de la première.",
+              "Après chaque intervalle, ta fréquence cardiaque doit redescendre sous 65% de ta FC max avant de repartir. Si elle ne redescend pas, tes récupérations sont trop courtes ou ton allure trop élevée.",
+              "Le fractionné améliore ta VO2max et ta vitesse à l'allure marathon. 6 semaines de séances régulières suffisent pour sentir une vraie différence sur tes chronos.",
+            ],
+            tempo:[
+              "L'allure tempo est l'allure de ta course sur 1h environ. Elle doit être inconfortable mais contrôlée — tu peux prononcer des mots isolés, pas des phrases. Trop facile = trop lent, trop dur = trop vite.",
+              "Ne pars jamais trop vite sur une séance tempo. Les 5 premières minutes semblent toujours faciles — c'est un piège. Pars 5 à 10 secondes plus lentement que ta cible et laisse ton corps monter en température.",
+              "Le tempo améliore ton seuil lactique : le point où ton corps commence à accumuler de l'acide lactique. Repousser ce seuil, c'est courir plus vite en étant moins fatigué. C'est le secret des coureurs réguliers.",
+              "Après une séance tempo réussie, tu dois finir épuisé mais pas vidé. Si tu pourrais faire encore 10 min, tu étais trop lent. Si tu termines en décomposition, tu étais trop rapide.",
+            ],
+            recovery:[
+              "Aujourd'hui l'objectif n'est pas de progresser mais de récupérer activement. Le mouvement à très basse intensité accélère l'élimination des déchets métaboliques dans tes muscles. Plus vite ils partent, plus vite tu récupères.",
+              "Petite foulée, allure de promenade. Si ton cardio monte au-dessus de 65% de ta FC max, marche. Cette séance doit être agréable — écoute un podcast, profite du paysage. C'est du soin, pas de la performance.",
+              "La récupération est où la progression se construit vraiment. L'entraînement crée du stress, le repos crée l'adaptation. Sans récup, tu accumules de la fatigue sans bénéfice. Aujourd'hui tu deviens meilleur en faisant peu.",
+            ],
+            race:[
+              "C'est le jour J ! La règle d'or : pars plus lentement que tu ne le penses nécessaire. Les 5 premiers km doivent sembler trop faciles. Tous les coureurs qui explosent en fin de course sont partis trop vite.",
+              "Confiance en ton plan. Tu as fait le travail. Aujourd'hui tu récoltes. Ne change rien à ta stratégie nutritionnelle, ne teste rien de nouveau. Exécute ce que tu as répété à l'entraînement.",
+              "Gère ton énergie mentale. Les km 25-30 sur un marathon, les km 15-18 sur un semi seront difficiles pour tout le monde. C'est normal. Décompose la distance en petits blocs et reste dans l'instant présent.",
+            ],
           };
-          var tip=coachTips[sessType]||"Écoute ton corps aujourd'hui. La régularité prime sur l'intensité.";
+          var dayIdx=new Date().getDay();
+          var tipsForType=coachTips[sessType]||["Écoute ton corps aujourd'hui. La régularité sur plusieurs mois fait plus que l'intensité d'une seule séance. Chaque kilomètre compte, même les jours sans motivation."];
+          var tip=tipsForType[dayIdx%tipsForType.length];
           return(
             <div className="rounded-[18px] bg-surf border border-bord mb-3.5 overflow-hidden">
               <div className="px-4 py-3 border-b border-bord" style={{background:"linear-gradient(135deg,"+OR+"10,transparent)"}}>
-                <div className="text-[10px] font-bold uppercase tracking-[1.2px]" style={{color:OR}}>Aujourd'hui</div>
+                <div className="text-[10px] font-bold uppercase tracking-[1.2px]" style={{color:OR}}>Programme d'aujourd'hui</div>
               </div>
               <div className="flex border-b border-bord">
                 <div className="w-[3px] shrink-0" style={{background:OR}}/>
@@ -156,13 +186,17 @@ export function HomeScreen(p){
                   </div>
                   {nextSess&&(
                     <div className="mt-2.5">
-                      <button onClick={function(){
-                        if(todayDone)return;
-                        p.onGoToJournal&&p.onGoToJournal(nextSess.km||0);
-                      }} className="w-full py-2.5 rounded-[10px] text-[12px] font-bold font-[inherit] tracking-[0.2px]"
-                        style={{background:todayDone?GR+"18":OR,border:todayDone?"1px solid "+GR+"44":"none",color:todayDone?GR:"#fff",cursor:todayDone?"default":"pointer"}}>
-                        {todayDone?"✓ Séance validée":"Valider cette séance"}
-                      </button>
+                      {todayDone?(
+                        <div className="w-full py-2 rounded-[10px] text-[12px] font-bold text-center" style={{background:GR+"18",border:"1px solid "+GR+"44",color:GR}}>
+                          ✓ Séance validée aujourd'hui
+                        </div>
+                      ):(
+                        <button onClick={function(){p.onGoToSuivi&&p.onGoToSuivi();}}
+                          className="w-full py-2.5 rounded-[10px] text-[12px] font-bold font-[inherit] tracking-[0.2px] border-none cursor-pointer"
+                          style={{background:OR,color:"#fff"}}>
+                          Valider dans Suivi →
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

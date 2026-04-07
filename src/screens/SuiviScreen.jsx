@@ -3,6 +3,7 @@ import { SURF2, BORD, MUT, OR, GR, BL } from "../data/constants.js";
 import { stravaAuthUrl } from "../utils/strava.js";
 import { weeksUntil, fmtDate, fmtPaceSec } from "../utils/date.js";
 import { planLevel } from "../utils/nutrition.js";
+import { buildPlan, getPlanWeeks } from "../utils/plan.js";
 import { parseGpx, calcTrackKm, RunMap } from "../components/gps.jsx";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
@@ -12,6 +13,28 @@ export function SuiviScreen(p){
   var race=p.race;
   var today=new Date();
   var [showGpxUpgrade,setShowGpxUpgrade]=useState(false);
+
+  // Today's planned session
+  var todayKey=today.toDateString();
+  var todayDone=!!(entries[todayKey]&&entries[todayKey].done);
+  var plan=race?buildPlan(race,p.profile||{}):null;
+  var planWeeks=getPlanWeeks(plan);
+  var todaySess=null;
+  for(var wi2=0;wi2<planWeeks.length;wi2++){
+    var wk2=planWeeks[wi2];
+    for(var si2=0;si2<wk2.sessions.length;si2++){
+      var s2=wk2.sessions[si2];
+      if(s2.date&&s2.date.toDateString()===todayKey&&s2.type!=="race"){todaySess=s2;break;}
+    }
+    if(todaySess)break;
+  }
+  function validateToday(){
+    var km=todaySess?todaySess.km||5:5;
+    var prev=entries[todayKey]||{};
+    var updated=Object.assign({},prev,{done:true,km:String(km),min:""});
+    p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[todayKey]:updated});});
+    p.onAddSession&&p.onAddSession(km);
+  }
 
   function saveTrack(res){
     var key=today.toDateString();
@@ -53,6 +76,31 @@ export function SuiviScreen(p){
   return(
     <><div><LogoBar/>
       <div className="px-4 pt-5 pb-20">
+        {(todaySess||!todayDone)&&(
+          <div className="rounded-2xl mb-4 overflow-hidden" style={{background:todayDone?"linear-gradient(135deg,"+GR+"18,"+GR+"08)":"linear-gradient(135deg,"+OR+"18,"+OR+"08)",border:"1.5px solid "+(todayDone?GR:OR)+"44"}}>
+            <div className="px-4 py-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] shrink-0" style={{background:todayDone?GR+"22":OR+"22"}}>
+                {todayDone?"✅":"🏃"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-bold" style={{color:todayDone?GR:OR}}>
+                  {todayDone?"Séance du jour validée !":todaySess?todaySess.label:"Séance du jour"}
+                </div>
+                <div className="text-[11px] text-sub mt-[2px]">
+                  {todayDone?"Bravo, continue comme ça 💪":todaySess?(todaySess.km+" km · "+(todaySess.pace||"allure libre")):"Marque ta sortie comme accomplie"}
+                </div>
+              </div>
+              {!todayDone&&(
+                <button onClick={validateToday}
+                  className="shrink-0 px-3.5 py-2 rounded-xl text-[12px] font-bold border-none cursor-pointer font-[inherit] text-white"
+                  style={{background:OR}}>
+                  Valider ✓
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-4">
           <div className="text-[26px] font-extrabold text-txt tracking-[-0.4px]">Suivi</div>
           <button onClick={share} className="px-3.5 py-1.5 rounded-[20px] text-[12px] font-semibold cursor-pointer font-[inherit]"
