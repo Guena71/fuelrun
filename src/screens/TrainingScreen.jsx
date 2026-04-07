@@ -138,7 +138,7 @@ export function TrainingScreen(p){
       </div>
     </div>
   );}
-  if(forceNoPlan){var rd2=getCourseReadiness(p.race,p.profile);return(
+  if(forceNoPlan){var rd2=getCourseReadiness(p.race,p.profile,weeksUntil);return(
     <div><LogoBar/>
       <div className="px-4 pt-4">
         <div className="text-[18px] font-bold text-txt mb-1">{p.race.name}</div>
@@ -166,7 +166,7 @@ export function TrainingScreen(p){
   );}
   if(planWeeks.length===0){return(<div className="px-6 py-[60px] text-center"><div className="text-[18px] font-semibold text-txt mb-2">Plan indisponible</div><Btn label="Choisir une autre course" onClick={p.onGoToCourses} full/></div>);}
 
-  var rd=getCourseReadiness(p.race,p.profile);
+  var rd=getCourseReadiness(p.race,p.profile,weeksUntil);
   return(
     <><div><LogoBar/>
       <div className="px-4 pt-4 pb-3">
