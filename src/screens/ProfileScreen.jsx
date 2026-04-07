@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "../firebase.js";
 import { SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
+import { stravaAuthUrl } from "../utils/strava.js";
 import { LEVELS, LEVEL_LABELS } from "../data/training.js";
 import { PLANS } from "../data/plans.js";
 import { calcVdot, vdotToPaces } from "../utils/vdot.js";
@@ -254,6 +255,71 @@ export function ProfileScreen(p){
             </div>
           )}
         </Card>
+
+        {/* ── Strava ── */}
+        <div className="mb-3.5">
+          <div className="text-[12px] text-mut font-semibold uppercase tracking-[0.5px] mb-2">Connexions</div>
+          {p.stravaProfile?(
+            <div className="bg-surf border border-bord rounded-2xl overflow-hidden mb-2">
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-bord">
+                <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0"
+                  style={{background:"#FC4C02"}}>
+                  {p.stravaProfile.athleteAvatar
+                    ?<img src={p.stravaProfile.athleteAvatar} className="w-full h-full object-cover"/>
+                    :<div className="w-full h-full flex items-center justify-center text-white font-bold text-[16px]">S</div>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-txt">Strava connecté</div>
+                  <div className="text-[11px] text-sub truncate">{p.stravaProfile.athleteName||"Athlete #"+p.stravaProfile.athleteId}</div>
+                </div>
+                <div className="w-2 h-2 rounded-full shrink-0" style={{background:GR}}/>
+              </div>
+              <div className="flex">
+                <button onClick={p.onStravaSync}
+                  className="flex-1 py-3 text-[12px] font-semibold border-none bg-transparent cursor-pointer font-[inherit] border-r border-bord"
+                  style={{color:OR,borderRight:"1px solid "+BORD}}>
+                  🔄 Synchroniser
+                </button>
+                <button onClick={p.onStravaDisconnect}
+                  className="flex-1 py-3 text-[12px] font-semibold border-none bg-transparent cursor-pointer font-[inherit]"
+                  style={{color:MUT}}>
+                  Déconnecter
+                </button>
+              </div>
+            </div>
+          ):(
+            <a href={stravaAuthUrl()}
+              className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl mb-2 no-underline"
+              style={{background:"#FC4C02",border:"none"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+              <div className="flex-1">
+                <div className="text-[14px] font-bold text-white">Connecter Strava</div>
+                <div className="text-[11px]" style={{color:"rgba(255,255,255,0.75)"}}>Importe tes courses automatiquement</div>
+              </div>
+              <div className="text-white text-[18px] font-light">›</div>
+            </a>
+          )}
+
+          {/* ── Garmin ── */}
+          <div className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl"
+            style={{background:SURF2,border:"1px solid "+BORD}}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-[20px]"
+              style={{background:"#1A9F78"+"22",border:"1px solid "+"#1A9F78"+"44"}}>🟢</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-bold text-txt">Garmin Connect</div>
+              <div className="text-[11px] text-sub mt-[2px]">Exporte en GPX depuis l'app Garmin</div>
+            </div>
+            <button
+              onClick={function(){window.open("https://connect.garmin.com/modern/activities","_blank");}}
+              className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer font-[inherit] border-none"
+              style={{background:"#1A9F78"+"22",color:"#1A9F78"}}>
+              Ouvrir
+            </button>
+          </div>
+          <div className="text-[11px] text-mut mt-1.5 px-1 leading-[1.5]">
+            Garmin → Mes activités → Exporter GPX → importer via le bouton 📎 dans le Journal
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-2.5 mb-2.5 mt-1">
           <button onClick={function(){

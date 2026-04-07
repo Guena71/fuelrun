@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
 import { OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
+import { stravaExchange, fetchStravaRuns, stravaActivitiesToEntries } from "./utils/strava.js";
 import { RunnerHero } from "./components/RunnerHero.jsx";
 import { CheckinModal } from "./components/CheckinModal.jsx";
 import { OnboardingGuide } from "./components/OnboardingGuide.jsx";
@@ -50,6 +51,86 @@ export default function App(){
   var [journalPreselect,setJournalPreselect]=useState(null);
   var [toast,setToast]=useState(null);
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
+
+  // ── Strava state (stored inside profile.strava) ──
+  var stravaProfile=profile?profile.strava||null:null;
+
+  async function handleStravaCallback(code){
+    try{
+      var data=await stravaExchange({grant_type:"authorization_code",code:code});
+      var sp={
+        accessToken:data.access_token,
+        refreshToken:data.refresh_token,
+        expiresAt:data.expires_at,
+        athleteId:data.athlete?data.athlete.id:null,
+        athleteName:data.athlete?(data.athlete.firstname+" "+data.athlete.lastname).trim():null,
+        athleteAvatar:data.athlete?data.athlete.profile_medium:null,
+      };
+      var newProfile=Object.assign({},profile,{strava:sp});
+      setProfile(newProfile);
+      showToast("Strava connecté ✓ — synchronisation en cours…","ok");
+      // Auto-sync recent runs
+      var runs=await fetchStravaRuns(sp,function(refreshed){
+        var up=Object.assign({},newProfile,{strava:refreshed});
+        setProfile(up);
+      });
+      var newEntries=stravaActivitiesToEntries(runs);
+      setEntries(function(prev){return Object.assign({},newEntries,prev);});// prev wins (manual data priority)
+      showToast(runs.length+" sorties Strava importées ✓","ok");
+      logEvent(analytics,"strava_connected",{runs:runs.length});
+    }catch(e){
+      showToast("Erreur Strava : "+e.message,"err");
+    }
+  }
+
+  async function syncStrava(){
+    if(!stravaProfile)return;
+    try{
+      showToast("Synchronisation Strava…","ok");
+      var runs=await fetchStravaRuns(stravaProfile,function(refreshed){
+        setProfile(Object.assign({},profile,{strava:refreshed}));
+      });
+      var newEntries=stravaActivitiesToEntries(runs);
+      setEntries(function(prev){return Object.assign({},newEntries,prev);});
+      showToast(runs.length+" sorties synchronisées ✓","ok");
+    }catch(e){
+      showToast("Erreur sync Strava : "+e.message,"err");
+    }
+  }
+
+  function disconnectStrava(){
+    var newProfile=Object.assign({},profile);
+    delete newProfile.strava;
+    setProfile(newProfile);
+    showToast("Strava déconnecté","ok");
+  }
+
+  // Strava OAuth callback page
+  function StravaCallbackScreen(){
+    var nav=useNavigate();
+    useEffect(function(){
+      var params=new URLSearchParams(window.location.search);
+      var code=params.get("code");
+      var error=params.get("error");
+      if(error||!code){
+        showToast("Connexion Strava annulée","err");
+        nav("/profile",{replace:true});
+        return;
+      }
+      handleStravaCallback(code).finally(function(){
+        nav("/profile",{replace:true});
+      });
+    },[]);
+    return(
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 px-6 text-center">
+          <div className="text-[48px]">🔄</div>
+          <div className="text-[16px] font-semibold text-txt">Connexion à Strava…</div>
+          <div className="text-[13px] text-mut">Synchronisation de tes activités</div>
+        </div>
+      </div>
+    );
+  }
 
   // Stripe return URL handling
   useEffect(function(){
@@ -242,6 +323,9 @@ export default function App(){
             <Route path="/profile" element={
               <ProfileScreen profile={profile} race={race} stats={stats} entries={entries} user={user}
                 pushEnabled={pushEnabled}
+                stravaProfile={stravaProfile}
+                onStravaSync={syncStrava}
+                onStravaDisconnect={disconnectStrava}
                 onBack={function(){navigate("/home");}}
                 onToast={showToast}
                 onUpdate={function(form){setProfile(Object.assign({},profile,form));}}
@@ -263,6 +347,7 @@ export default function App(){
                 onSaveError={function(msg){showToast(msg,"err");}}
               />
             }/>
+            <Route path="/strava-callback" element={<StravaCallbackScreen/>}/>
             <Route path="*" element={<Navigate to="/home" replace/>}/>
           </Routes>
         </div>
