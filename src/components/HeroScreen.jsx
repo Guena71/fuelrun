@@ -1,6 +1,14 @@
+import { useState, useEffect } from "react";
 import { SURF2, BORD, TXT, SUB, MUT, OR } from "../data/constants.js";
 import { RunnerHero } from "./RunnerHero.jsx";
 import { Btn } from "./ui.jsx";
+
+var QUOTES=[
+  "Pas besoin d'être rapide, l'important est de commencer !",
+  "Chaque kilomètre parcouru est une victoire sur celui que tu étais hier.",
+  "Le seul mauvais entraînement, c'est celui qu'on n'a pas fait.",
+  "Tu n'as pas à être le meilleur. Tu as juste à être meilleur qu'avant.",
+];
 
 export function LogoBar(p){
   return(
@@ -17,21 +25,46 @@ export function LogoBar(p){
 }
 
 export function HeroScreen(p){
+  var [quoteIdx,setQuoteIdx]=useState(0);
+  var [fade,setFade]=useState(true);
+
+  useEffect(function(){
+    var timer=setInterval(function(){
+      setFade(false);
+      setTimeout(function(){
+        setQuoteIdx(function(i){return (i+1)%QUOTES.length;});
+        setFade(true);
+      },400);
+    },4000);
+    return function(){clearInterval(timer);};
+  },[]);
+
   return(
-    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40}}>
-        <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={160}/></div>
-        <div style={{fontSize:38,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</div>
-        <div style={{fontSize:16,color:SUB,maxWidth:280,lineHeight:1.8}}>Entraînement · Nutrition · Performance · Coach</div>
-        <div style={{padding:"12px 20px",background:OR+"12",borderRadius:12,border:"1px solid "+OR+"30",maxWidth:320}}>
-          <div style={{fontSize:14,color:OR,fontWeight:600,fontStyle:"italic"}}>Pas besoin d'être rapide, l'important est de commencer !</div>
+    <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#1c0a00 0%,#120600 30%,#0a0a0a 65%,#0a0a0a 100%)",display:"flex",flexDirection:"column",padding:"0 24px 40px",position:"relative",overflow:"hidden"}}>
+      {/* Halos décoratifs */}
+      <div style={{position:"absolute",top:-80,right:-80,width:320,height:320,borderRadius:"50%",background:OR,opacity:0.07,pointerEvents:"none"}}/>
+      <div style={{position:"absolute",bottom:80,left:-60,width:200,height:200,borderRadius:"50%",background:OR,opacity:0.04,pointerEvents:"none"}}/>
+
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40,position:"relative"}}>
+        <div style={{animation:"run 2.5s ease-in-out infinite",filter:"drop-shadow(0 0 24px "+OR+"50)"}}><RunnerHero size={160}/></div>
+        <div style={{fontSize:42,fontWeight:800,color:TXT,letterSpacing:"-1px",lineHeight:1}}>FuelRun</div>
+        <div style={{fontSize:15,color:SUB,maxWidth:280,lineHeight:1.8,letterSpacing:0.2}}>Entraînement · Nutrition · Performance · Coach</div>
+
+        {/* Citation rotative */}
+        <div style={{padding:"14px 20px",background:OR+"12",borderRadius:14,border:"1px solid "+OR+"28",maxWidth:320,minHeight:68,display:"flex",alignItems:"center",justifyContent:"center",transition:"opacity 0.4s ease",opacity:fade?1:0}}>
+          <div style={{fontSize:13,color:OR,fontWeight:600,fontStyle:"italic",lineHeight:1.6}}>"{QUOTES[quoteIdx]}"</div>
         </div>
-        <div style={{marginTop:24,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
-          <Btn label="Commencer" onClick={p.onCommencer} size="lg" full/>
+
+        {/* CTA */}
+        <div style={{marginTop:16,width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{position:"relative"}}>
+            <Btn label="Commencer gratuitement" onClick={p.onCommencer} size="lg" full/>
+            <div style={{marginTop:6,fontSize:11,color:OR,fontWeight:600,textAlign:"center"}}>14 jours gratuits · Sans carte bancaire</div>
+          </div>
           <Btn label="J'ai déjà un compte" onClick={p.onLogin} variant="ghost" size="md" full/>
         </div>
       </div>
-      <div style={{textAlign:"center",fontSize:11,color:MUT}}>En continuant, vous acceptez les conditions d'utilisation.</div>
+      <div style={{textAlign:"center",fontSize:11,color:MUT,position:"relative"}}>En continuant, vous acceptez les <span style={{color:MUT,textDecoration:"underline"}}>conditions d'utilisation</span>.</div>
     </div>
   );
 }
