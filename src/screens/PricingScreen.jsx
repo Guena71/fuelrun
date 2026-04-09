@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { analytics, logEvent } from "../firebase.js";
-import { SURF2, BORD, TXT, SUB, MUT, OR } from "../data/constants.js";
+import { BG, SURF2, BORD, TXT, SUB, MUT, OR, BL } from "../data/constants.js";
 import { PLANS } from "../data/plans.js";
 import { lsSet } from "../utils/storage.js";
 import { LogoBar } from "../components/HeroScreen.jsx";
@@ -26,69 +26,43 @@ export function PricingScreen(p){
   }
 
   return(
-    <div className="min-h-screen bg-bg flex flex-col px-6 pb-10 overflow-y-auto">
+    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
+      
       {p.onClose?(
-        <div className="flex items-center gap-3 pt-4">
-          <button onClick={p.onClose}
-            className="bg-transparent border-none text-brand text-sm font-semibold cursor-pointer font-[inherit] flex items-center gap-1.5 p-0">
-            ← Retour
-          </button>
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 0 0"}}>
+          <button onClick={p.onClose} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:0}}>← Retour</button>
         </div>
       ):<LogoBar/>}
-      <div style={{paddingTop:p.onClose?12:28}} className="mb-5">
-        <div className="text-[28px] font-extrabold text-txt mb-1.5">Choisir ma formule</div>
-        <div className="text-sm text-sub">Sans engagement · Résiliable à tout moment</div>
+      <div style={{paddingTop:p.onClose?12:28,marginBottom:20}}>
+        <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>Choisir ma formule</div>
+        <div style={{fontSize:14,color:SUB}}>Sans engagement · Résiliable à tout moment</div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {PLANS.map(function(pl,i){
           var isLoading=checkoutLoading===pl.id;
-          var isPrimary=i===2;
+          var accent=i===2?OR:i===1?BL:null;
           return(
-            <div key={i} onClick={function(){if(!checkoutLoading)handlePlan(pl);}
-            } className="relative rounded-2xl px-[18px] py-4 cursor-pointer"
-              style={{
-                background:isPrimary?OR+"10":SURF2,
-                border:"1.5px solid "+(isPrimary?OR:BORD),
-                cursor:checkoutLoading?"not-allowed":"pointer",
-                opacity:checkoutLoading&&!isLoading?0.6:1
-              }}>
-              {pl.tag&&(
-                <div className="absolute -top-2.5 right-4 text-white text-[10px] font-bold rounded-[6px] px-2.5 py-[2px]"
-                  style={{background:pl.color}}>{pl.tag}</div>
-              )}
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-[17px] font-extrabold" style={{color:isPrimary?OR:TXT}}>{pl.name}</div>
-                <div>
-                  <span className="text-[22px] font-extrabold" style={{color:pl.color}}>{pl.price==="0"?"0 €":pl.price+"€"}</span>
-                  <span className="text-[11px] text-mut ml-[3px]">{pl.per}</span>
-                </div>
+            <div key={i} onClick={function(){if(!checkoutLoading)handlePlan(pl);}} style={{position:"relative",background:accent?accent+"18":SURF2,border:"2px solid "+(accent||BORD),borderRadius:16,padding:"16px 18px",cursor:checkoutLoading?"not-allowed":"pointer",opacity:checkoutLoading&&!isLoading?0.6:1,boxShadow:accent?"0 0 0 1px "+accent+"33":undefined}}>
+              {pl.tag?<div style={{position:"absolute",top:-10,right:16,background:pl.color,color:"#fff",fontSize:10,fontWeight:700,borderRadius:6,padding:"2px 10px"}}>{pl.tag}</div>:null}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                <div style={{fontSize:17,fontWeight:800,color:accent||TXT}}>{pl.name}</div>
+                <div><span style={{fontSize:22,fontWeight:800,color:pl.color}}>{pl.price==="0"?"0 €":pl.price+"€"}</span><span style={{fontSize:11,color:MUT,marginLeft:3}}>{pl.per}</span></div>
               </div>
-              <div className="text-[12px] text-sub mb-2.5">{pl.desc}</div>
-              <div className="h-px bg-bord mb-2.5"/>
-              <div className="flex flex-col gap-1.5 mb-3">
+              <div style={{fontSize:12,color:SUB,marginBottom:10}}>{pl.desc}</div>
+              <div style={{height:1,background:BORD,marginBottom:10}}/>
+              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
                 {pl.items.map(function(it,j){
                   var isHeader=it.endsWith(":");
-                  return(
-                    <div key={j} className="flex items-center gap-2">
-                      {isHeader
-                        ?<span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{color:pl.color}}>{it}</span>
-                        :<>
-                          <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                            style={{background:pl.color+"22",border:"1px solid "+pl.color+"44"}}>
-                            <div className="w-[5px] h-[5px] rounded-full" style={{background:pl.color}}/>
-                          </div>
-                          <span className="text-[13px]" style={{color:i===0?SUB:TXT}}>{it}</span>
-                        </>
-                      }
-                    </div>
-                  );
+                  return(<div key={j} style={{display:"flex",alignItems:"center",gap:8}}>
+                    {isHeader
+                      ?<span style={{fontSize:11,fontWeight:700,color:pl.color,textTransform:"uppercase",letterSpacing:0.5}}>{it}</span>
+                      :<><div style={{width:16,height:16,borderRadius:"50%",background:pl.color+"22",border:"1px solid "+pl.color+"44",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><div style={{width:5,height:5,borderRadius:"50%",background:pl.color}}/></div><span style={{fontSize:13,color:i===0?SUB:TXT}}>{it}</span></>
+                    }
+                  </div>);
                 })}
               </div>
-              <div className="rounded-[10px] py-2.5 text-center"
-                style={{background:isPrimary?OR:SURF2,border:!isPrimary?"1px solid "+BORD:"none"}}>
-                <span className="text-[13px] font-semibold" style={{color:isPrimary?"#fff":MUT}}>
-                  {isLoading?"Redirection…":pl.cta}
-                </span>
+              <div style={{background:accent||SURF2,borderRadius:10,padding:"10px",textAlign:"center",border:!accent?"1px solid "+BORD:"none"}}>
+                <span style={{fontSize:13,fontWeight:600,color:accent?"#fff":SUB}}>{isLoading?"Redirection…":pl.cta}</span>
               </div>
             </div>
           );

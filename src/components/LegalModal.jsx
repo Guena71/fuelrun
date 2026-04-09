@@ -1,4 +1,4 @@
-import { TXT, SUB } from "../data/constants.js";
+import { SURF, SURF2, BORD, TXT, SUB, OR } from "../data/constants.js";
 
 var LEGAL_CGU=`CONDITIONS GÉNÉRALES D'UTILISATION
 
@@ -86,30 +86,19 @@ export function LegalModal(p){
   var content=p.open==="cgu"?LEGAL_CGU:LEGAL_PRIVACY;
   var title=p.open==="cgu"?"Conditions Générales d'Utilisation":"Politique de Confidentialité";
   return(
-    <div className="fixed inset-0 z-[1000] bg-black/85 flex flex-col">
-      <div className="bg-surf flex-1 flex flex-col mt-12 rounded-t-[24px] overflow-hidden">
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-bord shrink-0">
-          <div className="text-base font-bold text-txt">{title}</div>
-          <button onClick={p.onClose}
-            className="bg-surf2 border-none text-txt text-xl w-8 h-8 rounded-lg cursor-pointer flex items-center justify-center font-[inherit]">
-            ×
-          </button>
+    <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.85)",display:"flex",flexDirection:"column"}}>
+      <div style={{background:SURF,flex:1,display:"flex",flexDirection:"column",marginTop:48,borderRadius:"24px 24px 0 0",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 20px 16px",borderBottom:"1px solid "+BORD,flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:TXT}}>{title}</div>
+          <button onClick={p.onClose} style={{background:SURF2,border:"none",color:TXT,fontSize:20,width:32,height:32,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>×</button>
         </div>
-        <div className="overflow-y-auto flex-1 p-5">
+        <div style={{overflowY:"auto",flex:1,padding:"20px"}}>
           {content.split("\n").map(function(line,i){
             var isSec=line.match(/^\d+\./);
             var isBullet=line.startsWith("•");
-            if(line==="")return <div key={i} className="h-2"/>;
-            return(
-              <div key={i} style={{
-                fontSize:isSec?14:13,
-                fontWeight:isSec?700:400,
-                color:isSec?TXT:SUB,
-                marginBottom:isSec?6:3,
-                paddingLeft:isBullet?12:0,
-                lineHeight:1.6
-              }}>{line}</div>
-            );
+            return line===""
+              ?<div key={i} style={{height:8}}/>
+              :<div key={i} style={{fontSize:isSec?14:13,fontWeight:isSec?700:400,color:isSec?TXT:isBullet?SUB:SUB,marginBottom:isSec?6:3,paddingLeft:isBullet?12:0,lineHeight:1.6}}>{line}</div>;
           })}
         </div>
       </div>

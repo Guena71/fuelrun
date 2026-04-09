@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
-import { SURF2, OR, GR, BL, YE, RE } from "../data/constants.js";
+import { BG, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { fmtTime, fmtPaceSec } from "../utils/date.js";
 
 export function parseGpx(text){
@@ -54,7 +54,6 @@ export function GpsTrackerModal({onSave,onClose}){
   var timerRef=useRef(null);
   var startTs=useRef(null);
   var elapsedBase=useRef(0);
-
   function startTracking(){
     setStatus("running");
     startTs.current=Date.now();
@@ -72,62 +71,37 @@ export function GpsTrackerModal({onSave,onClose}){
   }
   function stopTracking(){pauseTracking();setStatus("done");}
   useEffect(function(){return function(){if(watchId.current!=null)navigator.geolocation.clearWatch(watchId.current);clearInterval(timerRef.current);};},[]); // eslint-disable-line
-
   var km=calcTrackKm(track);
   var pace=km>0&&elapsed>0?fmtPaceSec(elapsed/km):"--:--";
-
   return(
-    <div className="fixed inset-0 bg-bg z-[300] flex flex-col pb-8">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-bord">
-        <button onClick={onClose}
-          className="bg-surf2 border border-bord rounded-lg px-3.5 py-1.5 text-sub text-[13px] cursor-pointer font-[inherit]">
-          Annuler
-        </button>
-        <div className="text-sm font-semibold text-txt">Enregistrement GPS</div>
-        <div className="w-[70px]"/>
+    <div style={{position:"fixed",inset:0,background:BG,zIndex:300,display:"flex",flexDirection:"column",padding:"0 0 32px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid "+BORD}}>
+        <button onClick={onClose} style={{background:SURF2,border:"1px solid "+BORD,borderRadius:8,padding:"6px 14px",color:SUB,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+        <div style={{fontSize:14,fontWeight:600,color:TXT}}>Enregistrement GPS</div>
+        <div style={{width:70}}/>
       </div>
-
-      <div className="flex-1 px-4 pt-3">
+      <div style={{flex:1,padding:"12px 16px 0"}}>
         {track.length>1
           ?<RunMap track={track} height={220}/>
-          :<div className="h-[220px] rounded-xl bg-surf2 border border-bord flex items-center justify-center flex-col gap-2">
-            <span className="text-[40px]">📍</span>
-            <span className="text-[12px] text-sub">En attente du GPS…</span>
-          </div>
+          :<div style={{height:220,borderRadius:12,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:8}}><span style={{fontSize:40}}>📍</span><span style={{fontSize:12,color:SUB}}>En attente du GPS…</span></div>
         }
       </div>
-
-      <div className="flex justify-around px-6 py-5">
+      <div style={{display:"flex",justifyContent:"space-around",padding:"20px 24px"}}>
         {[{label:"Durée",val:fmtTime(elapsed),col:OR},{label:"Distance",val:km.toFixed(2)+" km",col:BL},{label:"Allure",val:pace+" /km",col:GR}].map(function(s,i){
-          return(
-            <div key={i} className="text-center">
-              <div className="text-[22px] font-extrabold" style={{color:s.col}}>{s.val}</div>
-              <div className="text-[10px] text-mut uppercase tracking-[0.5px] mt-0.5">{s.label}</div>
-            </div>
-          );
+          return <div key={i} style={{textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:s.col}}>{s.val}</div><div style={{fontSize:10,color:MUT,textTransform:"uppercase",letterSpacing:0.5,marginTop:2}}>{s.label}</div></div>;
         })}
       </div>
-
-      <div className="flex justify-center gap-4 px-6">
-        {status==="idle"&&(
-          <button onClick={startTracking}
-            className="w-20 h-20 rounded-full border-none cursor-pointer text-[28px] text-white"
-            style={{background:GR,boxShadow:"0 0 24px "+GR+"60"}}>▶</button>
-        )}
+      <div style={{display:"flex",justifyContent:"center",gap:16,padding:"0 24px"}}>
+        {status==="idle"&&<button onClick={startTracking} style={{width:80,height:80,borderRadius:"50%",background:GR,border:"none",cursor:"pointer",fontSize:28,boxShadow:"0 0 24px "+GR+"60",color:"#fff"}}>▶</button>}
         {status==="running"&&<>
-          <button onClick={pauseTracking} className="w-[72px] h-[72px] rounded-full border-none cursor-pointer text-2xl text-white" style={{background:YE}}>⏸</button>
-          <button onClick={stopTracking}  className="w-[72px] h-[72px] rounded-full border-none cursor-pointer text-2xl text-white" style={{background:RE}}>⏹</button>
+          <button onClick={pauseTracking} style={{width:72,height:72,borderRadius:"50%",background:YE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏸</button>
+          <button onClick={stopTracking} style={{width:72,height:72,borderRadius:"50%",background:RE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏹</button>
         </>}
         {status==="paused"&&<>
-          <button onClick={startTracking} className="w-[72px] h-[72px] rounded-full border-none cursor-pointer text-2xl text-white" style={{background:GR}}>▶</button>
-          <button onClick={stopTracking}  className="w-[72px] h-[72px] rounded-full border-none cursor-pointer text-2xl text-white" style={{background:RE}}>⏹</button>
+          <button onClick={startTracking} style={{width:72,height:72,borderRadius:"50%",background:GR,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>▶</button>
+          <button onClick={stopTracking} style={{width:72,height:72,borderRadius:"50%",background:RE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏹</button>
         </>}
-        {status==="done"&&(
-          <button onClick={function(){onSave({track:track,km:String(km.toFixed(2)),min:String(Math.round(elapsed/60))});}}
-            className="px-10 py-4 rounded-2xl border-none cursor-pointer text-base font-bold text-white bg-brand font-[inherit]">
-            Enregistrer
-          </button>
-        )}
+        {status==="done"&&<button onClick={function(){onSave({track:track,km:String(km.toFixed(2)),min:String(Math.round(elapsed/60))});}} style={{padding:"16px 40px",borderRadius:14,background:OR,border:"none",cursor:"pointer",fontSize:16,fontWeight:700,color:"#fff",fontFamily:"inherit"}}>Enregistrer</button>}
       </div>
     </div>
   );

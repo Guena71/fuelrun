@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
-import { OR, GR, RE } from "./data/constants.js";
+import { BG, SURF, BORD, OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
+import { checkNewBadges, getWeeklyContractKey, contractProgress, sessionXP, xpToLevel } from "./utils/gamification.js";
 import { stravaExchange, fetchStravaRuns, stravaActivitiesToEntries } from "./utils/strava.js";
 import { RunnerHero } from "./components/RunnerHero.jsx";
 import { CheckinModal } from "./components/CheckinModal.jsx";
@@ -27,6 +28,26 @@ var NAV=[
   {path:"/coach",    label:"Coach",   icon:function(c){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 2H4a1 1 0 00-1 1v12a1 1 0 001 1h3l3 4 3-4h7a1 1 0 001-1V3a1 1 0 00-1-1z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="9" cy="9" r="1" fill={c}/><circle cx="12" cy="9" r="1" fill={c}/><circle cx="15" cy="9" r="1" fill={c}/></svg>;}},
 ];
 
+function StravaCallbackScreen({onCode,onError}){
+  var nav=useNavigate();
+  useEffect(function(){
+    var params=new URLSearchParams(window.location.search);
+    var code=params.get("code");
+    var error=params.get("error");
+    if(error||!code){onError();nav("/profile",{replace:true});return;}
+    onCode(code).finally(function(){nav("/profile",{replace:true});});
+  },[]);
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,padding:"0 24px",textAlign:"center"}}>
+        <div style={{fontSize:48}}>🔄</div>
+        <div style={{fontSize:16,fontWeight:600,color:"#f0f0f0"}}>Connexion à Strava…</div>
+        <div style={{fontSize:13,color:"#666"}}>Synchronisation de tes activités</div>
+      </div>
+    </div>
+  );
+}
+
 function Splash(){
   var [step,setStep]=useState(0);
   if(step===0)return <HeroScreen onCommencer={function(){setStep(1);}} onLogin={function(){setStep(2);}}/>;
@@ -50,6 +71,8 @@ export default function App(){
   var [showPricing,setShowPricing]=useState(false);
   var [journalPreselect,setJournalPreselect]=useState(null);
   var [toast,setToast]=useState(null);
+  var [gamification,setGamRaw]=useState({xp:0,badges:[],contract:null,contractsKept:0,bossKills:0});
+  var [xpPopup,setXpPopup]=useState(null);
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
 
   // ── Strava state (stored inside profile.strava) ──
@@ -105,32 +128,6 @@ export default function App(){
     showToast("Strava déconnecté","ok");
   }
 
-  // Strava OAuth callback page
-  function StravaCallbackScreen(){
-    var nav=useNavigate();
-    useEffect(function(){
-      var params=new URLSearchParams(window.location.search);
-      var code=params.get("code");
-      var error=params.get("error");
-      if(error||!code){
-        showToast("Connexion Strava annulée","err");
-        nav("/profile",{replace:true});
-        return;
-      }
-      handleStravaCallback(code).finally(function(){
-        nav("/profile",{replace:true});
-      });
-    },[]);
-    return(
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 px-6 text-center">
-          <div className="text-[48px]">🔄</div>
-          <div className="text-[16px] font-semibold text-txt">Connexion à Strava…</div>
-          <div className="text-[13px] text-mut">Synchronisation de tes activités</div>
-        </div>
-      </div>
-    );
-  }
 
   // Stripe return URL handling
   useEffect(function(){
@@ -169,6 +166,7 @@ export default function App(){
           setStatsRaw(data.stats||{sessions:0,km:0,streak:0});
           var wb=data.wellbeing;
           setWellbeingRaw(wb&&wb.date===today?wb.data:null);
+          if(data.gamification)setGamRaw(data.gamification);
           setAuthState("app");
         } else {
           setAuthState("onboarding");
@@ -182,16 +180,51 @@ export default function App(){
   function setRace(v){setRaceRaw(v);if(user)fsSave(user.uid,{race:v});}
   function setStats(fn){setStatsRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;if(user)fsSave(user.uid,{stats:next});return next;});}
   function setWellbeing(wb){setWellbeingRaw(wb);if(user)fsSave(user.uid,{wellbeing:wb?{date:today,data:wb}:null});}
+  function setGamification(fn){setGamRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;if(user)fsSave(user.uid,{gamification:next});return next;});}
 
-  function addSession(km){
+  function addXP(amount,label){
+    setGamification(function(g){return Object.assign({},g,{xp:(g.xp||0)+amount});});
+    setXpPopup({amount:amount,label:label||"",ts:Date.now()});
+    setTimeout(function(){setXpPopup(null);},2000);
+  }
+
+  function addSession(km,session){
+    var xp=session?sessionXP(session):50;
     setStats(function(s){
       var yesterday=new Date(new Date().setHours(0,0,0,0));
       yesterday.setDate(yesterday.getDate()-1);
       var yestKey=yesterday.toDateString();
       var hadYesterday=!!(entries&&entries[yestKey]&&entries[yestKey].done);
-      return{sessions:s.sessions+1,km:s.km+km,streak:hadYesterday?s.streak+1:1};
+      return{sessions:s.sessions+1,km:s.km+(parseFloat(km)||0),streak:hadYesterday?s.streak+1:1};
     });
+    addXP(xp,"Séance validée");
     logEvent(analytics,"session_logged",{km:km});
+    // Check if weekly contract is now fulfilled
+    var wk=getWeeklyContractKey();
+    var ctr=gamification.contract;
+    if(ctr&&ctr.weekKey===wk&&!gamification.contractCredited){
+      var done=contractProgress(entries||{},wk)+1;
+      if(done>=ctr.target){
+        setGamification(function(g){return Object.assign({},g,{contractsKept:(g.contractsKept||0)+1,contractCredited:true});});
+        addXP(50,"Contrat tenu !");
+        showToast("🤝 Contrat de la semaine respecté ! +50 XP","ok");
+      }
+    }
+  }
+
+  function onBossKill(){
+    setGamification(function(g){return Object.assign({},g,{bossKills:(g.bossKills||0)+1});});
+    addXP(25,"Session boss !");
+  }
+
+  function onContractKept(){
+    setGamification(function(g){return Object.assign({},g,{contractsKept:(g.contractsKept||0)+1});});
+    addXP(50,"Contrat tenu !");
+    showToast("🤝 Contrat de la semaine respecté ! +50 XP","ok");
+  }
+
+  function setWeeklyContract(contract){
+    setGamification(function(g){return Object.assign({},g,{contract:contract,contractCredited:false});});
   }
 
   var VAPID_PUBLIC_KEY="BDnhMkrmir_7UMOVXnPOeMYv_e4h5lrvKLmb-I9VJyMUZPZDm7x9g1fqhFNZj7-csn6jAV6LuzCfJwRSpdLtO7k";
@@ -233,10 +266,10 @@ export default function App(){
 
   // ── Loading ──
   if(authState==="loading")return(
-    <div className="min-h-screen bg-bg flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
+    <div style={{minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
         <RunnerHero size={64}/>
-        <div className="text-sm text-mut">Chargement…</div>
+        <div style={{fontSize:13,color:"#686868"}}>Chargement…</div>
       </div>
     </div>
   );
@@ -270,21 +303,27 @@ export default function App(){
 
   var goPrice=function(){setShowPricing(true);};
   var curPath=location.pathname;
+  var [coachContext,setCoachContext]=useState(null);
+  function openCoach(ctx){setCoachContext(ctx||null);navigate("/coach");}
+  var CONTEXT_LABELS={"/home":"l'accueil","/courses":"la page Courses","/training":"la page Plan d'entraînement","/suivi":"la page Suivi","/journal":"le Journal"};
 
   return(
-    <div className="bg-bg min-h-screen flex justify-center overflow-x-hidden max-w-[100vw]">
-      <div className="w-full max-w-[430px] bg-bg h-screen flex flex-col overflow-x-hidden">
-        <div className="flex-1 overflow-y-auto overflow-x-hidden touch-pan-y pb-20">
+    <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
+      <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
+        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80}}>
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace/>}/>
             <Route path="/home" element={
               <HomeScreen profile={profile} race={race} stats={stats} entries={entries} wellbeing={wellbeing}
+                gamification={gamification}
                 onCheckin={function(){setShowCheckin(true);}}
                 onShowPricing={goPrice}
                 onGoToProfile={function(){navigate("/profile");}}
                 onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});navigate("/journal");}}
                 onGoToSuivi={function(){navigate("/suivi");}}
                 onSignOut={function(){signOut(auth);}}
+                onSetContract={setWeeklyContract}
+                onContractKept={onContractKept}
               />
             }/>
             <Route path="/courses" element={
@@ -295,12 +334,16 @@ export default function App(){
             }/>
             <Route path="/training" element={
               <TrainingScreen profile={profile} race={race} setRace={setRace}
+                entries={entries}
+                gamification={gamification}
                 onGoToCourses={function(){navigate("/courses");}}
                 onShowPricing={goPrice}
+                onBossKill={onBossKill}
               />
             }/>
             <Route path="/suivi" element={
               <SuiviScreen profile={profile} race={race} stats={stats} entries={entries}
+                gamification={gamification}
                 stravaProfile={stravaProfile}
                 onStravaSync={syncStrava}
                 onSetEntries={setEntries}
@@ -320,6 +363,8 @@ export default function App(){
             }/>
             <Route path="/coach" element={
               <CoachScreen profile={profile} race={race} user={user} entries={entries} wellbeing={wellbeing}
+                gamification={gamification} stats={stats}
+                context={coachContext}
                 onShowPricing={goPrice}
               />
             }/>
@@ -350,27 +395,33 @@ export default function App(){
                 onSaveError={function(msg){showToast(msg,"err");}}
               />
             }/>
-            <Route path="/strava-callback" element={<StravaCallbackScreen/>}/>
+            <Route path="/strava-callback" element={<StravaCallbackScreen onCode={handleStravaCallback} onError={function(){showToast("Connexion Strava annulée","err");}}/>}/>
             <Route path="*" element={<Navigate to="/home" replace/>}/>
           </Routes>
         </div>
 
         {/* ── Bottom nav bar ── */}
         {NAV.some(function(n){return n.path===curPath;})&&(
-          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-surf border-t border-bord flex z-50 pb-1">
+          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:50,paddingBottom:4}}>
             {NAV.map(function(n){var active=curPath===n.path;var color=active?OR:"#686868";return(
-              <button key={n.path} onClick={function(){navigate(n.path);}} className="flex-1 flex flex-col items-center gap-[3px] pt-2 pb-1 cursor-pointer bg-transparent border-none relative">
+              <button key={n.path} onClick={function(){navigate(n.path);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,paddingTop:8,paddingBottom:4,cursor:"pointer",background:"transparent",border:"none",position:"relative"}}>
                 {n.icon(color)}
                 <span style={{fontSize:9,fontWeight:active?600:400,color:color,letterSpacing:0.2}}>{n.label}</span>
-                {active&&<div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2.5px] bg-brand rounded-b-sm"/>}
+                {active&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,background:OR,borderRadius:"0 0 3px 3px"}}/>}
               </button>
             );})}
           </div>
         )}
+        {/* ── Floating coach button (visible on all non-coach tabs) ── */}
+        {curPath!=="/coach"&&NAV.some(function(n){return n.path===curPath;})&&(
+          <button onClick={function(){openCoach(CONTEXT_LABELS[curPath]||null);}} style={{position:"fixed",bottom:72,right:"calc(50% - 215px + 16px)",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,"+OR+","+OR+"cc)",border:"none",cursor:"pointer",zIndex:60,boxShadow:"0 4px 16px rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>
+            🏃
+          </button>
+        )}
       </div>
 
       {showPricing&&(
-        <div className="fixed inset-0 bg-bg z-[450] overflow-y-auto">
+        <div style={{position:"fixed",inset:0,background:BG,zIndex:450,overflowY:"auto"}}>
           <PricingScreen user={user} onClose={function(){setShowPricing(false);}} onStart={function(){
             var chosen=ls("fr_pending_plan","gratuit");
             setProfile(Object.assign({},profile,{plan:chosen}));
@@ -381,10 +432,16 @@ export default function App(){
       )}
       {showCheckin?<CheckinModal onDone={function(wb){setWellbeing(wb);setShowCheckin(false);}} onClose={function(){setShowCheckin(false);}}/>:null}
       {showGuide?<OnboardingGuide onDone={function(){lsSet("fr_guide_done",true);setShowGuide(false);}} onTab={function(path){navigate(path);}}/>:null}
+      {xpPopup&&(
+        <div style={{position:"fixed",top:80,left:"50%",transform:"translateX(-50%)",zIndex:700,pointerEvents:"none",animation:"slideUp .3s ease"}}>
+          <div style={{background:"linear-gradient(135deg,"+OR+"ee,"+OR+"bb)",color:"#fff",borderRadius:20,padding:"8px 18px",fontSize:14,fontWeight:700,boxShadow:"0 4px 16px rgba(0,0,0,.4)",display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap"}}>
+            <span style={{fontSize:18}}>⭐</span>+{xpPopup.amount} XP{xpPopup.label?" · "+xpPopup.label:""}
+          </div>
+        </div>
+      )}
       {toast&&(
-        <div className="fixed bottom-[82px] left-1/2 -translate-x-1/2 z-[600] pointer-events-none w-[calc(100%-48px)] max-w-[382px]">
-          <div className="text-white rounded-xl px-[18px] py-3 text-[13px] font-semibold text-center shadow-[0_4px_20px_rgba(0,0,0,.4)] anim-slideUp"
-            style={{background:toast.type==="err"?RE:GR}}>
+        <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",zIndex:600,pointerEvents:"none",width:"calc(100% - 48px)",maxWidth:382}}>
+          <div style={{background:toast.type==="err"?RE:GR,color:"#fff",borderRadius:12,padding:"12px 18px",fontSize:13,fontWeight:600,textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,.4)",animation:"slideUp .3s ease"}}>
             {toast.msg}
           </div>
         </div>

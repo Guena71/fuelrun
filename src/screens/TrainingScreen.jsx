@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { SURF, SURF2, BORD, TXT, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
+import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { weeksUntil, fmtDate, fmtS } from "../utils/date.js";
 import { buildPlan, getPlanWeeks, getCourseReadiness } from "../utils/plan.js";
 import { planLevel } from "../utils/nutrition.js";
@@ -9,6 +9,7 @@ import { Btn, Card, Stat } from "../components/ui.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
 import { RaceStrategyModal } from "../components/RaceStrategyModal.jsx";
 import { SessionCard } from "../components/SessionCard.jsx";
+import { getBossSession } from "../utils/gamification.js";
 
 var FREE_PLAN_WEEKS=3;
 
@@ -52,33 +53,32 @@ export function TrainingScreen(p){
     var sugg0=suggestRaces(p.profile,races,"both");
     return(
       <div><LogoBar/>
-        <div className="px-4 pt-6">
-          <div className="text-center mb-6">
-            <div className="text-[18px] font-bold text-txt mb-1.5">Aucun plan actif</div>
-            <div className="text-[13px] text-sub">Choisis une course pour générer ton plan d'entraînement.</div>
+        <div style={{padding:"24px 16px 0"}}>
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:6}}>Aucun plan actif</div>
+            <div style={{fontSize:13,color:SUB}}>Choisis une course pour générer ton plan d'entraînement.</div>
           </div>
           {sugg0.length>0?(
-            <div className="mb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="text-[13px] font-bold text-txt">Courses recommandées</div>
-                <div className="px-2 py-[2px] rounded-[20px]" style={{background:OR+"22",border:"1px solid "+OR+"44"}}><span className="text-[10px] font-bold" style={{color:OR}}>Pour ton niveau</span></div>
+            <div style={{marginBottom:20}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <div style={{fontSize:13,fontWeight:700,color:TXT}}>Courses recommandées</div>
+                <div style={{padding:"2px 8px",borderRadius:20,background:OR+"22",border:"1px solid "+OR+"44"}}><span style={{fontSize:10,color:OR,fontWeight:700}}>Pour ton niveau</span></div>
               </div>
-              <div className="flex flex-col gap-2.5">
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {sugg0.map(function(r){
                   var col=r.type==="trail"?GR:BL;
                   var wks=weeksUntil(r.date);
                   return(
-                    <div key={r.id} onClick={function(){p.setRace(r);}} className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-surf border border-bord cursor-pointer">
-                      <div className="w-[46px] h-[46px] rounded-xl flex flex-col items-center justify-center shrink-0"
-                        style={{background:col+"18",border:"1px solid "+col+"33"}}>
-                        <div className="text-[16px] font-extrabold leading-none" style={{color:col}}>{r.dist}</div>
-                        <div className="text-[8px] font-semibold" style={{color:col}}>km</div>
+                    <div key={r.id} onClick={function(){p.setRace(r);}} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:SURF,border:"1px solid "+BORD,cursor:"pointer"}}>
+                      <div style={{width:46,height:46,borderRadius:12,background:col+"18",border:"1px solid "+col+"33",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        <div style={{fontSize:16,fontWeight:800,color:col,lineHeight:1}}>{r.dist}</div>
+                        <div style={{fontSize:8,color:col,fontWeight:600}}>km</div>
                       </div>
-                      <div className="flex-1">
-                        <div className="text-[14px] font-semibold text-txt mb-[3px]">{r.name}{r.star?" ⭐":""}</div>
-                        <div className="text-[11px] text-sub">{r.city} · dans {wks} semaines · {r.type==="trail"?"Trail":"Route"}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,color:TXT,marginBottom:3}}>{r.name}{r.star?" ⭐":""}</div>
+                        <div style={{fontSize:11,color:SUB}}>{r.city} · dans {wks} semaines · {r.type==="trail"?"Trail":"Route"}</div>
                       </div>
-                      <div className="text-[18px] text-mut shrink-0">›</div>
+                      <div style={{color:MUT,fontSize:18,flexShrink:0}}>›</div>
                     </div>
                   );
                 })}
@@ -91,40 +91,38 @@ export function TrainingScreen(p){
     );
   }
   if(plan&&plan.tooShort&&!forceNoPlan){return(
-    <div className="px-6 py-10 text-center">
-      <div className="text-[48px] mb-4">⚠️</div>
-      <div className="text-[18px] font-bold mb-3" style={{color:RE}}>Délai trop court</div>
-      <div className="text-[14px] text-sub leading-[1.8] mb-4">
-        Il ne reste que <span className="font-semibold" style={{color:YE}}>{plan.availWeeks} semaine{plan.availWeeks>1?"s":""}</span> avant cette course.
-        Un plan cohérent nécessite au minimum <span className="font-semibold" style={{color:OR}}>{plan.minViable} semaines</span>.
-        Le plan idéal serait de <span className="font-semibold" style={{color:GR}}>{plan.idealWeeks} semaines</span>.
+    <div style={{padding:"40px 24px",textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:16}}>⚠️</div>
+      <div style={{fontSize:18,fontWeight:700,color:RE,marginBottom:12}}>Délai trop court</div>
+      <div style={{fontSize:14,color:SUB,lineHeight:1.8,marginBottom:16}}>
+        Il ne reste que <span style={{color:YE,fontWeight:600}}>{plan.availWeeks} semaine{plan.availWeeks>1?"s":""}</span> avant cette course.
+        Un plan cohérent nécessite au minimum <span style={{color:OR,fontWeight:600}}>{plan.minViable} semaines</span>.
+        Le plan idéal serait de <span style={{color:GR,fontWeight:600}}>{plan.idealWeeks} semaines</span>.
       </div>
-      <div className="px-[18px] py-3.5 rounded-2xl text-[13px] text-sub leading-[1.7] mb-6"
-        style={{background:YE+"12",border:"1px solid "+YE+"33"}}>
+      <div style={{padding:"14px 18px",background:YE+"12",borderRadius:14,border:"1px solid "+YE+"33",fontSize:13,color:SUB,lineHeight:1.7,marginBottom:24}}>
         Tu peux participer sans plan structuré, ou choisir une course plus lointaine.
       </div>
       {(function(){
         var sugg1=suggestRaces(p.profile,races,p.race&&p.race.type).filter(function(r){return r.id!==p.race.id;}).slice(0,3);
         if(!sugg1.length)return null;
         return(
-          <div className="mb-4">
-            <div className="text-[12px] font-bold text-mut uppercase tracking-[0.8px] mb-2.5">Courses adaptées à ton niveau</div>
-            <div className="flex flex-col gap-2">
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:MUT,textTransform:"uppercase",letterSpacing:0.8,marginBottom:10}}>Courses adaptées à ton niveau</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {sugg1.map(function(r){
                 var col=r.type==="trail"?GR:BL;
                 var wks=weeksUntil(r.date);
                 return(
-                  <div key={r.id} onClick={function(){p.setRace(r);}} className="flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-surf border border-bord cursor-pointer">
-                    <div className="w-10 h-10 rounded-[10px] flex flex-col items-center justify-center shrink-0"
-                      style={{background:col+"18"}}>
-                      <div className="text-[14px] font-extrabold leading-none" style={{color:col}}>{r.dist}</div>
-                      <div className="text-[8px] font-semibold" style={{color:col}}>km</div>
+                  <div key={r.id} onClick={function(){p.setRace(r);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:SURF,border:"1px solid "+BORD,cursor:"pointer"}}>
+                    <div style={{width:40,height:40,borderRadius:10,background:col+"18",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <div style={{fontSize:14,fontWeight:800,color:col,lineHeight:1}}>{r.dist}</div>
+                      <div style={{fontSize:8,color:col,fontWeight:600}}>km</div>
                     </div>
-                    <div className="flex-1">
-                      <div className="text-[13px] font-semibold text-txt mb-0.5">{r.name}{r.star?" ⭐":""}</div>
-                      <div className="text-[11px] text-sub">{r.city} · dans {wks} sem.</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:TXT,marginBottom:2}}>{r.name}{r.star?" ⭐":""}</div>
+                      <div style={{fontSize:11,color:SUB}}>{r.city} · dans {wks} sem.</div>
                     </div>
-                    <div className="text-[16px] text-mut">›</div>
+                    <div style={{color:MUT,fontSize:16}}>›</div>
                   </div>
                 );
               })}
@@ -132,7 +130,7 @@ export function TrainingScreen(p){
           </div>
         );
       })()}
-      <div className="flex flex-col gap-2.5">
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
         <Btn label="Voir toutes les courses" onClick={p.onGoToCourses} full/>
         <Btn label="Continuer sans plan structuré" onClick={function(){setForceNoPlan(true);}} variant="ghost" full/>
       </div>
@@ -140,129 +138,102 @@ export function TrainingScreen(p){
   );}
   if(forceNoPlan){var rd2=getCourseReadiness(p.race,p.profile,weeksUntil);return(
     <div><LogoBar/>
-      <div className="px-4 pt-4">
-        <div className="text-[18px] font-bold text-txt mb-1">{p.race.name}</div>
-        <div className="text-[13px] text-sub mb-4">{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
-        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl mb-4"
-          style={{background:rd2.color+"12",border:"1px solid "+rd2.color+"33"}}>
-          <span className="text-[14px]">{rd2.icon}</span>
-          <span className="text-[12px] font-bold" style={{color:rd2.color}}>{rd2.label}</span>
-          <span className="text-[12px] text-sub"> · {rd2.msg}</span>
+      <div style={{padding:"16px 16px 0"}}>
+        <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:4}}>{p.race.name}</div>
+        <div style={{fontSize:13,color:SUB,marginBottom:16}}>{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:12,background:rd2.color+"12",border:"1px solid "+rd2.color+"33",marginBottom:16}}>
+          <span style={{fontSize:14}}>{rd2.icon}</span><span style={{fontSize:12,fontWeight:700,color:rd2.color}}>{rd2.label}</span><span style={{fontSize:12,color:SUB}}> · {rd2.msg}</span>
         </div>
-        <div className="flex flex-col gap-2.5">
-          {TIPS.map(function(tip,i){return(
-            <div key={i} className="flex gap-3.5 px-4 py-3.5 bg-surf rounded-2xl border border-bord">
-              <div className="text-[24px] shrink-0">{tip.icon}</div>
-              <div>
-                <div className="text-[14px] font-semibold text-txt mb-1">{tip.title}</div>
-                <div className="text-[12px] text-sub leading-[1.6]">{tip.desc}</div>
-              </div>
-            </div>
-          );})}
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {TIPS.map(function(tip,i){return(<div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:SURF,borderRadius:14,border:"1px solid "+BORD}}><div style={{fontSize:24,flexShrink:0}}>{tip.icon}</div><div><div style={{fontSize:14,fontWeight:600,color:TXT,marginBottom:4}}>{tip.title}</div><div style={{fontSize:12,color:SUB,lineHeight:1.6}}>{tip.desc}</div></div></div>);})}
         </div>
-        <div className="mt-4 mb-6"><Btn label="Choisir une autre course" onClick={function(){setForceNoPlan(false);p.onGoToCourses();}} variant="ghost" full/></div>
+        <div style={{marginTop:16,marginBottom:24}}><Btn label="Choisir une autre course" onClick={function(){setForceNoPlan(false);p.onGoToCourses();}} variant="ghost" full/></div>
       </div>
     </div>
   );}
-  if(planWeeks.length===0){return(<div className="px-6 py-[60px] text-center"><div className="text-[18px] font-semibold text-txt mb-2">Plan indisponible</div><Btn label="Choisir une autre course" onClick={p.onGoToCourses} full/></div>);}
+  if(planWeeks.length===0){return(<div style={{padding:"60px 24px",textAlign:"center"}}><div style={{fontSize:18,fontWeight:600,color:TXT,marginBottom:8}}>Plan indisponible</div><Btn label="Choisir une autre course" onClick={p.onGoToCourses} full/></div>);}
 
   var rd=getCourseReadiness(p.race,p.profile,weeksUntil);
   return(
     <><div><LogoBar/>
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="text-[26px] font-extrabold text-txt tracking-[-0.4px]">{p.race.name}</div>
-          <span className="px-2.5 py-[3px] rounded-[20px] text-[12px] font-semibold"
-            style={{background:(p.race.type==="trail"?GR:BL)+"22",color:p.race.type==="trail"?GR:BL}}>{weeksUntil(p.race.date)} sem.</span>
+      <div style={{padding:"16px 16px 12px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>{p.race.name}</div>
+          <span style={{padding:"3px 10px",borderRadius:20,background:(p.race.type==="trail"?GR:BL)+"22",color:p.race.type==="trail"?GR:BL,fontSize:12,fontWeight:600}}>{weeksUntil(p.race.date)} sem.</span>
         </div>
-        <div className="text-[13px] text-sub mb-2.5">{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
-        <div className="bg-surf2 rounded-xl px-3.5 py-3 mb-2.5 border border-bord">
-          <div className="flex gap-4 mb-2">
-            <div className="flex-1 text-center">
-              <div className="text-[20px] font-extrabold" style={{color:OR}}>{planWeeks.length}</div>
-              <div className="text-[10px] text-mut mt-0.5">Plan proposé</div>
-            </div>
-            <div className="w-px bg-bord"/>
-            <div className="flex-1 text-center">
-              <div className="text-[20px] font-extrabold" style={{color:plan.idealWeeks>plan.availWeeks?YE:GR}}>{plan.idealWeeks}</div>
-              <div className="text-[10px] text-mut mt-0.5">Sem. idéales</div>
-            </div>
-            <div className="w-px bg-bord"/>
-            <div className="flex-1 text-center">
-              <div className="text-[20px] font-extrabold text-info">{weeksUntil(p.race.date)}</div>
-              <div className="text-[10px] text-mut mt-0.5">Sem. restantes</div>
-            </div>
+        <div style={{fontSize:13,color:SUB,marginBottom:10}}>{p.race.dist} km · {p.race.city} · {fmtS(new Date(p.race.date))}</div>
+        <div style={{background:SURF2,borderRadius:12,padding:"12px 14px",marginBottom:10,border:"1px solid "+BORD}}>
+          <div style={{display:"flex",gap:16,marginBottom:8}}>
+            <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:20,fontWeight:800,color:OR}}>{planWeeks.length}</div><div style={{fontSize:10,color:MUT,marginTop:2}}>Plan proposé</div></div>
+            <div style={{width:1,background:BORD}}/>
+            <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:20,fontWeight:800,color:plan.idealWeeks>plan.availWeeks?YE:GR}}>{plan.idealWeeks}</div><div style={{fontSize:10,color:MUT,marginTop:2}}>Sem. idéales</div></div>
+            <div style={{width:1,background:BORD}}/>
+            <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:20,fontWeight:800,color:BL}}>{weeksUntil(p.race.date)}</div><div style={{fontSize:10,color:MUT,marginTop:2}}>Sem. restantes</div></div>
           </div>
-          <div className="text-[11px] text-sub text-center border-t border-bord pt-2">Début recommandé : <span className="text-txt font-semibold">{fmtDate(plan.planStart)}</span></div>
+          <div style={{fontSize:11,color:SUB,textAlign:"center",borderTop:"1px solid "+BORD,paddingTop:8}}>Début recommandé : <span style={{color:TXT,fontWeight:600}}>{fmtDate(plan.planStart)}</span></div>
         </div>
-        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl mb-2.5" style={{background:rd.color+"12",border:"1px solid "+rd.color+"33"}}>
-          <span className="text-[14px]">{rd.icon}</span>
-          <div className="flex-1"><span className="text-[12px] font-bold" style={{color:rd.color}}>{rd.label}</span><span className="text-[12px] text-sub"> · {rd.msg}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:12,background:rd.color+"12",border:"1px solid "+rd.color+"33",marginBottom:10}}>
+          <span style={{fontSize:14}}>{rd.icon}</span>
+          <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,color:rd.color}}>{rd.label}</span><span style={{fontSize:12,color:SUB}}> · {rd.msg}</span></div>
         </div>
-        <button onClick={function(){if(planLevel(p.profile)<2){setShowStrategyUpgrade(true);}else{setShowStrategy(true);}}}
-          className="w-full mt-2.5 py-[11px] rounded-xl text-[13px] font-semibold cursor-pointer font-[inherit] flex items-center justify-center gap-1.5"
-          style={{background:planLevel(p.profile)>=2?OR+"15":SURF2,border:"1px solid "+(planLevel(p.profile)>=2?OR+"44":BORD),color:planLevel(p.profile)>=2?OR:MUT}}>
-          {planLevel(p.profile)<2&&<span className="text-[12px]">🔒</span>}Stratégie de course · Splits{planLevel(p.profile)<2&&<span className="text-[10px] font-bold ml-1" style={{color:OR}}>Pro</span>}
+        <button onClick={function(){if(planLevel(p.profile)<2){setShowStrategyUpgrade(true);}else{setShowStrategy(true);}}} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:12,background:planLevel(p.profile)>=2?OR+"15":SURF2,border:"1px solid "+(planLevel(p.profile)>=2?OR+"44":BORD),color:planLevel(p.profile)>=2?OR:MUT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          {planLevel(p.profile)<2&&<span style={{fontSize:12}}>🔒</span>}Stratégie de course · Splits{planLevel(p.profile)<2&&<span style={{fontSize:10,color:OR,fontWeight:700,marginLeft:4}}>Pro</span>}
         </button>
       </div>
-      <div ref={scrollRef} className="flex gap-1.5 overflow-x-auto px-4 pb-4 touch-pan-x">
+      <div ref={scrollRef} style={{display:"flex",gap:6,overflowX:"auto",padding:"0 16px 16px",touchAction:"pan-x"}}>
         {planWeeks.map(function(wk,i){
           var isA=i===activeIdx;var pc=wk.phaseColor;
           var locked=planLevel(p.profile)<1&&i>=FREE_PLAN_WEEKS;
           return(
-          <div key={i} onClick={function(){locked?setShowPlanUpgrade(true):setSelWeek(i);}}
-            className="shrink-0 w-[54px] text-center py-2.5 px-1 rounded-xl cursor-pointer relative"
-            style={{border:"1.5px solid "+(isA?pc:BORD),background:isA?pc+"20":locked?SURF2:SURF,opacity:locked?0.5:wk.isPast?0.55:1}}>
-            {wk.isCurrent&&!locked?<div className="absolute -top-2 left-1/2 -translate-x-1/2 text-white text-[7px] font-bold rounded-[4px] px-[5px] py-[1px] whitespace-nowrap" style={{background:OR}}>now</div>:null}
-            {i===planWeeks.length-1&&!locked?<div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px]">🏁</div>:null}
-            {locked?<div className="text-[11px] mb-0.5">🔒</div>:<div className="text-[8px] font-bold uppercase tracking-[0.5px] mb-[3px]" style={{color:isA?pc:MUT}}>{wk.phaseLabel.slice(0,3)}</div>}
-            <div className="text-[14px] font-bold" style={{color:locked?MUT:isA?pc:TXT}}>S{wk.num}</div>
-            <div className="text-[9px] mt-[1px]" style={{color:locked?MUT:isA?pc:MUT}}>{locked?"—":wk.isRecup?"R":wk.km+"k"}</div>
+          <div key={i} onClick={function(){locked?setShowPlanUpgrade(true):setSelWeek(i);}} style={{flexShrink:0,width:54,textAlign:"center",padding:"10px 4px",borderRadius:12,border:"1.5px solid "+(isA?pc:locked?BORD:BORD),background:isA?pc+"20":locked?SURF2:SURF,cursor:"pointer",position:"relative",opacity:locked?0.5:wk.isPast?0.55:1}}>
+            {wk.isCurrent&&!locked?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:OR,color:"#fff",fontSize:7,fontWeight:700,borderRadius:4,padding:"1px 5px",whiteSpace:"nowrap"}}>now</div>:null}
+            {i===planWeeks.length-1&&!locked?<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:10}}>🏁</div>:null}
+            {locked?<div style={{fontSize:11,marginBottom:2}}>🔒</div>:<div style={{fontSize:8,color:isA?pc:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:3}}>{wk.phaseLabel.slice(0,3)}</div>}
+            <div style={{fontSize:14,fontWeight:700,color:locked?MUT:isA?pc:TXT}}>S{wk.num}</div>
+            <div style={{fontSize:9,color:locked?MUT:isA?pc:MUT,marginTop:1}}>{locked?"—":wk.isRecup?"R":wk.km+"k"}</div>
           </div>
         );})}
       </div>
       {w?(
-        <div key={activeIdx} className="px-4">
+        <div key={activeIdx} style={{padding:"0 16px"}}>
           {planLevel(p.profile)<1&&activeIdx>=FREE_PLAN_WEEKS?(
-            <div className="text-center px-5 py-10">
-              <div className="text-[40px] mb-4">🔒</div>
-              <div className="text-[18px] font-bold text-txt mb-2">Plan complet — Essential</div>
-              <div className="text-[13px] text-sub leading-[1.7] mb-2">
-                Tu as accès aux <span className="font-bold" style={{color:OR}}>{FREE_PLAN_WEEKS} premières semaines</span> gratuitement.<br/>
-                Passe en Essential pour débloquer les <span className="font-bold text-info">{planWeeks.length-FREE_PLAN_WEEKS} semaines restantes</span> et suivre ton plan jusqu'à la course.
+            <div style={{textAlign:"center",padding:"40px 20px"}}>
+              <div style={{fontSize:40,marginBottom:16}}>🔒</div>
+              <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:8}}>Plan complet — Essentiel</div>
+              <div style={{fontSize:13,color:SUB,lineHeight:1.7,marginBottom:8}}>
+                Tu as accès aux <span style={{color:OR,fontWeight:700}}>{FREE_PLAN_WEEKS} premières semaines</span> gratuitement.<br/>
+                Passe en Essentiel pour débloquer les <span style={{color:BL,fontWeight:700}}>{planWeeks.length-FREE_PLAN_WEEKS} semaines restantes</span> et suivre ton plan jusqu'à la course.
               </div>
-              <div className="text-[12px] text-mut mb-6">Semaine {activeIdx+1} sur {planWeeks.length}</div>
-              <Btn label="Passer à Essential — 4,99 €/mois" onClick={function(){p.onShowPricing&&p.onShowPricing();}} full/>
-              <button onClick={function(){setSelWeek(FREE_PLAN_WEEKS-1);}} className="mt-3 bg-transparent border-none text-mut text-[12px] cursor-pointer font-[inherit]">← Revenir à la semaine {FREE_PLAN_WEEKS}</button>
+              <div style={{fontSize:12,color:MUT,marginBottom:24}}>Semaine {activeIdx+1} sur {planWeeks.length}</div>
+              <Btn label="Passer à Essentiel — 4,99 €/mois" onClick={function(){p.onShowPricing&&p.onShowPricing();}} full/>
+              <button onClick={function(){setSelWeek(FREE_PLAN_WEEKS-1);}} style={{marginTop:12,background:"none",border:"none",color:MUT,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>← Revenir à la semaine {FREE_PLAN_WEEKS}</button>
             </div>
           ):(
             <>
               <Card style={{marginBottom:12}}>
-                <div className="px-[18px] py-4 border-b border-bord">
-                  <div className="flex justify-between items-start">
+                <div style={{padding:"16px 18px",borderBottom:"1px solid "+BORD}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div>
-                      <div className="text-[12px] font-semibold uppercase tracking-[0.5px] mb-1" style={{color:w.phaseColor}}>{w.phaseLabel}{w.isRecup?" · Récupération":""}</div>
-                      <div className="text-[20px] font-bold text-txt">Semaine {w.num}<span className="text-[14px] text-sub font-normal"> / {w.total}</span></div>
+                      <div style={{fontSize:12,color:w.phaseColor,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>{w.phaseLabel}{w.isRecup?" · Récupération":""}</div>
+                      <div style={{fontSize:20,fontWeight:700,color:TXT}}>Semaine {w.num}<span style={{fontSize:14,color:SUB,fontWeight:400}}> / {w.total}</span></div>
                     </div>
-                    <div className="text-right"><div className="text-[13px] font-semibold text-txt">{fmtS(w.weekStart)}</div><div className="text-[12px] text-sub">au {fmtS(w.weekEnd)}</div></div>
+                    <div style={{textAlign:"right"}}><div style={{fontSize:13,fontWeight:600,color:TXT}}>{fmtS(w.weekStart)}</div><div style={{fontSize:12,color:SUB}}>au {fmtS(w.weekEnd)}</div></div>
                   </div>
                 </div>
-                <div className="flex px-[18px] py-3.5">
+                <div style={{display:"flex",padding:"14px 18px"}}>
                   <Stat value={w.km+" km"} label="volume" color={w.phaseColor}/>
-                  <div className="w-px bg-bord"/>
+                  <div style={{width:1,background:BORD}}/>
                   <Stat value={w.sessions.length} label="séances" color={BL}/>
                 </div>
               </Card>
               {planLevel(p.profile)<1&&activeIdx===FREE_PLAN_WEEKS-1&&(
-                <div onClick={function(){p.onShowPricing&&p.onShowPricing();}}
-                  className="mb-3 px-3.5 py-2.5 rounded-xl cursor-pointer flex items-center justify-between"
-                  style={{background:BL+"12",border:"1px solid "+BL+"33"}}>
-                  <span className="text-[12px] font-semibold text-info">📋 {planWeeks.length-FREE_PLAN_WEEKS} semaines de plan verrouillées</span>
-                  <span className="text-[10px] font-bold px-2 py-[2px] rounded-[6px]" style={{color:BL,background:BL+"22"}}>Essential →</span>
+                <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{marginBottom:12,padding:"10px 14px",borderRadius:12,background:BL+"12",border:"1px solid "+BL+"33",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:12,color:BL,fontWeight:600}}>📋 {planWeeks.length-FREE_PLAN_WEEKS} semaines de plan verrouillées</span>
+                  <span style={{fontSize:10,fontWeight:700,color:BL,background:BL+"22",padding:"2px 8px",borderRadius:6}}>Essentiel →</span>
                 </div>
               )}
-              {w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} onShowPricing={p.onShowPricing}/>;})}
-              <div className="flex gap-2.5 mb-6 mt-1">
+              {(function(){var boss=getBossSession(w.sessions.filter(function(s){return s.type!=="rest";}));return w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} isBoss={!!(boss&&s===boss)} onBossKill={p.onBossKill} onShowPricing={p.onShowPricing}/>;});}())}
+              <div style={{display:"flex",gap:10,marginBottom:24,marginTop:4}}>
                 <Btn label="Précédente" onClick={function(){setSelWeek(Math.max(0,activeIdx-1));}} disabled={activeIdx===0} variant="ghost" style={{flex:1}} size="sm"/>
                 <Btn label="Suivante" onClick={function(){var next=activeIdx+1;if(planLevel(p.profile)<1&&next>=FREE_PLAN_WEEKS){setShowPlanUpgrade(true);}else{setSelWeek(Math.min(planWeeks.length-1,next));}}} disabled={activeIdx===planWeeks.length-1} variant="ghost" style={{flex:1}} size="sm"/>
               </div>
@@ -273,7 +244,7 @@ export function TrainingScreen(p){
     </div>
     {showStrategy&&<RaceStrategyModal race={p.race} onClose={function(){setShowStrategy(false);}}/>}
     {showStrategyUpgrade&&<UpgradeModal feature="Stratégie de course · Splits" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowStrategyUpgrade(false);}} onUpgrade={function(){setShowStrategyUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
-    {showPlanUpgrade&&<UpgradeModal feature={"Plan complet · "+planWeeks.length+" semaines"} minPlanLabel="Essential" minPlanColor={BL} onClose={function(){setShowPlanUpgrade(false);}} onUpgrade={function(){setShowPlanUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
+    {showPlanUpgrade&&<UpgradeModal feature={"Plan complet · "+planWeeks.length+" semaines"} minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowPlanUpgrade(false);}} onUpgrade={function(){setShowPlanUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );
 }

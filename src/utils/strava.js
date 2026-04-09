@@ -1,5 +1,5 @@
 var CLIENT_ID=import.meta.env.VITE_STRAVA_CLIENT_ID||"";
-var REDIRECT_URI=window.location.origin+"/strava-callback";
+var REDIRECT_URI="https://fuelrun-9ibg.vercel.app/strava-callback";
 
 // Build the Strava OAuth authorization URL
 export function stravaAuthUrl(){
@@ -18,10 +18,11 @@ export async function stravaExchange(payload){
   var res=await fetch("/api/strava-token",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload),
+    body:JSON.stringify(Object.assign({redirect_uri:REDIRECT_URI},payload)),
   });
-  if(!res.ok)throw new Error("Strava token exchange failed");
-  return res.json();
+  var data=await res.json();
+  if(!res.ok)throw new Error(data.message||data.error||JSON.stringify(data));
+  return data;
 }
 
 // Refresh an expired access token

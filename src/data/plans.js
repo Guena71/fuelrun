@@ -17,7 +17,7 @@ export var PLANS=[
     cta:"Commencer gratuitement"
   },
   {
-    id:"essential", name:"Essential", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
+    id:"essential", name:"Essentiel", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Le suivi complet pour progresser régulièrement.",
     items:[
       "14 jours gratuits, puis 4,99 € par mois :",
@@ -35,7 +35,7 @@ export var PLANS=[
     desc:"La préparation complète pour performer en compétition.",
     items:[
       "14 jours gratuits, puis 9,99 € par mois :",
-      "Tout Essential, plus :",
+      "Tout Essentiel, plus :",
       "Coach IA illimité 24h sur 24",
       "Allures personnalisées et zones d'entraînement",
       "Stratégie de course et temps par kilomètre",
