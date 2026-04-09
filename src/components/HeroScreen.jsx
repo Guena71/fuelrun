@@ -34,8 +34,8 @@ export function HeroScreen(p){
       setTimeout(function(){
         setQuoteIdx(function(i){return (i+1)%QUOTES.length;});
         setFade(true);
-      },400);
-    },4000);
+      },500);
+    },7000);
     return function(){clearInterval(timer);};
   },[]);
 
