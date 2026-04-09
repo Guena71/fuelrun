@@ -39,7 +39,7 @@ export function HeroScreen(p){
         setQuoteIdx(function(i){return (i+1)%QUOTES.length;});
         setFade(true);
       },500);
-    },7000);
+    },5000);
     return function(){clearInterval(timer);};
   },[]);
 
