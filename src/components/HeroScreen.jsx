@@ -52,7 +52,7 @@ export function HeroScreen(p){
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40,position:"relative"}}>
         <div style={{animation:"run 2.5s ease-in-out infinite",filter:"drop-shadow(0 0 24px "+OR+"50)"}}><RunnerHero size={160}/></div>
         <div style={{fontSize:42,fontWeight:800,color:TXT,letterSpacing:"-1px",lineHeight:1}}>FuelRun</div>
-        <div style={{fontSize:15,color:SUB,maxWidth:280,lineHeight:1.8,letterSpacing:0.2}}>Entraînement · Nutrition · Performance · Coach</div>
+        <div style={{fontSize:15,color:SUB,maxWidth:280,lineHeight:1.8,letterSpacing:0.2}}>Entraînement · Nutrition · Performance · Coaching</div>
 
         {/* Citation rotative */}
         <div style={{padding:"14px 20px",background:OR+"12",borderRadius:14,border:"1px solid "+OR+"28",maxWidth:320,minHeight:68,display:"flex",alignItems:"center",justifyContent:"center",transition:"opacity 0.4s ease",opacity:fade?1:0}}>
