@@ -45,10 +45,11 @@ export function CoachScreen(p){
     setDoc(doc(db,"users",p.user.uid),{coachHistory:trimmed},{merge:true}).catch(function(){});
   }
 
-  function send(){
-    if(!input.trim()||loading)return;
+  function send(overrideMsg){
+    var msg=overrideMsg!=null?overrideMsg.trim():input.trim();
+    if(!msg||loading)return;
     if(maxMsg!==Infinity&&dailyCount>=maxMsg){setShowCoachUpgrade(true);return;}
-    var msg=input.trim();setInput("");setLoading(true);setError("");
+    if(overrideMsg==null)setInput("");setLoading(true);setError("");
     var newMsgs=messages.concat([{role:"user",content:msg}]);
     setMessages(newMsgs);
     // === Contexte enrichi ===
@@ -119,7 +120,7 @@ export function CoachScreen(p){
               <div style={{height:3,background:OR+"20",borderRadius:4,overflow:"hidden",marginBottom:8}}>
                 <div style={{width:pct+"%",height:"100%",background:done?GR:OR,borderRadius:4,transition:"width 0.5s"}}/>
               </div>
-              {!done&&<button onClick={function(){setInput(chalMsg);}} style={{width:"100%",padding:"6px",borderRadius:8,background:OR+"18",border:"1px solid "+OR+"33",color:OR,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              {!done&&<button onClick={function(){send(chalMsg);}} style={{width:"100%",padding:"6px",borderRadius:8,background:OR+"18",border:"1px solid "+OR+"33",color:OR,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                 💬 Demander des conseils au coach →
               </button>}
             </div>
