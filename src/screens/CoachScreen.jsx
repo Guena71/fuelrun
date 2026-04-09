@@ -4,7 +4,7 @@ import { SURF, BORD, TXT, SUB, MUT, OR, GR, BL, RE } from "../data/constants.js"
 import { weeksUntil } from "../utils/date.js";
 import { buildPlan, getPlanWeeks } from "../utils/plan.js";
 import { planLevel } from "../utils/nutrition.js";
-import { xpToLevel, getWeeklyContractKey, contractProgress } from "../utils/gamification.js";
+import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress } from "../utils/gamification.js";
 import { ls, lsSet } from "../utils/storage.js";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
@@ -100,23 +100,28 @@ export function CoachScreen(p){
           <div style={{fontSize:13,fontWeight:700,color:TXT,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Coach FuelRun <span style={{fontSize:11,fontWeight:400,color:GR}}>· En ligne · Disponible 7j/7</span></div>
         </div>
         {(function(){
-          var cm=(p.gamification&&p.gamification.coachMessages)||0;
-          var milestones=[{n:1,emoji:"🎓",label:"Premier conseil"},{n:10,emoji:"💬",label:"Curieux"},{n:50,emoji:"🧠",label:"Coach addict"}];
-          var next=milestones.find(function(m){return cm<m.n;});
-          if(!next)return null;
-          var pct=Math.round(cm/next.n*100);
+          var wk=getWeeklyContractKey();
+          var chal=generateWeeklyChallenge(p.profile||{},wk);
+          var prog=challengeProgress(p.entries||{},wk,chal);
+          var done=prog>=chal.target;
+          var pct=Math.min(100,Math.round(prog/chal.target*100));
+          var chalMsg="Coach, j'ai un challenge cette semaine : "+chal.label+". J'en suis à "+prog+"/"+chal.target+". Donne-moi des conseils pour le réussir !";
           return(
-            <div style={{padding:"8px 10px",borderRadius:10,background:OR+"0e",border:"1px solid "+OR+"22",display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:16,flexShrink:0}}>{next.emoji}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                  <span style={{fontSize:11,color:OR,fontWeight:600}}>Badge "{next.label}" · {cm}/{next.n} questions</span>
-                  <span style={{fontSize:11,color:MUT}}>{pct}%</span>
+            <div style={{padding:"10px 12px",borderRadius:10,background:done?GR+"12":OR+"0e",border:"1px solid "+(done?GR+"44":OR+"22")}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:16}}>{chal.icon}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:done?GR:OR,textTransform:"uppercase",letterSpacing:0.5}}>Challenge de la semaine</span>
                 </div>
-                <div style={{height:3,background:OR+"20",borderRadius:4,overflow:"hidden"}}>
-                  <div style={{width:pct+"%",height:"100%",background:OR,borderRadius:4}}/>
-                </div>
+                <span style={{fontSize:11,fontWeight:700,color:done?GR:OR}}>{prog}/{chal.target}{done?" ✓":""}</span>
               </div>
+              <div style={{fontSize:12,color:TXT,marginBottom:6}}>{chal.label}</div>
+              <div style={{height:3,background:OR+"20",borderRadius:4,overflow:"hidden",marginBottom:8}}>
+                <div style={{width:pct+"%",height:"100%",background:done?GR:OR,borderRadius:4,transition:"width 0.5s"}}/>
+              </div>
+              {!done&&<button onClick={function(){setInput(chalMsg);}} style={{width:"100%",padding:"6px",borderRadius:8,background:OR+"18",border:"1px solid "+OR+"33",color:OR,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                💬 Demander des conseils au coach →
+              </button>}
             </div>
           );
         })()}

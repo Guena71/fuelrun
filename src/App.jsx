@@ -356,22 +356,6 @@ export default function App(){
                 gamification={gamification} stats={stats}
                 context={coachContext}
                 onShowPricing={goPrice}
-                onMessage={function(){
-                  setGamification(function(g){
-                    var next=Object.assign({},g,{coachMessages:(g.coachMessages||0)+1});
-                    // Vérifier les badges coach
-                    var ctx={stats:stats,entries:entries,gamification:next,race:race};
-                    var newBadges=checkNewBadges(ctx);
-                    if(newBadges.length>0){
-                      next=Object.assign({},next,{badges:(next.badges||[]).concat(newBadges)});
-                      newBadges.forEach(function(b){
-                        var def=["coach_1","coach_10","coach_50"].includes(b.id)?{coach_1:{emoji:"🎓",name:"Premier conseil"},coach_10:{emoji:"💬",name:"Curieux"},coach_50:{emoji:"🧠",name:"Coach addict"}}[b.id]:null;
-                        if(def)setTimeout(function(){showToast(def.emoji+" Badge débloqué : "+def.name+" !","ok");addXP(30,"Badge débloqué");},200);
-                      });
-                    }
-                    return next;
-                  });
-                }}
               />
             }/>
             <Route path="/profile" element={
