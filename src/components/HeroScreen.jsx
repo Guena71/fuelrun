@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SURF2, BORD, TXT, SUB, MUT, OR } from "../data/constants.js";
 import { RunnerHero } from "./RunnerHero.jsx";
 import { Btn } from "./ui.jsx";
@@ -11,10 +12,13 @@ var QUOTES=[
 ];
 
 export function LogoBar(p){
+  var navigate=useNavigate();
   return(
     <div style={{display:"flex",alignItems:"center",padding:"12px 24px 0"}}>
-      <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
-      <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
+      <div onClick={function(){navigate("/home");}} style={{display:"flex",alignItems:"center",cursor:"pointer"}}>
+        <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
+        <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
+      </div>
       {p.onSignOut&&(
         <button onClick={p.onSignOut} title="Se déconnecter" style={{marginLeft:"auto",width:36,height:36,borderRadius:10,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={MUT} strokeWidth="2" strokeLinecap="round"/><polyline points="16 17 21 12 16 7" stroke={MUT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke={MUT} strokeWidth="2" strokeLinecap="round"/></svg>
