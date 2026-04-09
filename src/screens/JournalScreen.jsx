@@ -36,7 +36,7 @@ export function JournalScreen(p){
     <><div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-          <button onClick={function(){navigate(-1);}} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",padding:0}}>← Retour</button>
+          <button onClick={function(){navigate("/suivi");}} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",padding:0}}>← Retour</button>
           <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Journal</div>
         </div>
         <Card style={{marginBottom:14}}><div style={{display:"flex",padding:"14px 18px"}}><Stat value={doneE.length} label="séances" color={OR}/><div style={{width:1,background:BORD}}/><Stat value={Math.round(totalKm)+" km"} label="ce mois" color={BL}/></div></Card>
