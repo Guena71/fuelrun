@@ -55,35 +55,6 @@ export function HomeScreen(p){
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
-        <svg style={{position:"absolute",top:-4,right:-6,opacity:0.15,pointerEvents:"none",animation:"runnerStride 0.75s ease-in-out infinite alternate"}} width="108" height="148" viewBox="0 0 108 148" fill="none">
-          {/* Tête */}
-          <circle cx="68" cy="14" r="12" fill={OR}/>
-          {/* Cou + torse (incliné vers l'avant) */}
-          <path d="M67 26 C65 38 61 50 56 68" stroke={OR} strokeWidth="6" strokeLinecap="round"/>
-          {/* Ligne d'épaules */}
-          <path d="M50 40 L72 34" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
-          {/* Bras droit – avant (coude plié, main vers le haut) */}
-          <path d="M72 34 L86 50" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          <path d="M86 50 L92 36" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          {/* Bras gauche – arrière (coude plié, main vers le bas) */}
-          <path d="M50 40 L36 56" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          <path d="M36 56 L28 46" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          {/* Hanche */}
-          <circle cx="56" cy="68" r="4" fill={OR}/>
-          {/* Jambe droite – avant, genou haut */}
-          <path d="M56 68 L72 93" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
-          <circle cx="72" cy="93" r="3.5" fill={OR}/>
-          <path d="M72 93 L60 118" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
-          {/* Pied droit */}
-          <path d="M60 118 L76 124" stroke={OR} strokeWidth="4.5" strokeLinecap="round"/>
-          {/* Jambe gauche – arrière, tendue en extension */}
-          <path d="M56 68 L40 92" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
-          <circle cx="40" cy="92" r="3.5" fill={OR}/>
-          {/* Jambe inférieure gauche avec talonnière (genou plié vers l'arrière) */}
-          <path d="M40 92 L52 74" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
-          {/* Pied gauche */}
-          <path d="M52 74 L60 68" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-        </svg>
         <div style={{marginBottom:24}}>
           <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
           <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
