@@ -78,6 +78,7 @@ input[type="range"]::-webkit-slider-thumb {
 @keyframes pulse   { 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
 @keyframes run     { 0%{ transform:translateX(-4px); } 50%{ transform:translateX(4px); } 100%{ transform:translateX(-4px); } }
 @keyframes bounce  { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+@keyframes runnerStride { from { transform:translateY(0) rotate(-2deg); } to { transform:translateY(-6px) rotate(2deg); } }
 
 /* ── Animation helpers ────────────────────────────────────────────────── */
 .anim-fadeIn  { animation: fadeIn  .3s  ease; }
