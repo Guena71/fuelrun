@@ -73,6 +73,7 @@ export default function App(){
   var [toast,setToast]=useState(null);
   var [gamification,setGamRaw]=useState({xp:0,badges:[],contract:null,contractsKept:0,bossKills:0});
   var [xpPopup,setXpPopup]=useState(null);
+  var [coachContext,setCoachContext]=useState(null);
   function showToast(msg,type){setToast({msg:msg,type:type||"ok"});setTimeout(function(){setToast(null);},3500);}
 
   // ── Strava state (stored inside profile.strava) ──
@@ -303,7 +304,6 @@ export default function App(){
 
   var goPrice=function(){setShowPricing(true);};
   var curPath=location.pathname;
-  var [coachContext,setCoachContext]=useState(null);
   function openCoach(ctx){setCoachContext(ctx||null);navigate("/coach");}
   var CONTEXT_LABELS={"/home":"l'accueil","/courses":"la page Courses","/training":"la page Plan d'entraînement","/suivi":"la page Suivi","/journal":"le Journal"};
 
