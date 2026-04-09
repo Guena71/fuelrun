@@ -1,5 +1,3 @@
-import { getWeekKey, contractProgress } from "../utils/gamification.js";
-
 // Chaque badge : { id, emoji, name, desc, check(ctx) }
 // ctx = { stats, entries, gamification, planWeeks, race }
 
