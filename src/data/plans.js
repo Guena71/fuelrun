@@ -5,13 +5,11 @@ export var PLANS=[
     id:"gratuit", name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
     desc:"Commence à t'entraîner, découvre les fonctionnalités.",
     items:[
-      "Essais inclus :",
       "3 premières semaines de plan d'entraînement offertes",
-      "Recettes et nutrition complète pendant 14 jours offerts",
-      "Après l'essai :",
       "1 objectif de course",
       "Nutrition du jour (calories et macros)",
       "Journal des séances",
+      "XP, badges & défis hebdomadaires",
       "5 messages Coach IA par jour",
     ],
     cta:"Commencer gratuitement"
@@ -25,8 +23,9 @@ export var PLANS=[
       "Plan d'entraînement complet sur toutes les semaines",
       "Journal avec suivi de la fatigue et de l'effort perçu",
       "Nutrition du jour pour toutes tes courses",
-      "30 messages Coach IA par jour",
+      "Synchronisation Strava (import automatique des activités)",
       "Import de tracés GPS (Garmin, Polar, Wahoo…)",
+      "30 messages Coach IA par jour",
     ],
     cta:"Essayer 14 jours gratuit"
   },
