@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
 import { BG, SURF, BORD, OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
-import { checkNewBadges, getWeeklyContractKey, contractProgress, sessionXP, xpToLevel } from "./utils/gamification.js";
+import { checkNewBadges, getWeeklyContractKey, sessionXP, xpToLevel, generateWeeklyChallenge, challengeProgress } from "./utils/gamification.js";
 import { stravaExchange, fetchStravaRuns, stravaActivitiesToEntries } from "./utils/strava.js";
 import { RunnerHero } from "./components/RunnerHero.jsx";
 import { CheckinModal } from "./components/CheckinModal.jsx";
@@ -200,15 +200,17 @@ export default function App(){
     });
     addXP(xp,"Séance validée");
     logEvent(analytics,"session_logged",{km:km});
-    // Check if weekly contract is now fulfilled
+    // Vérifier si le challenge de la semaine est accompli
     var wk=getWeeklyContractKey();
-    var ctr=gamification.contract;
-    if(ctr&&ctr.weekKey===wk&&!gamification.contractCredited){
-      var done=contractProgress(entries||{},wk)+1;
-      if(done>=ctr.target){
-        setGamification(function(g){return Object.assign({},g,{contractsKept:(g.contractsKept||0)+1,contractCredited:true});});
-        addXP(50,"Contrat tenu !");
-        showToast("🤝 Contrat de la semaine respecté ! +50 XP","ok");
+    var chal=generateWeeklyChallenge(profile,wk);
+    if(!gamification.challengeCredited){
+      // +1 session / +km simulé car la nouvelle entrée n'est pas encore dans l'état
+      var fakeEntries=Object.assign({},entries,{[new Date().toDateString()]:{done:true,km:km}});
+      var prog=challengeProgress(fakeEntries,wk,chal);
+      if(prog>=chal.target){
+        setGamification(function(g){return Object.assign({},g,{contractsKept:(g.contractsKept||0)+1,challengeCredited:true});});
+        addXP(chal.xp,"Challenge relevé !");
+        showToast("🏆 Challenge de la semaine relevé ! +"+chal.xp+" XP","ok");
       }
     }
   }
@@ -216,16 +218,6 @@ export default function App(){
   function onBossKill(){
     setGamification(function(g){return Object.assign({},g,{bossKills:(g.bossKills||0)+1});});
     addXP(25,"Session boss !");
-  }
-
-  function onContractKept(){
-    setGamification(function(g){return Object.assign({},g,{contractsKept:(g.contractsKept||0)+1});});
-    addXP(50,"Contrat tenu !");
-    showToast("🤝 Contrat de la semaine respecté ! +50 XP","ok");
-  }
-
-  function setWeeklyContract(contract){
-    setGamification(function(g){return Object.assign({},g,{contract:contract,contractCredited:false});});
   }
 
   var VAPID_PUBLIC_KEY="BDnhMkrmir_7UMOVXnPOeMYv_e4h5lrvKLmb-I9VJyMUZPZDm7x9g1fqhFNZj7-csn6jAV6LuzCfJwRSpdLtO7k";
@@ -322,8 +314,6 @@ export default function App(){
                 onGoToJournal={function(km){setJournalPreselect({date:new Date(),km:km});navigate("/journal");}}
                 onGoToSuivi={function(){navigate("/suivi");}}
                 onSignOut={function(){signOut(auth);}}
-                onSetContract={setWeeklyContract}
-                onContractKept={onContractKept}
               />
             }/>
             <Route path="/courses" element={

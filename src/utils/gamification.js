@@ -59,11 +59,11 @@ export function checkNewBadges(ctx){
   return newBadges;
 }
 
-// ─── Contrat hebdomadaire ─────────────────────────────────────────────────────
+// ─── Clé semaine courante ─────────────────────────────────────────────────────
 export function getWeeklyContractKey(){return getWeekKey();}
 
+// ─── Séances validées cette semaine ──────────────────────────────────────────
 export function contractProgress(entries,weekKey){
-  // Compter les séances validées cette semaine
   var count=0;
   var wStart=weekKeyToMonday(weekKey);
   var wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);
@@ -72,6 +72,40 @@ export function contractProgress(entries,weekKey){
     if(pair[1].done&&d>=wStart&&d<=wEnd)count++;
   });
   return count;
+}
+
+// ─── Km cumulés cette semaine ─────────────────────────────────────────────────
+export function weeklyKm(entries,weekKey){
+  var wStart=weekKeyToMonday(weekKey);
+  var wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);
+  var total=0;
+  Object.entries(entries||{}).forEach(function(pair){
+    var d=new Date(pair[0]);
+    if(pair[1].done&&d>=wStart&&d<=wEnd)total+=parseFloat(pair[1].km)||0;
+  });
+  return Math.round(total*10)/10;
+}
+
+// ─── Challenge hebdomadaire auto ──────────────────────────────────────────────
+var CHALLENGE_POOL=[
+  {type:"sessions",icon:"🏃",xp:60, label:function(t){return t+" séances cette semaine";},       targets:{débutant:2,intermédiaire:3,avancé:4}},
+  {type:"km",      icon:"📏",xp:80, label:function(t){return "Cumule "+t+" km cette semaine";},   targets:{débutant:12,intermédiaire:25,avancé:40}},
+  {type:"sessions",icon:"💪",xp:75, label:function(t){return t+" séances — tiens la cadence !";}, targets:{débutant:3,intermédiaire:4,avancé:5}},
+  {type:"km",      icon:"🗺️",xp:90, label:function(t){return "Dépasse les "+t+" km au compteur";},targets:{débutant:15,intermédiaire:30,avancé:50}},
+];
+
+export function generateWeeklyChallenge(profile,weekKey){
+  var wn=parseInt((weekKey||"").split("-W")[1])||1;
+  var def=CHALLENGE_POOL[wn%CHALLENGE_POOL.length];
+  var lvl=(profile&&profile.level)||"débutant";
+  var target=def.targets[lvl]||def.targets["débutant"];
+  return {weekKey:weekKey,type:def.type,icon:def.icon,label:def.label(target),target:target,xp:def.xp};
+}
+
+export function challengeProgress(entries,weekKey,challenge){
+  if(!challenge)return 0;
+  if(challenge.type==="km")return weeklyKm(entries,weekKey);
+  return contractProgress(entries,weekKey);
 }
 
 function weekKeyToMonday(key){

@@ -8,18 +8,17 @@ import { buildPlan, getPlanWeeks } from "../utils/plan.js";
 import { weatherAdvice } from "../utils/weather.js";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { AnimCount } from "../components/AnimCount.jsx";
-import { xpToLevel, getWeeklyContractKey, contractProgress } from "../utils/gamification.js";
+import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress } from "../utils/gamification.js";
 import { BADGE_DEFS } from "../data/badges.js";
-import { WeeklyContractModal } from "../components/WeeklyContractModal.jsx";
 
 export function HomeScreen(p){
   var [weather,setWeather]=useState(null);
-  var [showContract,setShowContract]=useState(false);
-  var gam=p.gamification||{xp:0,badges:[],contract:null,contractsKept:0,bossKills:0};
+  var gam=p.gamification||{xp:0,badges:[],contractsKept:0,bossKills:0};
   var level=xpToLevel(gam.xp||0);
   var weekKey=getWeeklyContractKey();
-  var contract=gam.contract&&gam.contract.weekKey===weekKey?gam.contract:null;
-  var contractDone=contract?contractProgress(p.entries||{},weekKey):0;
+  var challenge=generateWeeklyChallenge(p.profile||{},weekKey);
+  var chalDone=challengeProgress(p.entries||{},weekKey,challenge);
+  var chalCompleted=chalDone>=challenge.target;
   var earnedBadges=(gam.badges||[]).slice(-3).map(function(b){return BADGE_DEFS.find(function(d){return d.id===b.id;});}).filter(Boolean);
   var todayKey=new Date().toDateString();
   var todayDone=!!(p.entries&&p.entries[todayKey]&&p.entries[todayKey].done);
@@ -112,33 +111,24 @@ export function HomeScreen(p){
           </div>
         )}
 
-        <div style={{borderRadius:16,background:SURF,border:"1px solid "+BORD,marginBottom:14,padding:"14px 16px"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{borderRadius:16,background:SURF,border:"1px solid "+(chalCompleted?GR+"66":BORD),marginBottom:14,padding:"14px 16px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:22}}>🤝</span>
+              <span style={{fontSize:22}}>{challenge.icon}</span>
               <div>
-                <div style={{fontSize:13,fontWeight:700,color:TXT}}>Contrat de la semaine</div>
-                {contract?(
-                  <div style={{fontSize:11,color:SUB,marginTop:2}}>{contractDone}/{contract.target} séance{contract.target>1?"s":""} · {contractDone>=contract.target?"Tenu ✓":"En cours"}</div>
-                ):(
-                  <div style={{fontSize:11,color:MUT,marginTop:2}}>Pas encore d'engagement cette semaine</div>
-                )}
+                <div style={{fontSize:10,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:2}}>Challenge de la semaine</div>
+                <div style={{fontSize:13,fontWeight:700,color:TXT}}>{challenge.label}</div>
               </div>
             </div>
-            {!contract&&(
-              <button onClick={function(){setShowContract(true);}} style={{padding:"7px 12px",borderRadius:10,background:OR,border:"none",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                M'engager
-              </button>
-            )}
-            {contract&&(
-              <div style={{fontSize:20,fontWeight:800,color:contractDone>=contract.target?GR:OR}}>{contractDone}/{contract.target}</div>
-            )}
-          </div>
-          {contract&&(
-            <div style={{marginTop:10,height:5,background:OR+"18",borderRadius:6,overflow:"hidden"}}>
-              <div style={{width:Math.min(100,Math.round(contractDone/contract.target*100))+"%",height:"100%",background:"linear-gradient(90deg,"+OR+"99,"+OR+")",borderRadius:6}}/>
+            <div style={{textAlign:"right",flexShrink:0}}>
+              <div style={{fontSize:18,fontWeight:800,color:chalCompleted?GR:OR}}>{chalDone}<span style={{fontSize:11,color:MUT,fontWeight:400}}>/{challenge.target}</span></div>
+              <div style={{fontSize:10,color:OR,fontWeight:600}}>+{challenge.xp} XP</div>
             </div>
-          )}
+          </div>
+          <div style={{height:5,background:OR+"18",borderRadius:6,overflow:"hidden"}}>
+            <div style={{width:Math.min(100,Math.round(chalDone/challenge.target*100))+"%",height:"100%",background:chalCompleted?"linear-gradient(90deg,"+GR+"99,"+GR+")":"linear-gradient(90deg,"+OR+"99,"+OR+")",borderRadius:6,transition:"width 0.6s ease"}}/>
+          </div>
+          <div style={{marginTop:6,fontSize:11,color:chalCompleted?GR:MUT,fontWeight:chalCompleted?600:400}}>{chalCompleted?"✓ Challenge relevé cette semaine !":"En cours · se renouvelle chaque semaine"}</div>
         </div>
 
         {earnedBadges.length>0&&(
@@ -287,12 +277,6 @@ export function HomeScreen(p){
           );
         })()}
       </div>
-      {showContract&&(
-        <WeeklyContractModal
-          onCommit={function(target){setShowContract(false);p.onSetContract&&p.onSetContract({weekKey:weekKey,target:target});}}
-          onClose={function(){setShowContract(false);}}
-        />
-      )}
     </div>
   );
 }
