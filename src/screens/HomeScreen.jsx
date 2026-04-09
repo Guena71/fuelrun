@@ -55,15 +55,34 @@ export function HomeScreen(p){
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
-        <svg style={{position:"absolute",top:0,right:0,opacity:0.13,pointerEvents:"none",animation:"runnerStride 0.7s ease-in-out infinite alternate"}} width="110" height="130" viewBox="0 0 110 130" fill="none">
-          <circle cx="62" cy="14" r="10" fill={OR}/>
-          <line x1="62" y1="24" x2="56" y2="55" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
-          <line x1="60" y1="36" x2="80" y2="52" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          <line x1="59" y1="36" x2="36" y2="28" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
-          <line x1="56" y1="55" x2="38" y2="78" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
-          <line x1="38" y1="78" x2="22" y2="110" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
-          <line x1="56" y1="55" x2="76" y2="74" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
-          <line x1="76" y1="74" x2="96" y2="68" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
+        <svg style={{position:"absolute",top:-4,right:-6,opacity:0.15,pointerEvents:"none",animation:"runnerStride 0.75s ease-in-out infinite alternate"}} width="108" height="148" viewBox="0 0 108 148" fill="none">
+          {/* Tête */}
+          <circle cx="68" cy="14" r="12" fill={OR}/>
+          {/* Cou + torse (incliné vers l'avant) */}
+          <path d="M67 26 C65 38 61 50 56 68" stroke={OR} strokeWidth="6" strokeLinecap="round"/>
+          {/* Ligne d'épaules */}
+          <path d="M50 40 L72 34" stroke={OR} strokeWidth="5" strokeLinecap="round"/>
+          {/* Bras droit – avant (coude plié, main vers le haut) */}
+          <path d="M72 34 L86 50" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
+          <path d="M86 50 L92 36" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
+          {/* Bras gauche – arrière (coude plié, main vers le bas) */}
+          <path d="M50 40 L36 56" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
+          <path d="M36 56 L28 46" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
+          {/* Hanche */}
+          <circle cx="56" cy="68" r="4" fill={OR}/>
+          {/* Jambe droite – avant, genou haut */}
+          <path d="M56 68 L72 93" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
+          <circle cx="72" cy="93" r="3.5" fill={OR}/>
+          <path d="M72 93 L60 118" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
+          {/* Pied droit */}
+          <path d="M60 118 L76 124" stroke={OR} strokeWidth="4.5" strokeLinecap="round"/>
+          {/* Jambe gauche – arrière, tendue en extension */}
+          <path d="M56 68 L40 92" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
+          <circle cx="40" cy="92" r="3.5" fill={OR}/>
+          {/* Jambe inférieure gauche avec talonnière (genou plié vers l'arrière) */}
+          <path d="M40 92 L52 74" stroke={OR} strokeWidth="5.5" strokeLinecap="round"/>
+          {/* Pied gauche */}
+          <path d="M52 74 L60 68" stroke={OR} strokeWidth="4" strokeLinecap="round"/>
         </svg>
         <div style={{marginBottom:24}}>
           <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
