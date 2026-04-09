@@ -8,13 +8,30 @@ export function haversineKm(lat1,lng1,lat2,lng2){
   return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
 }
 
+var SHEET_CACHE_KEY="fr_races_sheet";
+var SHEET_CACHE_TTL=24*60*60*1000; // 24h
+
 export function useRaces(){
   var today=new Date().toISOString().slice(0,10);
-  var [races,setRaces]=useState(function(){return RACES.filter(function(r){return r.date>=today;});});
+  var staticRaces=RACES.filter(function(r){return r.date>=today;});
+  var [races,setRaces]=useState(function(){
+    try{
+      var cached=JSON.parse(localStorage.getItem(SHEET_CACHE_KEY)||"null");
+      if(cached&&cached.ts&&Date.now()-cached.ts<SHEET_CACHE_TTL&&cached.data&&cached.data.length>0){
+        return cached.data.filter(function(r){return r.date>=today;});
+      }
+    }catch(e){}
+    return staticRaces;
+  });
   useEffect(function(){
-    fetch("/races.json")
+    fetch("/api/races")
       .then(function(res){return res.json();})
-      .then(function(data){setRaces(data.filter(function(r){return r.date>=today;}));})
+      .then(function(data){
+        if(data&&data.length>0){
+          try{localStorage.setItem(SHEET_CACHE_KEY,JSON.stringify({data:data,ts:Date.now()}));}catch(e){}
+          setRaces(data.filter(function(r){return r.date>=today;}));
+        }
+      })
       .catch(function(){});
   },[]);
   return races;
