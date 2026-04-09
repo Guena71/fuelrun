@@ -125,4 +125,25 @@ export var BADGE_DEFS=[
     desc:"Atteins le niveau Elite (3500 XP)",
     check:function(ctx){return (ctx.gamification.xp||0)>=3500;},
   },
+  {
+    id:"coach_1",
+    emoji:"🎓",
+    name:"Premier conseil",
+    desc:"Pose ta première question au Coach IA",
+    check:function(ctx){return (ctx.gamification.coachMessages||0)>=1;},
+  },
+  {
+    id:"coach_10",
+    emoji:"💬",
+    name:"Curieux",
+    desc:"Pose 10 questions au Coach IA",
+    check:function(ctx){return (ctx.gamification.coachMessages||0)>=10;},
+  },
+  {
+    id:"coach_50",
+    emoji:"🧠",
+    name:"Coach addict",
+    desc:"50 questions posées au Coach IA",
+    check:function(ctx){return (ctx.gamification.coachMessages||0)>=50;},
+  },
 ];

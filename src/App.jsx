@@ -356,6 +356,7 @@ export default function App(){
                 gamification={gamification} stats={stats}
                 context={coachContext}
                 onShowPricing={goPrice}
+                onMessage={function(){setGamification(function(g){return Object.assign({},g,{coachMessages:(g.coachMessages||0)+1});});}}
               />
             }/>
             <Route path="/profile" element={

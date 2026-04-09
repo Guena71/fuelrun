@@ -80,6 +80,7 @@ export function CoachScreen(p){
       setMessages(updated);
       saveHistory(updated);
       var nc=dailyCount+1;setDailyCount(nc);lsSet(countKey,nc);
+      p.onMessage&&p.onMessage();
       setLoading(false);
     }).catch(function(){
       setMessages(function(m){return m.concat([{role:"model",content:"Problème de connexion."}]);});setLoading(false);
@@ -94,10 +95,31 @@ export function CoachScreen(p){
           <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Coach IA</div>
           {remaining!==null&&<div style={{fontSize:11,fontWeight:600,color:remaining<=2?RE:remaining<=5?"#F59E0B":MUT,background:SURF,padding:"3px 8px",borderRadius:8,border:"1px solid "+BORD}}>{remaining} msg restants</div>}
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,"+OR+"44,"+OR+"11)",border:"1px solid "+OR+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🏃</div>
           <div style={{fontSize:13,fontWeight:700,color:TXT,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Coach FuelRun <span style={{fontSize:11,fontWeight:400,color:GR}}>· En ligne · Disponible 7j/7</span></div>
         </div>
+        {(function(){
+          var cm=(p.gamification&&p.gamification.coachMessages)||0;
+          var milestones=[{n:1,emoji:"🎓",label:"Premier conseil"},{n:10,emoji:"💬",label:"Curieux"},{n:50,emoji:"🧠",label:"Coach addict"}];
+          var next=milestones.find(function(m){return cm<m.n;});
+          if(!next)return null;
+          var pct=Math.round(cm/next.n*100);
+          return(
+            <div style={{padding:"8px 10px",borderRadius:10,background:OR+"0e",border:"1px solid "+OR+"22",display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:16,flexShrink:0}}>{next.emoji}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                  <span style={{fontSize:11,color:OR,fontWeight:600}}>Badge "{next.label}" · {cm}/{next.n} questions</span>
+                  <span style={{fontSize:11,color:MUT}}>{pct}%</span>
+                </div>
+                <div style={{height:3,background:OR+"20",borderRadius:4,overflow:"hidden"}}>
+                  <div style={{width:pct+"%",height:"100%",background:OR,borderRadius:4}}/>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {error?<div style={{marginTop:8,fontSize:12,color:RE}}>{error}</div>:null}
       </div>
       <div ref={msgsRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",padding:"16px 16px 8px"}}>
