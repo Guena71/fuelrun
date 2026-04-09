@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SURF, SURF2, BORD, TXT, MUT, OR, GR, BL, RE } from "../data/constants.js";
 import { MONTHS_F, WDAYS } from "../data/constants.js";
 import { getToday, fmtDate } from "../utils/date.js";
@@ -10,6 +11,7 @@ import { Btn, Card, Stat } from "../components/ui.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
 
 export function JournalScreen(p){
+  var navigate=useNavigate();
   var [month,setMonth]=useState(new Date());
   var entries=p.entries||{};
   function setEntries(fn){p.onSetEntries&&p.onSetEntries(fn);}
@@ -33,7 +35,10 @@ export function JournalScreen(p){
   return(
     <><div><LogoBar/>
       <div style={{padding:"20px 16px 0"}}>
-        <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px",marginBottom:16}}>Journal</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+          <button onClick={function(){navigate(-1);}} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",padding:0}}>← Retour</button>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Journal</div>
+        </div>
         <Card style={{marginBottom:14}}><div style={{display:"flex",padding:"14px 18px"}}><Stat value={doneE.length} label="séances" color={OR}/><div style={{width:1,background:BORD}}/><Stat value={Math.round(totalKm)+" km"} label="ce mois" color={BL}/></div></Card>
         <Card style={{padding:"18px 16px",marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
