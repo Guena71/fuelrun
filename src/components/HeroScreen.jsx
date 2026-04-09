@@ -22,7 +22,7 @@ export function HeroScreen(p){
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16,paddingTop:40}}>
         <div style={{animation:"run 2.5s ease-in-out infinite"}}><RunnerHero size={160}/></div>
         <div style={{fontSize:38,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</div>
-        <div style={{fontSize:16,color:SUB,maxWidth:280,lineHeight:1.8}}>Entraînement · Nutrition · Performance</div>
+        <div style={{fontSize:16,color:SUB,maxWidth:280,lineHeight:1.8}}>Entraînement · Nutrition · Performance · Coach</div>
         <div style={{padding:"12px 20px",background:OR+"12",borderRadius:12,border:"1px solid "+OR+"30",maxWidth:320}}>
           <div style={{fontSize:14,color:OR,fontWeight:600,fontStyle:"italic"}}>Pas besoin d'être rapide, l'important est de commencer !</div>
         </div>
