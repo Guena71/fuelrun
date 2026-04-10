@@ -142,7 +142,7 @@ export function CoachScreen(p){
         ):null}
         <div style={{display:"flex",gap:8}}>
           <input value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")send();}} placeholder="Pose ta question au coach…" style={{flex:1,background:SURF,border:"1px solid "+BORD,borderRadius:12,padding:"12px 16px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-          <button onClick={send} disabled={!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)} style={{width:46,height:46,borderRadius:12,background:maxMsg!==Infinity&&dailyCount>=maxMsg?MUT:OR,border:"none",cursor:!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)?"not-allowed":"pointer",fontSize:18,opacity:!input.trim()||loading?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>{maxMsg!==Infinity&&dailyCount>=maxMsg?"🔒":"↑"}</button>
+          <button onClick={function(){send();}} disabled={!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)} style={{width:46,height:46,borderRadius:12,background:maxMsg!==Infinity&&dailyCount>=maxMsg?MUT:OR,border:"none",cursor:!input.trim()||loading||(maxMsg!==Infinity&&dailyCount>=maxMsg)?"not-allowed":"pointer",fontSize:18,opacity:!input.trim()||loading?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>{maxMsg!==Infinity&&dailyCount>=maxMsg?"🔒":"↑"}</button>
         </div>
         {maxMsg!==Infinity&&dailyCount>=maxMsg&&(
           <div onClick={function(){setShowCoachUpgrade(true);}} style={{marginTop:8,padding:"10px 12px",borderRadius:10,background:OR+"15",border:"1px solid "+OR+"33",cursor:"pointer",textAlign:"center"}}>
