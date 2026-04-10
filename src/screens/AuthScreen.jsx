@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { auth, analytics, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
-import { BG, SURF, SURF2, BORD, TXT, SUB, MUT, OR, RE } from "../data/constants.js";
+import { useState, useEffect } from "react";
+import { auth, analytics, googleProvider, appleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
+import { BG, SURF2, BORD, TXT, SUB, MUT, OR, RE } from "../data/constants.js";
 import { Btn } from "../components/ui.jsx";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { LegalModal } from "../components/LegalModal.jsx";
@@ -14,6 +14,16 @@ export function AuthScreen(){
   var [forgotMode,setForgotMode]=useState(false);
   var [forgotSent,setForgotSent]=useState(false);
   var [legal,setLegal]=useState(null);
+
+  // Récupère le résultat du redirect Apple au retour dans l'app
+  useEffect(function(){
+    getRedirectResult(auth).then(function(r){
+      if(!r)return;
+      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
+    }).catch(function(e){
+      if(e.code!=="auth/no-auth-event")setError("Erreur Apple : "+e.message);
+    });
+  },[]);
 
   function handleEmail(){
     if(!email.trim()||!password.trim()){setError("Remplis tous les champs.");return;}
@@ -36,11 +46,8 @@ export function AuthScreen(){
 
   function handleApple(){
     setLoading(true);setError("");
-    signInWithPopup(auth,appleProvider).then(function(r){
-      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
-    }).catch(function(e){
-      var msg=e.code==="auth/popup-closed-by-user"?"Connexion annulée.":e.code==="auth/cancelled-popup-request"?"Connexion annulée.":"Erreur Apple : "+e.message;
-      setError(msg);setLoading(false);
+    signInWithRedirect(auth,appleProvider).catch(function(e){
+      setError("Erreur Apple : "+e.message);setLoading(false);
     });
   }
 
