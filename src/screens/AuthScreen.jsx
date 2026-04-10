@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { auth, analytics, googleProvider, appleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
+import { auth, analytics, googleProvider, appleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
 import { BG, SURF2, BORD, TXT, SUB, MUT, OR, RE } from "../data/constants.js";
 import { Btn } from "../components/ui.jsx";
 import { LogoBar } from "../components/HeroScreen.jsx";
@@ -47,11 +47,9 @@ export function AuthScreen(){
     signInWithPopup(auth,appleProvider).then(function(r){
       logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
     }).catch(function(e){
-      if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request"){setLoading(false);return;}
-      // Fallback redirect si popup bloqué
-      signInWithRedirect(auth,appleProvider).catch(function(e2){
-        setError("Erreur Apple : "+e2.message);setLoading(false);
-      });
+      setLoading(false);
+      if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request")return;
+      setError("Erreur Apple ["+e.code+"] : "+e.message);
     });
   }
 
