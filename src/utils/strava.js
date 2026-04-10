@@ -56,10 +56,28 @@ export async function fetchStravaRuns(stravaProfile,onTokenRefreshed){
   return acts.filter(function(a){return a.type==="Run"||a.sport_type==="Run";});
 }
 
+// Decode Google Encoded Polyline → [{lat, lon, ts}]
+function decodePolyline(encoded){
+  if(!encoded)return [];
+  var points=[],index=0,len=encoded.length,lat=0,lng=0;
+  while(index<len){
+    var b,shift=0,result=0;
+    do{b=encoded.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lat+=((result&1)?~(result>>1):(result>>1));
+    shift=0;result=0;
+    do{b=encoded.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lng+=((result&1)?~(result>>1):(result>>1));
+    points.push({lat:lat/1e5,lon:lng/1e5,ts:null});
+  }
+  return points;
+}
+
 // Convert a Strava activity to a journal entry
 export function stravaActivityToEntry(act){
   var km=(act.distance/1000).toFixed(2);
   var min=Math.round(act.moving_time/60);
+  var polyline=act.map&&act.map.summary_polyline;
+  var track=polyline?decodePolyline(polyline):null;
   return {
     done:true,
     km:km,
@@ -67,7 +85,7 @@ export function stravaActivityToEntry(act){
     feel:null,
     rpe:null,
     note:"[Strava] "+act.name,
-    track:null,
+    track:track&&track.length>1?track:null,
     stravaId:act.id,
   };
 }
