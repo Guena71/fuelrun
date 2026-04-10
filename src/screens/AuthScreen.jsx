@@ -35,10 +35,23 @@ export function AuthScreen(){
     }).catch(function(e){setError(e.message);setLoading(false);});
   }
 
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  var isPWA=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+
   function handleApple(){
+    if(isIOS&&isPWA){
+      setError("Apple Sign-In n'est pas disponible dans l'app installée sur iOS. Utilise l'e-mail ou ouvre fuelrun.vercel.app dans Safari.");
+      return;
+    }
     setLoading(true);setError("");
-    signInWithRedirect(auth,appleProvider).catch(function(e){
-      setError("Erreur Apple : "+e.message);setLoading(false);
+    signInWithPopup(auth,appleProvider).then(function(r){
+      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
+    }).catch(function(e){
+      if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request"){setLoading(false);return;}
+      // Fallback redirect si popup bloqué
+      signInWithRedirect(auth,appleProvider).catch(function(e2){
+        setError("Erreur Apple : "+e2.message);setLoading(false);
+      });
     });
   }
 
