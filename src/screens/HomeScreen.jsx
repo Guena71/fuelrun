@@ -61,13 +61,16 @@ export function HomeScreen(p){
               <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
               <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
             </div>
-            {weather&&(function(){
-              var adv=weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0);
+            {(function(){
+              var now=new Date();
+              var dayStr=now.toLocaleDateString("fr-FR",{weekday:"short"});
+              var dateStr=now.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+              var adv=weather?weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0):null;
               return(
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)"}}>
-                  <span style={{fontSize:22,lineHeight:1}}>{adv.icon}</span>
-                  <span style={{fontSize:14,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
-                  {weather.windspeed_10m>10&&<span style={{fontSize:9,color:MUT}}>{Math.round(weather.windspeed_10m)} km/h</span>}
+                  <span style={{fontSize:10,color:OR,fontWeight:700,textTransform:"capitalize",letterSpacing:0.5}}>{dayStr}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:TXT}}>{dateStr}</span>
+                  {adv&&<><span style={{fontSize:20,lineHeight:1,marginTop:4}}>{adv.icon}</span><span style={{fontSize:13,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>{weather.windspeed_10m>10&&<span style={{fontSize:9,color:MUT}}>{Math.round(weather.windspeed_10m)} km/h</span>}</>}
                 </div>
               );
             })()}
