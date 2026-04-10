@@ -56,8 +56,22 @@ export function HomeScreen(p){
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-30,left:-30,width:140,height:140,borderRadius:"50%",background:BL,opacity:0.04,pointerEvents:"none"}}/>
         <div style={{marginBottom:24}}>
-          <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
-          <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
+              <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
+            </div>
+            {weather&&(function(){
+              var adv=weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0);
+              return(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)"}}>
+                  <span style={{fontSize:22,lineHeight:1}}>{adv.icon}</span>
+                  <span style={{fontSize:14,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
+                  {weather.windspeed_10m>10&&<span style={{fontSize:9,color:MUT}}>{Math.round(weather.windspeed_10m)} km/h</span>}
+                </div>
+              );
+            })()}
+          </div>
           <div style={{marginTop:10}}>
             <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35",cursor:"pointer",fontFamily:"inherit"}}>
               <span style={{fontSize:11,color:OR,fontWeight:600}}>Modifier ton profil</span>
@@ -88,6 +102,24 @@ export function HomeScreen(p){
       </div>
 
       <div style={{padding:"14px 16px 0"}}>
+        {p.wellbeing?(
+          <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:wba.bg,border:"1px solid "+wba.color+"30",marginBottom:14}}>
+            <div style={{width:40,height:40,borderRadius:12,background:wba.color+"25",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{wba.icon}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:700,color:wba.color}}>{wba.text}</div>
+              <div style={{fontSize:11,color:SUB,marginTop:1}}>{wba.sub}</div>
+            </div>
+          </div>
+        ):(
+          <div onClick={p.onCheckin} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:SURF,border:"1px solid "+OR+"33",marginBottom:14,cursor:"pointer"}}>
+            <div style={{width:40,height:40,borderRadius:12,background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🌡️</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:600,color:TXT}}>Comment tu te sens aujourd'hui ?</div>
+              <div style={{fontSize:11,color:SUB,marginTop:1}}>Check-in rapide · 30 sec</div>
+            </div>
+            <div style={{color:OR,fontSize:18,flexShrink:0}}>›</div>
+          </div>
+        )}
         {p.race&&planWeeks.length>0&&(
           <div style={{borderRadius:16,background:SURF,border:"1px solid "+BORD,marginBottom:14,padding:"14px 16px"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -246,39 +278,12 @@ export function HomeScreen(p){
           );
         })()}
 
-        <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>
-          {p.wellbeing?(
-            <div style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",background:wba.bg,borderBottom:"1px solid "+wba.color+"20"}}>
-              <div style={{width:44,height:44,borderRadius:12,background:wba.color+"25",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{wba.icon}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:wba.color}}>{wba.text}</div>
-                <div style={{fontSize:12,color:SUB,marginTop:2}}>{wba.sub}</div>
-              </div>
-            </div>
-          ):(
-            <div onClick={p.onCheckin} style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",borderBottom:"1px solid "+BORD,cursor:"pointer"}}>
-              <div style={{width:44,height:44,borderRadius:12,background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🌡️</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600,color:TXT}}>Comment tu te sens ?</div>
-                <div style={{fontSize:12,color:SUB,marginTop:2}}>Check-in rapide · 30 sec</div>
-              </div>
-              <div style={{width:30,height:30,borderRadius:"50%",background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",color:OR,fontSize:16,flexShrink:0}}>›</div>
-            </div>
-          )}
-        </div>
-
         {weather&&(function(){
           var adv=weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0);
           return(
-            <div style={{borderRadius:14,background:SURF,border:"1px solid "+BORD,padding:"14px 16px",marginBottom:14}}>
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                <div style={{fontSize:34,lineHeight:1,flexShrink:0}}>{adv.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:10,color:adv.color,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Météo · Conseil séance</div>
-                  <div style={{fontSize:13,fontWeight:600,color:TXT,marginBottom:4}}>{adv.desc} · {Math.round(weather.temperature_2m||0)}°C{weather.windspeed_10m>10?" · "+Math.round(weather.windspeed_10m)+" km/h":""}</div>
-                  <div style={{fontSize:12,color:SUB,lineHeight:1.5}}>{adv.tip}</div>
-                </div>
-              </div>
+            <div style={{borderRadius:14,background:SURF,border:"1px solid "+BORD,padding:"12px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,color:adv.color,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Météo · Conseil séance</div>
+              <div style={{fontSize:12,color:SUB,lineHeight:1.5}}>{adv.tip}</div>
             </div>
           );
         })()}
