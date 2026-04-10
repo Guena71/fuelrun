@@ -12,8 +12,12 @@ import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProg
 import { BADGE_DEFS } from "../data/badges.js";
 import { shareBadge, shareChallenge, shareRun } from "../utils/share.js";
 
+function wIcon(code){return code===0?"☀️":code<=3?"⛅":code<=48?"🌫️":code<=65?"🌧️":code<=77?"❄️":code<=82?"🌦️":"⛈️";}
+
 export function HomeScreen(p){
   var [weather,setWeather]=useState(null);
+  var [hourly,setHourly]=useState(null);
+  var [showWeather,setShowWeather]=useState(false);
   var gam=p.gamification||{xp:0,badges:[],contractsKept:0,bossKills:0};
   var level=xpToLevel(gam.xp||0);
   var weekKey=getWeeklyContractKey();
@@ -27,9 +31,12 @@ export function HomeScreen(p){
     if(!navigator.geolocation)return;
     navigator.geolocation.getCurrentPosition(function(pos){
       var la=pos.coords.latitude.toFixed(4),lo=pos.coords.longitude.toFixed(4);
-      fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&current=temperature_2m,weathercode,windspeed_10m")
+      fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&current=temperature_2m,weathercode,windspeed_10m&hourly=temperature_2m,weathercode,precipitation_probability,windspeed_10m&forecast_days=1&timezone=auto")
         .then(function(r){return r.json();})
-        .then(function(d){if(d&&d.current)setWeather(d.current);})
+        .then(function(d){
+          if(d&&d.current)setWeather(d.current);
+          if(d&&d.hourly)setHourly(d.hourly);
+        })
         .catch(function(){});
     },function(){},{timeout:5000,maximumAge:300000});
   },[]);
@@ -50,7 +57,7 @@ export function HomeScreen(p){
   if(p.wellbeing){var tot=0;var vals=Object.values(p.wellbeing);for(var vi=0;vi<vals.length;vi++)tot+=vals[vi];var wpct=tot/(4*4);if(wpct<=0.4)wba={text:"Repos aujourd'hui",sub:"Ton corps a besoin de récupérer.",icon:"🛌",color:RE,bg:RE+"12"};else if(wpct<=0.6)wba={text:"Séance légère conseillée",sub:"Ne force pas trop.",icon:"🚶",color:YE,bg:YE+"12"};else if(wpct<=0.8)wba={text:"Séance normale",sub:"Tu es en bonne forme.",icon:"✅",color:BL,bg:BL+"12"};else wba={text:"Super forme !",sub:"Profites-en, donne tout.",icon:"🚀",color:GR,bg:GR+"12"};}
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
-    <div style={{paddingBottom:8}}>
+    <><div style={{paddingBottom:8}}>
       <LogoBar profile={p.profile} onProfile={function(){p.onGoToProfile&&p.onGoToProfile();}} onSignOut={p.onSignOut}/>
       <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(150deg,#1c0f00 0%,#110900 45%,"+BG+" 100%)",padding:"16px 20px 0px"}}>
         <div style={{position:"absolute",top:-60,right:-60,width:240,height:240,borderRadius:"50%",background:OR,opacity:0.05,pointerEvents:"none"}}/>
@@ -67,7 +74,7 @@ export function HomeScreen(p){
               var dateStr=now.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
               var adv=weather?weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0):null;
               return(
-                <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:12,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",whiteSpace:"nowrap"}}>
+                <div onClick={adv?function(){setShowWeather(true);}:null} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:12,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",whiteSpace:"nowrap",cursor:adv?"pointer":"default"}}>
                   <span style={{fontSize:11,fontWeight:600,color:OR,textTransform:"capitalize"}}>{dayStr}</span>
                   <span style={{fontSize:11,fontWeight:700,color:TXT}}>{dateStr}</span>
                   {adv&&<>
@@ -296,5 +303,54 @@ export function HomeScreen(p){
         })()}
       </div>
     </div>
+
+    {showWeather&&hourly&&(function(){
+
+      var now=new Date();
+      var curHour=now.getHours();
+      var hours=hourly.time.map(function(t,i){
+        return{
+          h:parseInt(t.slice(11,13)),
+          temp:Math.round(hourly.temperature_2m[i]),
+          code:hourly.weathercode[i],
+          rain:hourly.precipitation_probability[i]||0,
+          wind:Math.round(hourly.windspeed_10m[i]),
+        };
+      }).filter(function(h){return h.h>=curHour;});
+      // Meilleur créneau : pas de pluie, temp idéale, vent faible
+      var bestIdx=0;var bestScore=-Infinity;
+      hours.forEach(function(h,i){
+        var score=(h.code<61?10:0)-(h.rain/10)+( h.temp>=10&&h.temp<=22?5:0)-(h.wind>20?3:0);
+        if(score>bestScore){bestScore=score;bestIdx=i;}
+      });
+      return(
+        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={function(){setShowWeather(false);}}>
+          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"0 0 32px",maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px"}}>
+              <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo du jour</div>
+              <button onClick={function(){setShowWeather(false);}} style={{background:"none",border:"none",color:MUT,fontSize:20,cursor:"pointer",padding:4}}>✕</button>
+            </div>
+            <div style={{overflowY:"auto",padding:"0 16px"}}>
+              {hours.map(function(h,i){
+                var isBest=i===bestIdx;
+                return(
+                  <div key={h.h} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:12,marginBottom:6,background:isBest?OR+"12":SURF,border:"1px solid "+(isBest?OR+"44":BORD)}}>
+                    <span style={{fontSize:13,fontWeight:700,color:isBest?OR:MUT,width:36,flexShrink:0}}>{String(h.h).padStart(2,"0")}h</span>
+                    <span style={{fontSize:20,flexShrink:0}}>{wIcon(h.code)}</span>
+                    <span style={{fontSize:15,fontWeight:700,color:TXT,width:36,flexShrink:0}}>{h.temp}°</span>
+                    <div style={{flex:1,display:"flex",gap:8}}>
+                      {h.rain>0&&<span style={{fontSize:11,color:BL}}>💧{h.rain}%</span>}
+                      {h.wind>10&&<span style={{fontSize:11,color:MUT}}>💨{h.wind} km/h</span>}
+                    </div>
+                    {isBest&&<span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>🏃 Idéal</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+    </>
   );
 }
