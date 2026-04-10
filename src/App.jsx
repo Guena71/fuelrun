@@ -159,7 +159,9 @@ export default function App(){
   useEffect(function(){
     getRedirectResult(auth).then(function(r){
       if(r)logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
-    }).catch(function(){});
+    }).catch(function(e){
+      showToast("Erreur Apple : "+e.code+" — "+e.message,"err");
+    });
   },[]);
 
   useEffect(function(){
