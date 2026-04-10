@@ -79,6 +79,10 @@ input[type="range"]::-webkit-slider-thumb {
 @keyframes run     { 0%{ transform:translateX(-4px); } 50%{ transform:translateX(4px); } 100%{ transform:translateX(-4px); } }
 @keyframes bounce  { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
 @keyframes runnerStride { from { transform:translateY(0) rotate(-2deg); } to { transform:translateY(-6px) rotate(2deg); } }
+@keyframes coachFab {
+  0%,100% { transform:translateY(0)   scale(1);    box-shadow:0 4px 16px rgba(255,90,31,.45); }
+  50%      { transform:translateY(-5px) scale(1.07); box-shadow:0 8px 28px rgba(255,90,31,.75); }
+}
 
 /* ── Animation helpers ────────────────────────────────────────────────── */
 .anim-fadeIn  { animation: fadeIn  .3s  ease; }
@@ -86,3 +90,4 @@ input[type="range"]::-webkit-slider-thumb {
 .anim-run     { animation: run     2.5s ease-in-out infinite; }
 .anim-bounce  { animation: bounce  1.8s ease-in-out infinite; }
 .anim-pulse   { animation: pulse   1.5s ease-in-out infinite; }
+.coach-fab    { animation: coachFab 2.4s ease-in-out infinite; }

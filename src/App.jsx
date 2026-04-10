@@ -421,7 +421,7 @@ export default function App(){
         )}
         {/* ── Floating coach button (visible on all non-coach tabs) ── */}
         {curPath!=="/coach"&&NAV.some(function(n){return n.path===curPath;})&&(
-          <button onClick={function(){openCoach(CONTEXT_LABELS[curPath]||null);}} style={{position:"fixed",bottom:72,right:"calc(50% - 215px + 16px)",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,"+OR+","+OR+"cc)",border:"none",cursor:"pointer",zIndex:60,boxShadow:"0 4px 16px rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>
+          <button className="coach-fab" onClick={function(){openCoach(CONTEXT_LABELS[curPath]||null);}} style={{position:"fixed",bottom:72,right:"calc(50% - 215px + 16px)",width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,"+OR+","+OR+"bb)",border:"none",cursor:"pointer",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
             🏃
           </button>
         )}
