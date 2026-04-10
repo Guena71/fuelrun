@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { auth, analytics, googleProvider, appleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
+import { useState } from "react";
+import { auth, analytics, googleProvider, appleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, logEvent } from "../firebase.js";
 import { BG, SURF2, BORD, TXT, SUB, MUT, OR, RE } from "../data/constants.js";
 import { Btn } from "../components/ui.jsx";
 import { LogoBar } from "../components/HeroScreen.jsx";
@@ -15,15 +15,6 @@ export function AuthScreen(){
   var [forgotSent,setForgotSent]=useState(false);
   var [legal,setLegal]=useState(null);
 
-  // Récupère le résultat du redirect Apple au retour dans l'app
-  useEffect(function(){
-    getRedirectResult(auth).then(function(r){
-      if(!r)return;
-      logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
-    }).catch(function(e){
-      if(e.code!=="auth/no-auth-event")setError("Erreur Apple : "+e.message);
-    });
-  },[]);
 
   function handleEmail(){
     if(!email.trim()||!password.trim()){setError("Remplis tous les champs.");return;}

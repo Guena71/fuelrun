@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { auth, db, analytics, signOut, onAuthStateChanged, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
+import { auth, db, analytics, signOut, onAuthStateChanged, getRedirectResult, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
 import { BG, SURF, BORD, OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
 import { checkNewBadges, getWeeklyContractKey, sessionXP, xpToLevel, generateWeeklyChallenge, challengeProgress } from "./utils/gamification.js";
@@ -155,6 +155,12 @@ export default function App(){
       showToast("Erreur de sauvegarde — vérifie ta connexion","err");
     });
   }
+
+  useEffect(function(){
+    getRedirectResult(auth).then(function(r){
+      if(r)logEvent(analytics,r.user.metadata.creationTime===r.user.metadata.lastSignInTime?"sign_up":"login",{method:"apple"});
+    }).catch(function(){});
+  },[]);
 
   useEffect(function(){
     var unsub=onAuthStateChanged(auth,function(u){
