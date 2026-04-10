@@ -12,6 +12,7 @@ import { HeroScreen } from "./components/HeroScreen.jsx";
 import { AuthScreen } from "./screens/AuthScreen.jsx";
 import { PricingScreen } from "./screens/PricingScreen.jsx";
 import { Onboarding } from "./screens/Onboarding.jsx";
+import { FirstRunScreen } from "./screens/FirstRunScreen.jsx";
 import { HomeScreen } from "./screens/HomeScreen.jsx";
 import { TrainingScreen } from "./screens/TrainingScreen.jsx";
 import { CoursesScreen } from "./screens/CoursesScreen.jsx";
@@ -281,10 +282,18 @@ export default function App(){
     var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek,plan:ls("fr_pending_plan","gratuit")};
     setProfile(prof);setRace(d.race);
     if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
+    if(d.level==="starter"){setAuthState("firstrun");return;}
     setAuthState("app");
     navigate(d.race?"/training":"/home",{replace:true});
     if(!ls("fr_guide_done",false))setTimeout(function(){setShowGuide(true);},800);
   }}/>;}
+
+  if(authState==="firstrun"){return <FirstRunScreen onStart={function(){
+    setAuthState("app");
+    navigate("/home",{replace:true});
+    if(!ls("fr_guide_done",false))setTimeout(function(){setShowGuide(true);},800);
+  }}/>;}
+
 
   if(!profile)return null;
 
