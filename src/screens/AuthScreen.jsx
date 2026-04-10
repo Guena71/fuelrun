@@ -58,10 +58,10 @@ export function AuthScreen(){
   function handleForgot(){
     if(!email.trim()){setError("Entre ton e-mail ci-dessus.");return;}
     setLoading(true);setError("");
-    sendPasswordResetEmail(auth,email).then(function(){
+    sendPasswordResetEmail(auth,email,{url:"https://fuelrun.vercel.app",handleCodeInApp:false}).then(function(){
       setForgotSent(true);setLoading(false);
     }).catch(function(e){
-      var msg=e.code==="auth/user-not-found"?"Aucun compte avec cet e-mail.":"Erreur : "+e.message;
+      var msg=e.code==="auth/user-not-found"||e.code==="auth/invalid-email"?"Aucun compte avec cet e-mail.":"Erreur : "+e.message;
       setError(msg);setLoading(false);
     });
   }
