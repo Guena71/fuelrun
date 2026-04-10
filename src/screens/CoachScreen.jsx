@@ -4,7 +4,7 @@ import { SURF, BORD, TXT, SUB, MUT, OR, GR, BL, RE } from "../data/constants.js"
 import { weeksUntil } from "../utils/date.js";
 import { buildPlan, getPlanWeeks } from "../utils/plan.js";
 import { planLevel } from "../utils/nutrition.js";
-import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress } from "../utils/gamification.js";
+import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress, contractProgress } from "../utils/gamification.js";
 import { ls, lsSet } from "../utils/storage.js";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
