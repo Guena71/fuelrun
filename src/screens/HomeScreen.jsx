@@ -10,6 +10,7 @@ import { LogoBar } from "../components/HeroScreen.jsx";
 import { AnimCount } from "../components/AnimCount.jsx";
 import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress } from "../utils/gamification.js";
 import { BADGE_DEFS } from "../data/badges.js";
+import { shareBadge, shareChallenge, shareRun } from "../utils/share.js";
 
 export function HomeScreen(p){
   var [weather,setWeather]=useState(null);
@@ -128,7 +129,10 @@ export function HomeScreen(p){
           <div style={{height:5,background:OR+"18",borderRadius:6,overflow:"hidden"}}>
             <div style={{width:Math.min(100,Math.round(chalDone/challenge.target*100))+"%",height:"100%",background:chalCompleted?"linear-gradient(90deg,"+GR+"99,"+GR+")":"linear-gradient(90deg,"+OR+"99,"+OR+")",borderRadius:6,transition:"width 0.6s ease"}}/>
           </div>
-          <div style={{marginTop:6,fontSize:11,color:chalCompleted?GR:MUT,fontWeight:chalCompleted?600:400}}>{chalCompleted?"✓ Challenge relevé cette semaine !":"En cours · se renouvelle chaque semaine"}</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
+            <div style={{fontSize:11,color:chalCompleted?GR:MUT,fontWeight:chalCompleted?600:400}}>{chalCompleted?"✓ Challenge relevé cette semaine !":"En cours · se renouvelle chaque semaine"}</div>
+            {chalCompleted&&<button onClick={function(){shareChallenge(challenge,chalDone);}} style={{padding:"4px 10px",borderRadius:8,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Partager 🚀</button>}
+          </div>
         </div>
 
         {earnedBadges.length>0&&(
@@ -136,9 +140,10 @@ export function HomeScreen(p){
             <div style={{fontSize:10,color:MUT,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Badges récents</div>
             <div style={{display:"flex",gap:10}}>
               {earnedBadges.map(function(def){return(
-                <div key={def.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1}}>
+                <div key={def.id} onClick={function(){shareBadge(def);}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1,cursor:"pointer"}}>
                   <div style={{width:44,height:44,borderRadius:12,background:OR+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{def.emoji}</div>
                   <div style={{fontSize:9,color:TXT,fontWeight:600,textAlign:"center",lineHeight:1.2}}>{def.name}</div>
+                  <div style={{fontSize:9,color:OR}}>Partager</div>
                 </div>
               );})}
             </div>
@@ -217,8 +222,9 @@ export function HomeScreen(p){
                   {nextSess&&(
                     <div style={{marginTop:10}}>
                       {todayDone?(
-                        <div style={{width:"100%",padding:"9px",borderRadius:10,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:12,fontWeight:700,textAlign:"center"}}>
-                          ✓ Séance validée aujourd'hui
+                        <div style={{display:"flex",gap:8}}>
+                          <div style={{flex:1,padding:"9px",borderRadius:10,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:12,fontWeight:700,textAlign:"center"}}>✓ Séance validée</div>
+                          <button onClick={function(){var e=p.entries&&p.entries[todayKey];shareRun(e&&e.km,e&&e.min);}} style={{padding:"9px 12px",borderRadius:10,background:OR+"18",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🚀</button>
                         </div>
                       ):(
                         <button onClick={function(){p.onGoToSuivi&&p.onGoToSuivi();}} style={{width:"100%",padding:"9px",borderRadius:10,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:0.2}}>
