@@ -74,13 +74,13 @@ export function HomeScreen(p){
               var dateStr=now.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
               var adv=weather?weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0):null;
               return(
-                <div onClick={adv?function(){setShowWeather(true);}:null} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:12,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",whiteSpace:"nowrap",cursor:adv?"pointer":"default"}}>
-                  <span style={{fontSize:11,fontWeight:600,color:OR,textTransform:"capitalize"}}>{dayStr}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:TXT}}>{dateStr}</span>
+                <div onClick={adv?function(){setShowWeather(true);}:null} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",borderRadius:14,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",whiteSpace:"nowrap",cursor:adv?"pointer":"default"}}>
+                  <span style={{fontSize:13,fontWeight:600,color:OR,textTransform:"capitalize"}}>{dayStr}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:TXT}}>{dateStr}</span>
                   {adv&&<>
-                    <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>·</span>
-                    <span style={{fontSize:16,lineHeight:1}}>{adv.icon}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
+                    <span style={{fontSize:10,color:"rgba(255,255,255,0.2)"}}>·</span>
+                    <span style={{fontSize:20,lineHeight:1}}>{adv.icon}</span>
+                    <span style={{fontSize:14,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
                   </>}
                 </div>
               );
