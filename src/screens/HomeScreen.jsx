@@ -67,17 +67,13 @@ export function HomeScreen(p){
               var dateStr=now.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
               var adv=weather?weatherAdvice(weather.weathercode||0,weather.temperature_2m||15,weather.windspeed_10m||0):null;
               return(
-                <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:12,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)"}}>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-                    <span style={{fontSize:9,color:OR,fontWeight:700,textTransform:"capitalize",letterSpacing:0.3}}>{dayStr}</span>
-                    <span style={{fontSize:12,fontWeight:700,color:TXT}}>{dateStr}</span>
-                  </div>
+                <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:12,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",whiteSpace:"nowrap"}}>
+                  <span style={{fontSize:11,fontWeight:600,color:OR,textTransform:"capitalize"}}>{dayStr}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:TXT}}>{dateStr}</span>
                   {adv&&<>
-                    <div style={{width:1,height:28,background:"rgba(255,255,255,0.12)"}}/>
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-                      <span style={{fontSize:18,lineHeight:1}}>{adv.icon}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
-                    </div>
+                    <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>·</span>
+                    <span style={{fontSize:16,lineHeight:1}}>{adv.icon}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:TXT}}>{Math.round(weather.temperature_2m||0)}°</span>
                   </>}
                 </div>
               );
