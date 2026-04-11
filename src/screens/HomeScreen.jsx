@@ -13,6 +13,7 @@ import { BADGE_DEFS } from "../data/badges.js";
 import { shareBadge, shareChallenge, shareRun } from "../utils/share.js";
 
 function wIcon(code){return code===0?"☀️":code<=3?"⛅":code<=48?"🌫️":code<=65?"🌧️":code<=77?"❄️":code<=82?"🌦️":"⛈️";}
+function calcStreak(entries){var s=0,d=new Date();d.setHours(0,0,0,0);while(true){var k=d.toDateString();if(entries&&entries[k]&&entries[k].done){s++;d.setDate(d.getDate()-1);}else break;}return s;}
 
 export function HomeScreen(p){
   var [weather,setWeather]=useState(null);
@@ -94,7 +95,7 @@ export function HomeScreen(p){
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
-          {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Jours 🔥",value:p.stats.streak,color:YE}].map(function(st,i){
+          {[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km),color:BL},{label:"Jours 🔥",value:calcStreak(p.entries),color:YE}].map(function(st,i){
             return(<div key={i} style={{background:"rgba(255,255,255,0.045)",backdropFilter:"blur(8px)",borderRadius:14,padding:"14px 10px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
               <div style={{fontSize:24,fontWeight:800,lineHeight:1}}><AnimCount value={st.value} color={st.color}/></div>
               <div style={{fontSize:9,color:MUT,marginTop:5,fontWeight:500,textTransform:"uppercase",letterSpacing:0.5}}>{st.label}</div>
