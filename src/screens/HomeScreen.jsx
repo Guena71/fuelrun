@@ -69,7 +69,6 @@ export function HomeScreen(p){
             <div>
               <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
               <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
-              {(function(){var lvl=planLevel(p.profile);var col=lvl>=2?OR:lvl>=1?BL:MUT;var label=lvl>=2?"Pro":lvl>=1?"Essentiel":"Gratuit";return(<span style={{display:"inline-block",marginTop:6,fontSize:10,fontWeight:700,color:col,background:col+"18",border:"1px solid "+col+"44",borderRadius:20,padding:"2px 10px",textTransform:"uppercase",letterSpacing:0.8}}>{label}</span>);})()}
             </div>
             {(function(){
               var now=new Date();
@@ -89,8 +88,9 @@ export function HomeScreen(p){
               );
             })()}
           </div>
-          <div style={{marginTop:10}}>
-            <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35",cursor:"pointer",fontFamily:"inherit"}}>
+          <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10}}>
+            {(function(){var lvl=planLevel(p.profile);var col=lvl>=2?OR:lvl>=1?BL:MUT;var label=lvl>=2?"Pro":lvl>=1?"Essentiel":"Gratuit";return(<span style={{fontSize:10,fontWeight:700,color:col,background:col+"18",border:"1px solid "+col+"44",borderRadius:20,padding:"3px 10px",textTransform:"uppercase",letterSpacing:0.8}}>{label}</span>);})()}
+            <button onClick={function(){p.onGoToProfile&&p.onGoToProfile();}} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 10px",borderRadius:20,background:OR+"18",border:"1px solid "+OR+"35",cursor:"pointer",fontFamily:"inherit"}}>
               <span style={{fontSize:11,color:OR,fontWeight:600}}>Modifier ton profil</span>
               <span style={{fontSize:10,color:OR}}>✎</span>
             </button>
