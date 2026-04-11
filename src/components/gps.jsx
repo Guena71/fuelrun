@@ -101,7 +101,7 @@ export function GpsTrackerModal({onSave,onClose}){
           <button onClick={startTracking} style={{width:72,height:72,borderRadius:"50%",background:GR,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>▶</button>
           <button onClick={stopTracking} style={{width:72,height:72,borderRadius:"50%",background:RE,border:"none",cursor:"pointer",fontSize:24,color:"#fff"}}>⏹</button>
         </>}
-        {status==="done"&&<button onClick={function(){onSave({track:track,km:String(km.toFixed(2)),min:String(Math.round(elapsed/60))});}} style={{padding:"16px 40px",borderRadius:14,background:OR,border:"none",cursor:"pointer",fontSize:16,fontWeight:700,color:"#fff",fontFamily:"inherit"}}>Enregistrer</button>}
+        {status==="done"&&<button onClick={function(){onSave({track:track,km:String(km.toFixed(2)),min:String(Math.round(elapsed/60)),sec:String(elapsed)});}} style={{padding:"16px 40px",borderRadius:14,background:OR,border:"none",cursor:"pointer",fontSize:16,fontWeight:700,color:"#fff",fontFamily:"inherit"}}>Enregistrer</button>}
       </div>
     </div>
   );

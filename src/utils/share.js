@@ -1,3 +1,4 @@
+import { fmtDuration } from "./date.js";
 var APP_URL="https://fuelrun.vercel.app";
 
 export async function share(text){
@@ -29,12 +30,13 @@ export function shareChallenge(challenge,done){
   );
 }
 
-export function shareRun(km,min){
+export function shareRun(km,min,sec){
   var pace=min&&km?Math.round((parseFloat(min)/parseFloat(km))*60):"";
   var paceStr=pace?Math.floor(pace/60)+"'"+(pace%60<10?"0"+pace%60:pace%60)+'"/km':"";
+  var dur=min?fmtDuration(min,sec):"";
   return share(
     "🏃 Nouvelle sortie sur FuelRun !\n"+
-    "📍 "+parseFloat(km).toFixed(1)+" km"+(min?" · "+min+" min":"")+(paceStr?" · "+paceStr:"")+"\n"+
+    "📍 "+parseFloat(km).toFixed(1)+" km"+(dur?" · "+dur:"")+(paceStr?" · "+paceStr:"")+"\n"+
     "👟 Rejoins-moi sur FuelRun"
   );
 }

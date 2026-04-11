@@ -16,7 +16,7 @@ export function JournalScreen(p){
   var entries=p.entries||{};
   function setEntries(fn){p.onSetEntries&&p.onSetEntries(fn);}
   var [sel,setSel]=useState(null);
-  var [form,setForm]=useState({done:false,km:"",min:"",feel:null,note:""});
+  var [form,setForm]=useState({done:false,km:"",min:"",sec:"",feel:null,note:""});
   var [showGps,setShowGps]=useState(false);
   var [showGpxUpgradeJ,setShowGpxUpgradeJ]=useState(false);
   var y=month.getFullYear();var mo=month.getMonth();
@@ -28,7 +28,7 @@ export function JournalScreen(p){
   function hasSess(d){for(var wi=0;wi<planWeeks.length;wi++){for(var si=0;si<planWeeks[wi].sessions.length;si++){var s=planWeeks[wi].sessions[si];if(s.date&&s.date.toDateString()===d.toDateString()&&s.type!=="race")return true;}}return false;}
   var doneE=Object.entries(entries).filter(function(e){return e[1].done;});
   var totalKm=doneE.reduce(function(s,e){return s+(parseFloat(e[1].km)||0);},0);
-  function openDay(d,defaultKm){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||(defaultKm!=null?String(defaultKm):""),min:e.min||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||"",track:e.track||null});}
+  function openDay(d,defaultKm){var k=d.toDateString();var e=entries[k]||{};setSel({date:d,key:k});setForm({done:!!e.done,km:e.km||(defaultKm!=null?String(defaultKm):""),min:e.min||"",sec:e.sec||"",feel:e.feel!=null?e.feel:null,rpe:e.rpe||5,note:e.note||"",track:e.track||null});}
   useEffect(function(){if(p.preselect){openDay(p.preselect.date,p.preselect.km);p.onClearPreselect&&p.onClearPreselect();}},[]);
   function save(){var was=!entries[sel.key]||!entries[sel.key].done;setEntries(function(prev){return Object.assign({},prev,{[sel.key]:Object.assign({},form)});});if(form.done&&was&&p.onAddSession)p.onAddSession(parseFloat(form.km)||5);setSel(null);}
   var feels=["😤","😓","😐","🙂","💪"];
@@ -89,8 +89,9 @@ export function JournalScreen(p){
                       var track=parseGpx(ev.target.result);
                       if(track.length>0){
                         var km=calcTrackKm(track);
-                        var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;
-                        setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,done:true});});
+                        var secDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/1000):null;
+                        var minDur=secDur?Math.round(secDur/60):null;
+                        setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,sec:secDur?String(secDur):f.sec,done:true});});
                       }
                     };reader.readAsText(file);e.target.value="";
                   }}/>
@@ -129,7 +130,7 @@ export function JournalScreen(p){
         ):null}
       </div>
     </div>
-    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){setForm(function(f){return Object.assign({},f,{track:res.track,km:res.km,min:res.min,done:true});});setShowGps(false);}}/>}
+    {showGps&&<GpsTrackerModal onClose={function(){setShowGps(false);}} onSave={function(res){setForm(function(f){return Object.assign({},f,{track:res.track,km:res.km,min:res.min,sec:res.sec||"",done:true});});setShowGps(false);}}/>}
     {showGpxUpgradeJ&&<UpgradeModal feature="Import GPX" minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowGpxUpgradeJ(false);}} onUpgrade={function(){setShowGpxUpgradeJ(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );

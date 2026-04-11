@@ -270,7 +270,7 @@ export function HomeScreen(p){
                       {todayDone?(
                         <div style={{display:"flex",gap:8}}>
                           <div style={{flex:1,padding:"9px",borderRadius:10,background:GR+"18",border:"1px solid "+GR+"44",color:GR,fontSize:12,fontWeight:700,textAlign:"center"}}>✓ Séance validée</div>
-                          <button onClick={function(){var e=p.entries&&p.entries[todayKey];shareRun(e&&e.km,e&&e.min);}} style={{padding:"9px 12px",borderRadius:10,background:OR+"18",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🚀</button>
+                          <button onClick={function(){var e=p.entries&&p.entries[todayKey];shareRun(e&&e.km,e&&e.min,e&&e.sec);}} style={{padding:"9px 12px",borderRadius:10,background:OR+"18",border:"1px solid "+OR+"44",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🚀</button>
                         </div>
                       ):(
                         <button onClick={function(){p.onGoToSuivi&&p.onGoToSuivi();}} style={{width:"100%",padding:"9px",borderRadius:10,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:0.2}}>

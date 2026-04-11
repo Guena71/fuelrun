@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL } from "../data/constants.js";
 import { stravaAuthUrl } from "../utils/strava.js";
-import { weeksUntil, fmtDate, fmtPaceSec } from "../utils/date.js";
+import { weeksUntil, fmtDate, fmtPaceSec, fmtDuration } from "../utils/date.js";
 import { planLevel } from "../utils/nutrition.js";
 import { buildPlan, getPlanWeeks } from "../utils/plan.js";
 import { parseGpx, calcTrackKm, RunMap } from "../components/gps.jsx";
@@ -259,7 +259,7 @@ export function SuiviScreen(p){
                 <div style={{fontSize:11,color:SUB}}>{fmtDate(new Date(lastTracked[0]))} · {lastTracked[1].km} km</div>
               </div>
               <RunMap track={lastTracked[1].track} height={160}/>
-              {lastTracked[1].min&&<div style={{marginTop:6,fontSize:11,color:SUB,textAlign:"center"}}>Durée : {lastTracked[1].min} min · Allure : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
+              {lastTracked[1].min&&<div style={{marginTop:6,fontSize:11,color:SUB,textAlign:"center"}}>Durée : {fmtDuration(lastTracked[1].min,lastTracked[1].sec)} · Allure : {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
             </div>
           )}
           {recent.length===0?(
@@ -274,7 +274,7 @@ export function SuiviScreen(p){
                 <div key={i} onClick={function(){p.onOpenJournal&&p.onOpenJournal();}} style={{padding:"12px 16px",borderBottom:i<recent.length-1?"1px solid "+BORD:"none",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                   <div style={{width:38,height:38,borderRadius:10,background:OR+"18",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:13,color:OR,fontWeight:800}}>{Math.round(data.km||0)}<span style={{fontSize:8,fontWeight:500,marginLeft:1}}>km</span></div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+data.min+" min":""}</div>
+                    <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+fmtDuration(data.min,data.sec):""}</div>
                     <div style={{fontSize:11,color:MUT,marginTop:2}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}{data.rpe?" · RPE "+data.rpe:""}</div>
                   </div>
                   {data.feel!=null&&<div style={{fontSize:18}}>{[..."😤😓😐🙂💪"][data.feel]||""}</div>}
