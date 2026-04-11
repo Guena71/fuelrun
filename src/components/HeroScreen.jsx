@@ -17,7 +17,7 @@ export function LogoBar(p){
     <div style={{display:"flex",alignItems:"center",padding:"12px 24px 0"}}>
       <div onClick={function(){navigate("/home");}} style={{display:"flex",alignItems:"center",cursor:"pointer"}}>
         <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 12px "+OR+"60)"}}><RunnerHero size={56}/></div>
-        <span style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
+        <span style={{fontSize:38,fontWeight:800,color:TXT,letterSpacing:"-0.5px",marginLeft:14}}>FuelRun</span>
       </div>
       {p.onSignOut&&(
         <button onClick={p.onSignOut} title="Se déconnecter" style={{marginLeft:"auto",width:36,height:36,borderRadius:10,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
