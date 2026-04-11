@@ -11,6 +11,7 @@ import { AnimCount } from "../components/AnimCount.jsx";
 import { xpToLevel, getWeeklyContractKey, generateWeeklyChallenge, challengeProgress } from "../utils/gamification.js";
 import { BADGE_DEFS } from "../data/badges.js";
 import { shareBadge, shareChallenge, shareRun } from "../utils/share.js";
+import { planLevel } from "../utils/nutrition.js";
 
 function wIcon(code){return code===0?"☀️":code<=3?"⛅":code<=48?"🌫️":code<=65?"🌧️":code<=77?"❄️":code<=82?"🌦️":"⛈️";}
 function calcStreak(entries){var s=0,d=new Date();d.setHours(0,0,0,0);while(true){var k=d.toDateString();if(entries&&entries[k]&&entries[k].done){s++;d.setDate(d.getDate()-1);}else break;}return s;}
@@ -68,6 +69,7 @@ export function HomeScreen(p){
             <div>
               <div style={{fontSize:12,color:OR,fontWeight:600,textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>{greeting}</div>
               <div style={{fontSize:30,fontWeight:800,color:TXT,letterSpacing:"-0.5px",lineHeight:1}}>{p.profile.name||"Champion"}</div>
+              {(function(){var lvl=planLevel(p.profile);var col=lvl>=2?OR:lvl>=1?BL:MUT;var label=lvl>=2?"Pro":lvl>=1?"Essentiel":"Gratuit";return(<span style={{display:"inline-block",marginTop:6,fontSize:10,fontWeight:700,color:col,background:col+"18",border:"1px solid "+col+"44",borderRadius:20,padding:"2px 10px",textTransform:"uppercase",letterSpacing:0.8}}>{label}</span>);})()}
             </div>
             {(function(){
               var now=new Date();
