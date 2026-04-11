@@ -68,7 +68,7 @@ export function CoachScreen(p){
     var weekKey=getWeeklyContractKey();var contract=gam.contract&&gam.contract.weekKey===weekKey?gam.contract:null;var contractDoneCount=contract?contractProgress(p.entries||{},weekKey):0;
     // Contexte depuis quel écran
     var ctxLine=p.context?"Contexte : l'utilisateur t'ouvre depuis "+p.context+". Commence par un message adapté à ce contexte.\n":"";
-    var sys="Tu es le coach IA de FuelRun, expert en running, trail et entraînement. Tu connais parfaitement cet athlète et son plan.\n"+ctxLine+"\n== PROFIL ==\n"+(p.profile.name||"Coureur")+", "+(p.profile.age||"30")+" ans, "+(p.profile.weight||"70")+" kg, niveau "+(p.profile.level||"débutant")+(p.profile.gender?"," +p.profile.gender:"")+"\nNiveau : "+level.emoji+" "+level.name+" ("+( gam.xp||0)+" XP) · Série : "+(p.stats&&p.stats.streak||0)+" jour(s) consécutif(s) · Total : "+(p.stats&&Math.round(p.stats.km)||0)+" km en "+(p.stats&&p.stats.sessions||0)+" séances\n\n== OBJECTIF ==\n"+(p.race?""+p.race.name+", "+p.race.dist+"km ("+(p.race.type==="trail"?"trail":"route")+") — dans "+weeksUntil(p.race.date)+" semaine(s)":"Pas de course configurée")+"\n\n== PLAN ==\nSemaine "+(curWIdx+1)+"/"+planWCtx.length+" · "+donePlanSess+"/"+totalPlanSess+" séances réalisées depuis le début\nSéances cette semaine :\n  "+weekSessLines+"\n\n== 30 DERNIERS JOURS ==\n"+(recentLines.length>0?recentLines.slice(-12).join(" | "):"Aucune activité enregistrée")+"\n\n== ÉTAT ==\nForme : "+wellStr+"\n"+(contract?"Contrat semaine : "+contractDoneCount+"/"+contract.target+" séances réalisées":"Pas de contrat cette semaine")+"\n\nRéponds en français, ton naturel et direct, 2-4 phrases max, conseils concrets basés sur ces données précises.";
+    var sys="Tu es le coach de FuelRun, expert en running, trail et entraînement. Tu connais parfaitement cet athlète et son plan.\n"+ctxLine+"\n== PROFIL ==\n"+(p.profile.name||"Coureur")+", "+(p.profile.age||"30")+" ans, "+(p.profile.weight||"70")+" kg, niveau "+(p.profile.level||"débutant")+(p.profile.gender?"," +p.profile.gender:"")+"\nNiveau : "+level.emoji+" "+level.name+" ("+( gam.xp||0)+" XP) · Série : "+(p.stats&&p.stats.streak||0)+" jour(s) consécutif(s) · Total : "+(p.stats&&Math.round(p.stats.km)||0)+" km en "+(p.stats&&p.stats.sessions||0)+" séances\n\n== OBJECTIF ==\n"+(p.race?""+p.race.name+", "+p.race.dist+"km ("+(p.race.type==="trail"?"trail":"route")+") — dans "+weeksUntil(p.race.date)+" semaine(s)":"Pas de course configurée")+"\n\n== PLAN ==\nSemaine "+(curWIdx+1)+"/"+planWCtx.length+" · "+donePlanSess+"/"+totalPlanSess+" séances réalisées depuis le début\nSéances cette semaine :\n  "+weekSessLines+"\n\n== 30 DERNIERS JOURS ==\n"+(recentLines.length>0?recentLines.slice(-12).join(" | "):"Aucune activité enregistrée")+"\n\n== ÉTAT ==\nForme : "+wellStr+"\n"+(contract?"Contrat semaine : "+contractDoneCount+"/"+contract.target+" séances réalisées":"Pas de contrat cette semaine")+"\n\nRéponds en français, ton naturel et direct, 2-4 phrases max, conseils concrets basés sur ces données précises.";
     var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
     fetch("/api/coach",{
       method:"POST",
@@ -93,7 +93,7 @@ export function CoachScreen(p){
       <LogoBar/>
       <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0,overflowX:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Coach IA</div>
+          <div style={{fontSize:26,fontWeight:800,color:TXT,letterSpacing:"-0.4px"}}>Coach</div>
           {remaining!==null&&<div style={{fontSize:11,fontWeight:600,color:remaining<=2?RE:remaining<=5?"#F59E0B":MUT,background:SURF,padding:"3px 8px",borderRadius:8,border:"1px solid "+BORD}}>{remaining} msg restants</div>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
@@ -150,7 +150,7 @@ export function CoachScreen(p){
           </div>
         )}
       </div>
-      {showCoachUpgrade&&<UpgradeModal feature={"Coach IA · Limite atteinte"} minPlanLabel={lvl<1?"Essentiel":"Pro"} minPlanColor={lvl<1?BL:OR} onClose={function(){setShowCoachUpgrade(false);}} onUpgrade={function(){setShowCoachUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
+      {showCoachUpgrade&&<UpgradeModal feature={"Coach · Limite atteinte"} minPlanLabel={lvl<1?"Essentiel":"Pro"} minPlanColor={lvl<1?BL:OR} onClose={function(){setShowCoachUpgrade(false);}} onUpgrade={function(){setShowCoachUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </div>
   );
 }

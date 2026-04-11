@@ -11,9 +11,9 @@ FuelRun est une application de coaching sportif personnalisé pour la course à 
 L'application est accessible depuis tout appareil connecté à Internet. L'utilisateur s'engage à fournir des informations exactes lors de son inscription et à maintenir la confidentialité de ses identifiants.
 
 3. FORMULES ET ABONNEMENTS
-• Gratuit : accès limité (3 semaines de plan, 5 messages Coach IA/jour)
-• Essentiel (4,99 €/mois) : plan complet, Strava, nutrition, 30 messages Coach IA/jour
-• Pro (9,99 €/mois) : toutes fonctionnalités, coach IA illimité, recettes premium
+• Gratuit : accès limité (3 semaines de plan, 5 messages Coach/jour)
+• Essentiel (4,99 €/mois) : plan complet, Strava, nutrition, 30 messages Coach/jour
+• Pro (9,99 €/mois) : toutes fonctionnalités, coach illimité, recettes premium
 
 Les abonnements sont sans engagement et résiliables à tout moment depuis les paramètres. Aucun remboursement ne sera effectué pour une période déjà facturée.
 

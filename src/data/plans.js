@@ -10,7 +10,7 @@ export var PLANS=[
       "Nutrition du jour (calories et macros)",
       "Journal des séances",
       "XP, badges & défis hebdomadaires",
-      "5 messages Coach IA par jour",
+      "5 messages Coach par jour",
     ],
     cta:"Commencer gratuitement"
   },
@@ -25,7 +25,7 @@ export var PLANS=[
       "Nutrition du jour pour toutes tes courses",
       "Synchronisation Strava (import automatique des activités)",
       "Import de tracés GPS (Garmin, Polar, Wahoo…)",
-      "30 messages Coach IA par jour",
+      "30 messages Coach par jour",
     ],
     cta:"Essayer 14 jours gratuit"
   },
@@ -35,7 +35,7 @@ export var PLANS=[
     items:[
       "14 jours gratuits, puis 9,99 € par mois :",
       "Tout Essentiel, plus :",
-      "Coach IA illimité 24h sur 24",
+      "Coach illimité 24h sur 24",
       "Allures personnalisées et zones d'entraînement",
       "Stratégie de course et temps par kilomètre",
       "Recettes premium et plans repas sur-mesure",

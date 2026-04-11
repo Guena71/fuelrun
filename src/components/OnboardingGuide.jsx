@@ -6,7 +6,7 @@ var GUIDE_STEPS=[
   {tab:"courses",  title:"Trouve ta course",       desc:"Sélectionne une course objectif et laisse FuelRun générer ton plan personnalisé."},
   {tab:"training", title:"Ton plan d'entraînement",desc:"Toutes tes séances semaine par semaine, avec nutrition et recettes intégrées."},
   {tab:"suivi",    title:"Suis ta progression",    desc:"Visualise tes km, tes sorties récentes et ta progression vers la course."},
-  {tab:"coach",    title:"Ton coach IA",           desc:"Pose toutes tes questions à ton coach personnel, disponible 24h/24."},
+  {tab:"coach",    title:"Ton coach",           desc:"Pose toutes tes questions à ton coach personnel, disponible 24h/24."},
 ];
 var NAV_IDS=["home","courses","training","suivi","coach"];
 
