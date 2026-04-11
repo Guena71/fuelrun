@@ -137,6 +137,7 @@ export default function App(){
     var checkout=params.get("checkout");
     if(checkout==="success"){
       var plan=params.get("plan")||"pro";
+      lsSet("fr_checkout_plan",plan);
       showToast("Abonnement "+plan+" activé — 14 jours gratuits !","ok");
       logEvent(analytics,"purchase",{plan:plan});
       navigate(location.pathname,{replace:true});
@@ -145,6 +146,17 @@ export default function App(){
       navigate(location.pathname,{replace:true});
     }
   },[]);
+
+  // Applique le plan dès que le profil est chargé après un paiement
+  useEffect(function(){
+    if(!profile)return;
+    var pendingPlan=ls("fr_checkout_plan",null);
+    if(!pendingPlan)return;
+    lsSet("fr_checkout_plan",null);
+    var updated=Object.assign({},profile,{plan:pendingPlan});
+    setProfile(updated);
+    showToast("Plan "+pendingPlan+" déverrouillé ✓","ok");
+  },[profile]);
 
   function setEntries(fn){setEntriesRaw(function(prev){var next=typeof fn==="function"?fn(prev):fn;lsSet("fr_entries",next);if(user)fsSave(user.uid,{entries:next});return next;});}
 

@@ -13,14 +13,26 @@ function verifyStripeSignature(rawBody, signature, secret) {
 async function updatePlan(uid, plan) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const apiKey    = process.env.FIREBASE_API_KEY;
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=profile.plan&key=${apiKey}`;
-  await fetch(url, {
+  // Lire d'abord le profil existant pour ne pas écraser les autres champs
+  const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}?key=${apiKey}`;
+  const getRes = await fetch(base);
+  if(!getRes.ok){ console.error("Firestore GET failed",getRes.status,await getRes.text()); return; }
+  const doc = await getRes.json();
+  // Reconstruire le profil avec le nouveau plan
+  const existingProfile = doc.fields?.profile?.mapValue?.fields || {};
+  const updatedFields = Object.assign({}, existingProfile, { plan: { stringValue: plan } });
+  const patchUrl = `${base}&updateMask.fieldPaths=profile`;
+  const patchRes = await fetch(patchUrl, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      fields: { profile: { mapValue: { fields: { plan: { stringValue: plan } } } } }
+      fields: Object.assign({}, doc.fields||{}, {
+        profile: { mapValue: { fields: updatedFields } }
+      })
     })
   });
+  if(!patchRes.ok) console.error("Firestore PATCH failed",patchRes.status,await patchRes.text());
+  else console.log("Plan mis à jour:",uid,"→",plan);
 }
 
 export const config = { api: { bodyParser: false } };
