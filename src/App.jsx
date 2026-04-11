@@ -189,6 +189,7 @@ export default function App(){
           var wb=data.wellbeing;
           setWellbeingRaw(wb&&wb.date===today?wb.data:null);
           if(data.gamification)setGamRaw(data.gamification);
+          if(data.entries)setEntriesRaw(function(prev){return Object.assign({},data.entries,prev);});
           setAuthState("app");
         } else {
           setAuthState("onboarding");
