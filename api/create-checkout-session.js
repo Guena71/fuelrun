@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   const priceId = priceMap[plan];
   if (!priceId) return res.status(400).json({ error: "Plan inconnu : " + plan });
 
-  const base = "https://fuelrun-9ibg.vercel.app";
+  const base = "https://fuelrun.vercel.app";
   const params = new URLSearchParams({
     mode: "subscription",
     "payment_method_types[0]": "card",
