@@ -5,7 +5,8 @@ export var MEALS_MAP={
   recovery:[{time:"Matin",      food:"Smoothie protéine + fruits"},        {time:"Midi",         food:"Salade + pain complet"},       {time:"Soir",      food:"Soupe + poisson blanc + riz"}],
   tempo:   [{time:"Matin",      food:"Toast + beurre d'amande + banane"},  {time:"Midi",         food:"Pâtes + thon + tomates"},      {time:"Soir",      food:"Riz + poulet + brocolis"}],
   rest:    [{time:"Matin",      food:"Yaourt grec + granola + miel"},      {time:"Midi",         food:"Salade composée + protéines"}, {time:"Soir",      food:"Légumes rôtis + poisson"}],
-  race:    [{time:"Matin J−3h", food:"Riz ou pâtes blanches + banane"},    {time:"Pendant",      food:"Gels + eau régulièrement"},    {time:"Récup",     food:"Boisson récup + fruits + protéines"}]
+  race:    [{time:"Matin J−3h", food:"Riz ou pâtes blanches + banane"},    {time:"Pendant",      food:"Gels + eau régulièrement"},    {time:"Récup",     food:"Boisson récup + fruits + protéines"}],
+  strength:[{time:"Matin",      food:"Œufs + flocons d'avoine + banane"},  {time:"Midi",         food:"Riz + bœuf + légumes verts"},  {time:"Soir",      food:"Saumon + patate douce + brocolis"}]
 };
 
 export var RECIPES={
@@ -18,7 +19,16 @@ export var RECIPES={
      steps:["Assaisonner le poulet de paprika, sel et poivre, cuire 6 min à la poêle.","Trancher le poulet et l'avocat.","Étaler le tzatziki sur chaque tortilla.","Garnir de poulet, avocat, roquette et citron vert.","Rouler serré et couper en deux en diagonale."]},
     {name:"Pâtes complètes saumon épinards",slot:"Soir",time:"20 min",kcal:560,
      ingredients:["180 g pâtes complètes","130 g saumon frais","80 g épinards frais","1 échalote","10 cl crème légère","1 c. à soupe d'huile d'olive","Aneth, zeste de citron","Sel, poivre"],
-     steps:["Cuire les pâtes al dente selon paquet.","Faire revenir l'échalote 2 min à l'huile d'olive.","Ajouter le saumon en dés, cuire 4 min.","Incorporer les épinards et la crème, chauffer 2 min.","Mélanger avec les pâtes, finir avec l'aneth et le zeste de citron."]}
+     steps:["Cuire les pâtes al dente selon paquet.","Faire revenir l'échalote 2 min à l'huile d'olive.","Ajouter le saumon en dés, cuire 4 min.","Incorporer les épinards et la crème, chauffer 2 min.","Mélanger avec les pâtes, finir avec l'aneth et le zeste de citron."]},
+    {name:"Bowl açaï énergie",slot:"Matin",time:"10 min",kcal:380,
+     ingredients:["100 g purée d'açaï surgelée","1 banane congelée","100 ml lait d'amande","30 g granola","1 c. à soupe de beurre d'amande","Baies fraîches","1 c. à café de miel"],
+     steps:["Mixer la purée d'açaï, la banane congelée et le lait d'amande jusqu'à texture épaisse.","Verser dans un bol.","Garnir de granola, baies, beurre d'amande et miel.","Manger immédiatement avant que le bol décongèle trop."]},
+    {name:"Salade niçoise du coureur",slot:"Midi",time:"15 min",kcal:490,
+     ingredients:["2 œufs durs","160 g thon en conserve","150 g haricots verts cuits","10 olives noires","2 tomates","1 poivron","4 c. à soupe d'huile d'olive","Jus de citron","Basilic"],
+     steps:["Cuire les haricots verts croquants 6 min, refroidir.","Couper les tomates et le poivron.","Disposer tous les ingrédients dans un grand bol.","Préparer la vinaigrette huile d'olive + citron + sel + basilic.","Napper et servir frais."]},
+    {name:"Poulet miel-moutarde et riz basmati",slot:"Soir",time:"25 min",kcal:580,
+     ingredients:["200 g filet de poulet","180 g riz basmati","2 c. à soupe de miel","1 c. à soupe de moutarde de Dijon","1 c. à soupe d'huile d'olive","Thym","Sel, poivre"],
+     steps:["Cuire le riz basmati 12 min à l'eau salée.","Mélanger miel, moutarde, huile et thym dans un bol.","Mariner le poulet 5 min dans cette sauce.","Cuire le poulet à la poêle 7 min en l'arrosant régulièrement de la sauce.","Servir sur le riz avec la sauce restante."]}
   ],
   long:[
     {name:"Riz de l'athlète banane-miel",slot:"Matin J−3h",time:"15 min",kcal:580,
@@ -32,7 +42,13 @@ export var RECIPES={
      steps:["Mettre tous les ingrédients dans un blender.","Mixer 30 secondes à vitesse maximum.","Boire immédiatement — la fenêtre anabolique est ouverte 20 à 30 min après l'effort.","Ratio glucides/protéines 4:1 optimal pour la resynthèse du glycogène."]},
     {name:"Risotto poulet-épinards récupération",slot:"Soir",time:"30 min",kcal:620,
      ingredients:["200 g riz arborio","200 g filet de poulet","100 g épinards frais","1 oignon","80 cl bouillon de volaille","40 g parmesan râpé","2 c. à soupe d'huile d'olive","Sel, poivre"],
-     steps:["Faire revenir l'oignon haché 3 min à l'huile d'olive.","Ajouter le riz, nacrer 2 min en remuant.","Verser le bouillon chaud louche par louche en remuant constamment (~18 min).","En parallèle, griller le poulet assaisonné et trancher.","Incorporer les épinards et le parmesan en fin de cuisson.","Servir avec le poulet posé dessus."]}
+     steps:["Faire revenir l'oignon haché 3 min à l'huile d'olive.","Ajouter le riz, nacrer 2 min en remuant.","Verser le bouillon chaud louche par louche en remuant constamment (~18 min).","En parallèle, griller le poulet assaisonné et trancher.","Incorporer les épinards et le parmesan en fin de cuisson.","Servir avec le poulet posé dessus."]},
+    {name:"Crêpes sportives épeautre-banane",slot:"Matin J−3h",time:"20 min",kcal:520,
+     ingredients:["150 g farine d'épeautre","2 œufs","250 ml lait","1 banane écrasée","1 c. à soupe de miel","1 pincée de sel","1 c. à café de cannelle"],
+     steps:["Mélanger la farine, les œufs, le lait, la banane, le miel, le sel et la cannelle.","Laisser reposer 10 min.","Cuire les crêpes dans une poêle légèrement huilée.","Garnir de miel et d'une banane en rondelles.","Manger 3h avant le départ pour une digestion optimale."]},
+    {name:"Barre énergétique maison avoine-miel",slot:"Pendant (avant l'effort)",time:"15 min + 1h frigo",kcal:240,
+     ingredients:["200 g flocons d'avoine","100 g miel","50 g beurre de cacahuète","50 g raisins secs","30 g pépites de chocolat noir","1 pincée de sel"],
+     steps:["Chauffer le miel et le beurre de cacahuète à feu doux jusqu'à mélange homogène.","Incorporer les flocons, les raisins et le sel hors du feu.","Étaler dans un plat chemisé de papier sulfurisé.","Parsemer de pépites de chocolat, presser légèrement.","Réfrigérer 1h, couper en barres. Conserver au frais jusqu'à 5 jours."]}
   ],
   interval:[
     {name:"Toast avocat-œuf poché-saumon fumé",slot:"Matin (90 min avant)",time:"15 min",kcal:480,
@@ -43,7 +59,13 @@ export var RECIPES={
      steps:["Cuire le quinoa 12 min dans de l'eau salée, égoutter et refroidir.","Cuire les edamame 3 min à l'eau bouillante.","Préparer la sauce tahini : mixer le tahini, le jus de citron, l'ail et 3 c. à soupe d'eau.","Disposer tous les ingrédients en sections dans un bol.","Napper de sauce tahini et parsemer de graines de courge."]},
     {name:"Wok bœuf-légumes-nouilles soba",slot:"Soir",time:"20 min",kcal:560,
      ingredients:["160 g nouilles soba","200 g filet de bœuf tranché fin","150 g brocolis","1 poivron rouge","2 carottes","3 c. à soupe de sauce soja","1 c. à soupe de gingembre frais","1 c. à café d'huile de sésame","Graines de sésame"],
-     steps:["Cuire les soba 5 min, rincer à l'eau froide, réserver.","Faire chauffer un wok à feu vif avec un filet d'huile.","Saisir le bœuf 2 min, réserver.","Faire sauter les légumes 5 min en gardant du croquant.","Remettre le bœuf, les soba, la sauce soja et le gingembre.","Mélanger 1 min, finir avec l'huile de sésame et les graines."]}
+     steps:["Cuire les soba 5 min, rincer à l'eau froide, réserver.","Faire chauffer un wok à feu vif avec un filet d'huile.","Saisir le bœuf 2 min, réserver.","Faire sauter les légumes 5 min en gardant du croquant.","Remettre le bœuf, les soba, la sauce soja et le gingembre.","Mélanger 1 min, finir avec l'huile de sésame et les graines."]},
+    {name:"Smoothie pré-fractionné",slot:"Matin (1h avant)",time:"5 min",kcal:320,
+     ingredients:["1 banane congelée","150 g yaourt grec","200 ml lait d'amande","1 c. à soupe de beurre de cacahuète","1 c. à café de miel","1 pincée de cannelle","Quelques glaçons"],
+     steps:["Mettre tous les ingrédients dans un blender.","Mixer 30 secondes jusqu'à consistance lisse.","Boire 60 min avant la séance.","Simple, digeste et chargé en glucides rapides pour les fractionnés."]},
+    {name:"Bol de récup thaï au poulet",slot:"Soir",time:"25 min",kcal:540,
+     ingredients:["180 g riz jasmin","200 g filet de poulet","200 ml lait de coco","1 c. à soupe de pâte de curry vert","150 g pois gourmands","1 citron vert","Coriandre fraîche","Sauce poisson"],
+     steps:["Cuire le riz jasmin.","Faire revenir la pâte de curry 1 min, ajouter le lait de coco et porter à frémissement.","Ajouter le poulet en dés, cuire 8 min.","Incorporer les pois gourmands 2 min avant la fin.","Servir sur le riz, finir avec jus de citron vert et coriandre."]}
   ],
   tempo:[
     {name:"Pancakes avoine-banane sans gluten",slot:"Matin (2h avant)",time:"20 min",kcal:430,
@@ -54,7 +76,13 @@ export var RECIPES={
      steps:["Cuire les pâtes al dente.","Pendant ce temps, mixer la roquette, les noix, le parmesan, l'ail, l'huile et le citron en pesto grossier.","Réserver 2 c. à soupe d'eau de cuisson avant d'égoutter.","Mélanger les pâtes égouttées avec le pesto et un peu d'eau de cuisson.","Poivrer généreusement, servir immédiatement."]},
     {name:"Saumon en croûte d'herbes et purée de patate douce",slot:"Soir",time:"25 min",kcal:580,
      ingredients:["200 g filet de saumon","400 g patate douce","2 c. à soupe de chapelure","1 c. à soupe de persil haché","1 c. à café de moutarde de Dijon","1 c. à soupe d'huile d'olive","20 g beurre","Sel, poivre, muscade"],
-     steps:["Préchauffer le four à 200 °C.","Cuire la patate douce en cubes vapeur 15 min, écraser avec le beurre, sel et muscade.","Badigeonner le saumon de moutarde, recouvrir du mélange chapelure-persil.","Enfourner 12 min jusqu'à ce que la croûte soit dorée.","Servir le saumon sur la purée avec un filet d'huile d'olive."]}
+     steps:["Préchauffer le four à 200 °C.","Cuire la patate douce en cubes vapeur 15 min, écraser avec le beurre, sel et muscade.","Badigeonner le saumon de moutarde, recouvrir du mélange chapelure-persil.","Enfourner 12 min jusqu'à ce que la croûte soit dorée.","Servir le saumon sur la purée avec un filet d'huile d'olive."]},
+    {name:"Tartines épéautre-ricotta-noix-miel",slot:"Matin (2h avant)",time:"8 min",kcal:390,
+     ingredients:["2 tranches pain d'épeautre","100 g ricotta","1 c. à soupe de miel","30 g noix concassées","1/2 poire","Cannelle"],
+     steps:["Toaster légèrement le pain d'épeautre.","Étaler la ricotta généreusement.","Disposer les tranches de poire.","Parsemer de noix concassées.","Finir avec le miel et une pincée de cannelle."]},
+    {name:"Curry de pois chiches épinards",slot:"Soir",time:"25 min",kcal:490,
+     ingredients:["400 g pois chiches en conserve","200 g épinards frais","1 boîte tomates concassées","200 ml lait de coco","1 oignon","2 gousses d'ail","1 c. à soupe de curry","1 c. à café de cumin","Riz basmati pour accompagner"],
+     steps:["Faire revenir l'oignon et l'ail 3 min.","Ajouter le curry et le cumin, torréfier 1 min.","Incorporer les tomates, les pois chiches et le lait de coco.","Mijoter 15 min à feu doux.","Incorporer les épinards 2 min avant de servir.","Servir avec le riz basmati."]}
   ],
   recovery:[
     {name:"Chia pudding coco-mangue-curcuma",slot:"Matin",time:"5 min + nuit",kcal:370,
@@ -65,7 +93,16 @@ export var RECIPES={
      steps:["Faire revenir l'oignon et l'ail 3 min dans l'huile d'olive.","Ajouter le curry et le cumin, torréfier 1 min en remuant.","Incorporer les lentilles rincées, le bouillon et le lait de coco.","Cuire à feu doux 18-20 min jusqu'à ce que les lentilles soient fondantes.","Mixer partiellement pour une texture onctueuse avec des morceaux.","Garnir de coriandre fraîche."]},
     {name:"Cabillaud vapeur, légumes rôtis et huile d'olive",slot:"Soir",time:"25 min",kcal:380,
      ingredients:["200 g dos de cabillaud","200 g courgettes","150 g poivrons colorés","100 g tomates cerises","3 c. à soupe d'huile d'olive extra-vierge","1 citron","Thym, romarin","Fleur de sel, poivre"],
-     steps:["Préchauffer le four à 200 °C.","Couper les légumes en morceaux, arroser de 2 c. à soupe d'huile, thym, romarin, sel et poivre.","Rôtir 20 min au four en retournant à mi-cuisson.","Cuire le cabillaud à la vapeur 8-10 min selon épaisseur.","Servir le poisson sur les légumes, arroser d'huile d'olive crue et de jus de citron.","L'huile crue préserve les Oméga-3 et les polyphénols anti-inflammatoires."]}
+     steps:["Préchauffer le four à 200 °C.","Couper les légumes en morceaux, arroser de 2 c. à soupe d'huile, thym, romarin, sel et poivre.","Rôtir 20 min au four en retournant à mi-cuisson.","Cuire le cabillaud à la vapeur 8-10 min selon épaisseur.","Servir le poisson sur les légumes, arroser d'huile d'olive crue et de jus de citron.","L'huile crue préserve les Oméga-3 et les polyphénols anti-inflammatoires."]},
+    {name:"Smoothie anti-inflammatoire cerise-gingembre",slot:"Matin",time:"5 min",kcal:300,
+     ingredients:["200 g cerises surgelées","1 banane","200 ml lait d'amande","1 c. à café de gingembre frais râpé","1/2 c. à café de curcuma","1 c. à soupe de miel","1 c. à soupe de graines de lin"],
+     steps:["Mettre tous les ingrédients dans un blender.","Mixer jusqu'à consistance lisse.","Boire immédiatement ou conserver 1h au frais.","Les cerises contiennent des anthocyanes qui réduisent les courbatures."]},
+    {name:"Bowl de récup au saumon et avocat",slot:"Midi",time:"15 min",kcal:510,
+     ingredients:["160 g riz complet cuit","150 g saumon fumé ou cuit","1 avocat","Concombre en rondelles","Edamame cuits","2 c. à soupe de sauce soja","Graines de sésame","Pickles de gingembre"],
+     steps:["Disposer le riz dans un bol.","Garnir de saumon, avocat tranché, concombre et edamame.","Napper de sauce soja.","Parsemer de graines de sésame et de pickles de gingembre.","Les Oméga-3 du saumon et les graisses mono-insaturées de l'avocat accélèrent la récup."]},
+    {name:"Soupe miso-tofu-wakamé",slot:"Soir",time:"15 min",kcal:250,
+     ingredients:["1 l bouillon dashi ou légumes","3 c. à soupe de pâte miso","150 g tofu soyeux","20 g algues wakamé séchées","2 oignons verts","1 c. à soupe de sauce soja"],
+     steps:["Porter le bouillon à frémissement (ne pas faire bouillir le miso).","Réhydrater les algues wakamé 5 min dans l'eau froide, égoutter.","Couper le tofu en cubes.","Délayer le miso dans une louche de bouillon, incorporer hors du feu.","Ajouter le tofu, les algues et les oignons verts émincés.","Servir aussitôt. Repas léger idéal le soir d'un jour de récup."]}
   ],
   race:[
     {name:"Riz de l'athlète — protocole race day",slot:"Matin J−3h précises",time:"15 min",kcal:650,
@@ -77,5 +114,25 @@ export var RECIPES={
     {name:"Shake de récupération golden milk protéiné",slot:"Récup — dans les 20 min",time:"5 min",kcal:390,
      ingredients:["300 ml lait entier chaud","30 g protéines whey vanille","1 banane","1 c. à café de curcuma","1/2 c. à café de cannelle","1 c. à café de miel","1 pincée de poivre noir"],
      steps:["Chauffer le lait sans faire bouillir.","Mixer avec tous les ingrédients 30 secondes.","Boire immédiatement dans les 20 minutes après la ligne d'arrivée.","Le curcuma + poivre relance la récupération musculaire.","Compléter avec un repas solide 90 min plus tard (riz, poulet, légumes)."]}
+  ],
+  strength:[
+    {name:"Œufs brouillés au saumon et pain de seigle",slot:"Matin",time:"10 min",kcal:480,
+     ingredients:["3 œufs","60 g saumon fumé","2 tranches pain de seigle","1 c. à soupe de crème fraîche","Ciboulette","Sel, poivre","10 g beurre"],
+     steps:["Battre les œufs avec la crème, sel et poivre.","Faire fondre le beurre à feu doux, verser les œufs.","Remuer doucement à la spatule jusqu'à consistance crémeuse (ne pas trop cuire).","Toaster le pain de seigle.","Disposer les œufs sur le pain, garnir de saumon et ciboulette."]},
+    {name:"Riz complet bœuf-brocolis sauce teriyaki",slot:"Midi",time:"20 min",kcal:580,
+     ingredients:["180 g riz complet","200 g bavette de bœuf","200 g brocolis","3 c. à soupe de sauce teriyaki","1 c. à café d'huile de sésame","Gingembre frais","Graines de sésame"],
+     steps:["Cuire le riz complet.","Couper le bœuf en lamelles, faire saisir 2 min à feu très vif.","Faire sauter les brocolis 4 min.","Remettre le bœuf, ajouter la sauce teriyaki et le gingembre.","Mélanger 1 min, finir avec l'huile de sésame et les graines de sésame.","Servir sur le riz."]},
+    {name:"Saumon laqué et patate douce rôtie",slot:"Soir",time:"30 min",kcal:560,
+     ingredients:["200 g filet de saumon","350 g patate douce","2 c. à soupe de sauce soja","1 c. à soupe de miel","1 c. à café d'ail en poudre","1 c. à soupe d'huile d'olive","Brocolis vapeur"],
+     steps:["Préchauffer le four à 200 °C.","Couper la patate douce en cubes, assaisonner d'huile, sel et ail.","Rôtir 25 min au four.","Mélanger sauce soja et miel, badigeonner le saumon.","Cuire le saumon à la poêle 4 min/face.","Servir avec les brocolis vapeur et les patates douces."]},
+    {name:"Shake protéiné post-séance",slot:"Après séance (dans les 30 min)",time:"5 min",kcal:380,
+     ingredients:["300 ml lait entier","35 g protéines whey chocolat","1 banane","1 c. à soupe de beurre de cacahuète","1 pincée de cannelle","Quelques glaçons"],
+     steps:["Mettre tous les ingrédients dans un blender.","Mixer 20 secondes.","Boire immédiatement après l'entraînement.","La fenêtre anabolique est maximale dans les 30 min post-effort.","Le ratio protéines/glucides favorise la synthèse musculaire."]},
+    {name:"Bowl protéiné végétarien pois chiches-halloumi",slot:"Midi",time:"20 min",kcal:540,
+     ingredients:["400 g pois chiches en conserve","150 g halloumi","1 poivron rouge","1 courgette","3 c. à soupe d'huile d'olive","1 c. à café de paprika fumé","1 c. à café de cumin","Riz basmati","Sauce yaourt-citron"],
+     steps:["Égoutter et rincer les pois chiches, assaisonner de paprika et cumin.","Rôtir les pois chiches et légumes 20 min au four à 200 °C.","Griller le halloumi à la poêle 2 min/face.","Préparer la sauce : yaourt grec + jus de citron + sel.","Servir sur le riz, napper de sauce yaourt."]},
+    {name:"Galettes de poulet-quinoa-herbes",slot:"Soir",time:"25 min",kcal:460,
+     ingredients:["300 g filet de poulet haché","80 g quinoa cuit","1 œuf","2 gousses d'ail","Persil, ciboulette","1 c. à café de paprika","Sel, poivre","Huile pour la poêle","Salade verte en accompagnement"],
+     steps:["Mélanger le poulet haché, le quinoa, l'œuf, l'ail pressé et les herbes.","Assaisonner de paprika, sel et poivre.","Former 6 galettes d'environ 70 g chacune.","Cuire à la poêle 4 min par face à feu moyen.","Servir avec la salade verte et une sauce yaourt-herbes."]}
   ]
 };
