@@ -40,6 +40,7 @@ export function SessionCard(p){
   var [done,setDoneRaw]=useState(function(){return ls(doneKey,false);});
   function toggleDone(e){e.stopPropagation();var v=!done;setDoneRaw(v);lsSet(doneKey,v);if(v&&p.isBoss&&p.onBossKill)p.onBossKill();}
   var sc=TYPE_COLORS[s.type]||OR;
+  var isStrength=s.type==="strength";
   var n=calcNutrition(p.profile,s.type);
   var recipes=RECIPES[s.type]||[];
   var isPast=s.date&&s.date<new Date(new Date().setHours(0,0,0,0));
@@ -56,22 +57,26 @@ export function SessionCard(p){
       )}
       {p.isNext&&!p.isBoss&&(
         <div style={{background:"linear-gradient(90deg,"+sc+"cc,"+sc+"88)",padding:"5px 14px",display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:10}}>⚡</span>
-          <span style={{fontSize:10,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:0.8}}>Prochaine séance</span>
+          <span style={{fontSize:10}}>{isStrength?"💪":"⚡"}</span>
+          <span style={{fontSize:10,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:0.8}}>{isStrength?"Séance de renforcement":"Prochaine séance"}</span>
         </div>
       )}
       <div style={{padding:"14px 16px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
           <div style={{width:44,height:44,borderRadius:11,background:sc+(p.isNext?"44":"20"),border:"1px solid "+sc+"44",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <div style={{fontSize:9,color:sc,fontWeight:700}}>{s.dayLabel}</div>
-            <div style={{fontSize:9,color:sc}}>{s.date?s.date.getDate()+"/"+(s.date.getMonth()+1):""}</div>
+            {isStrength?<span style={{fontSize:18}}>💪</span>:<>
+              <div style={{fontSize:9,color:sc,fontWeight:700}}>{s.dayLabel}</div>
+              <div style={{fontSize:9,color:sc}}>{s.date?s.date.getDate()+"/"+(s.date.getMonth()+1):""}</div>
+            </>}
           </div>
           <div style={{flex:1}}>
             <div style={{fontSize:14,fontWeight:p.isNext?700:600,color:p.isNext?sc:TXT,marginBottom:3}}>{s.label}</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {s.type!=="race"?<span style={{fontSize:12,color:SUB}}>{s.km} km</span>:null}
-              {s.pace?<span style={{fontSize:12,color:SUB}}>· {s.pace}/km</span>:null}
-              {(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}
+              {isStrength?(
+                <><span style={{fontSize:12,color:sc,fontWeight:600}}>Renforcement</span>{s.duration&&<span style={{fontSize:12,color:SUB}}>· {s.duration}</span>}{s.exercises&&<span style={{fontSize:12,color:SUB}}>· {s.exercises.length} exercices</span>}</>
+              ):(
+                <>{s.type!=="race"?<span style={{fontSize:12,color:SUB}}>{s.km} km</span>:null}{s.pace?<span style={{fontSize:12,color:SUB}}>· {s.pace}/km</span>:null}{(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}</>
+              )}
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
@@ -84,8 +89,22 @@ export function SessionCard(p){
           <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid "+BORD}}>
             {s.desc&&(
               <div style={{background:sc+"10",border:"1px solid "+sc+"25",borderRadius:12,padding:"12px 14px",marginBottom:12}}>
-                <div style={{fontSize:10,color:sc,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>Consignes</div>
+                <div style={{fontSize:10,color:sc,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:6}}>{isStrength?"Description":"Consignes"}</div>
                 <div style={{fontSize:13,color:TXT,lineHeight:1.7}}>{s.desc}</div>
+              </div>
+            )}
+            {isStrength&&s.exercises&&s.exercises.length>0&&(
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:10,color:sc,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:8}}>Exercices</div>
+                {s.exercises.map(function(ex,ei){return(
+                  <div key={ei} style={{marginBottom:6,padding:"10px 12px",borderRadius:10,background:sc+"0e",border:"1px solid "+sc+"22"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                      <div style={{fontSize:13,fontWeight:700,color:TXT}}>{ex.name}</div>
+                      <div style={{fontSize:11,fontWeight:600,color:sc,background:sc+"18",padding:"2px 8px",borderRadius:6,whiteSpace:"nowrap",marginLeft:8,flexShrink:0}}>{ex.sets}</div>
+                    </div>
+                    <div style={{fontSize:11,color:MUT,fontStyle:"italic"}}>{ex.tip}</div>
+                  </div>
+                );})}
               </div>
             )}
             {(function(){

@@ -1,4 +1,4 @@
-import { DIST_BRACKETS, IDEAL_WEEKS_TABLE, PEAK_KM_TABLE, PHASE_DEFS, PACES } from "../data/training.js";
+import { DIST_BRACKETS, IDEAL_WEEKS_TABLE, PEAK_KM_TABLE, PHASE_DEFS, PACES, STRENGTH_SESSIONS } from "../data/training.js";
 import { YE } from "../data/constants.js";
 import { addDays, startOfWeek, weeksUntil, getToday } from "./date.js";
 
@@ -59,6 +59,8 @@ export function buildPlan(race,profile){
       var longKm=Math.max(8,Math.round(dist*lf*(0.4+progress*0.5)));
       var baseSess=phase.sessions.map(function(s){return{type:s.type,label:s.label,km:s.type==="long"?longKm:Math.max(4,Math.round(kmWeek*s.pct)),desc:s.desc,pace:pt[s.type]||pt.easy};});
       var sessions=baseSess.slice(0,sPerWeek).map(function(s,si){var dayOff=days[si%days.length];return{type:s.type,label:s.label,km:s.km,desc:s.desc,pace:pt[s.type]||pt.easy,date:addDays(wStart,dayOff),dayLabel:jours[dayOff]};});
+      var strPool=STRENGTH_SESSIONS[level]||STRENGTH_SESSIONS.beginner||[];
+      if(strPool.length>0){var strSess=strPool[wi%strPool.length];var freeDays=[2,4,0,6,3,1,5];var strDay=freeDays.find(function(d){return days.indexOf(d)===-1;});if(strDay!=null){sessions=sessions.concat([{type:"strength",label:strSess.name,km:0,desc:strSess.desc,pace:"",duration:strSess.duration,exercises:strSess.exercises,date:addDays(wStart,strDay),dayLabel:jours[strDay]}]);}}
       var realKm=sessions.reduce(function(s,x){return s+(x.type==="race"?0:x.km);},0);
       var _today=getToday();allWeeks.push({num:wi+1,total:totalWeeks,idealWeeks:idealWeeks,availWeeks:availWeeks,phase:phaseId,phaseLabel:phase.label,phaseColor:phase.color,weekStart:wStart,weekEnd:addDays(wStart,6),km:realKm,isRecup:isRecup,isCurrent:wStart.toDateString()===startOfWeek(_today).toDateString(),isPast:addDays(wStart,6)<_today,sessions:sessions});
       wi++;

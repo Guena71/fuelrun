@@ -2,8 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { weeksUntil, fmtDate, fmtS } from "../utils/date.js";
 import { buildPlan, getPlanWeeks, getCourseReadiness } from "../utils/plan.js";
-import { planLevel, calcNutrition, getRecipesTrial, RECIPES_TRIAL_DAYS } from "../utils/nutrition.js";
-import { RECIPES } from "../data/meals.js";
+import { planLevel } from "../utils/nutrition.js";
 import { useRaces, suggestRaces } from "../utils/races.js";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { Btn, Card, Stat } from "../components/ui.jsx";
@@ -11,86 +10,7 @@ import { UpgradeModal } from "../components/UpgradeModal.jsx";
 import { RaceStrategyModal } from "../components/RaceStrategyModal.jsx";
 import { SessionCard } from "../components/SessionCard.jsx";
 import { getBossSession } from "../utils/gamification.js";
-import { STRENGTH_SESSIONS } from "../data/training.js";
-
 var FREE_PLAN_WEEKS=3;
-
-function StrengthCard({profile,weekIdx}){
-  var [open,setOpen]=useState(false);
-  var [nutOpen,setNutOpen]=useState(false);
-  var lvl=(profile&&profile.level)||"beginner";
-  var pool=STRENGTH_SESSIONS[lvl]||STRENGTH_SESSIONS.beginner||[];
-  if(!pool.length)return null;
-  var sess=pool[weekIdx%pool.length];
-  var n=calcNutrition(profile,"strength");
-  var recipes=RECIPES["strength"]||[];
-  var isPro=planLevel(profile)>=2;
-  var trial=isPro?{active:true,daysLeft:99}:getRecipesTrial();
-  var canSeeRecipes=isPro||trial.active;
-  return(
-    <div style={{marginBottom:10,borderRadius:14,background:"#A855F715",border:"1px solid #A855F733",overflow:"hidden"}}>
-      <div onClick={function(){setOpen(function(v){return !v;});}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
-        <div style={{width:38,height:38,borderRadius:10,background:"#A855F725",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>💪</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:11,color:"#A855F7",fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:2}}>Renforcement musculaire · complémentaire</div>
-          <div style={{fontSize:13,fontWeight:700,color:TXT}}>{sess.name}</div>
-          <div style={{fontSize:11,color:SUB}}>{sess.duration} · {sess.exercises.length} exercices</div>
-        </div>
-        <div style={{color:"#A855F7",fontSize:18,flexShrink:0,transition:"transform 0.2s",transform:open?"rotate(90deg)":"rotate(0deg)"}}>›</div>
-      </div>
-      {open&&(
-        <div style={{padding:"0 16px 14px"}}>
-          <div style={{fontSize:12,color:SUB,marginBottom:10,lineHeight:1.5}}>{sess.desc}</div>
-          {sess.exercises.map(function(ex,ei){return(
-            <div key={ei} style={{marginBottom:8,padding:"10px 12px",borderRadius:10,background:"rgba(168,85,247,0.08)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                <div style={{fontSize:13,fontWeight:700,color:TXT}}>{ex.name}</div>
-                <div style={{fontSize:11,fontWeight:600,color:"#A855F7",background:"#A855F718",padding:"2px 8px",borderRadius:6,whiteSpace:"nowrap",marginLeft:8}}>{ex.sets}</div>
-              </div>
-              <div style={{fontSize:11,color:MUT,fontStyle:"italic"}}>{ex.tip}</div>
-            </div>
-          );})}
-          <div style={{borderRadius:12,border:"1px solid "+BORD,overflow:"hidden",marginTop:4}}>
-            <div onClick={function(e){e.stopPropagation();setNutOpen(function(v){return !v;});}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:SURF2,cursor:"pointer"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:13}}>🥗</span>
-                <span style={{fontSize:12,fontWeight:600,color:TXT}}>Nutrition jour de renforcement</span>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:12,fontWeight:700,color:OR}}>{n.kcal} kcal</span>
-                <div style={{width:22,height:22,borderRadius:7,background:"#0a0a0a",border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:SUB,transform:nutOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
-              </div>
-            </div>
-            {nutOpen&&(
-              <div>
-                <div style={{display:"flex",gap:6,padding:"10px 12px",borderTop:"1px solid "+BORD}}>
-                  {[{label:"Glucides",value:n.carbs+"g",color:BL},{label:"Protéines",value:n.prot+"g",color:GR},{label:"Lipides",value:n.fat+"g",color:YE}].map(function(m,i){
-                    return <div key={i} style={{flex:1,background:SURF2,borderRadius:8,padding:"7px 4px",textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:2}}>{m.label}</div></div>;
-                  })}
-                </div>
-                {canSeeRecipes?(
-                  recipes.map(function(r,ri){return(
-                    <div key={ri} style={{borderTop:"1px solid "+BORD,padding:"9px 14px"}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <div style={{fontSize:11,fontWeight:700,color:OR,width:90,flexShrink:0}}>{r.slot}</div>
-                        <div style={{flex:1,fontSize:12,fontWeight:500,color:TXT}}>{r.name}</div>
-                        <span style={{fontSize:11,color:MUT,marginLeft:6}}>{r.kcal} kcal</span>
-                      </div>
-                    </div>
-                  );})
-                ):(
-                  <div style={{margin:"8px 12px 12px",padding:"12px 14px",borderRadius:10,background:OR+"10",border:"1px solid "+OR+"33"}}>
-                    <div style={{fontSize:11,color:MUT}}>Recettes détaillées disponibles en Pro · Essai {RECIPES_TRIAL_DAYS} jours gratuit.</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 var TIPS=[
   {icon:"🏃",title:"Maintiens ton volume habituel",   desc:"Continue à courir à ton rythme actuel sans augmenter la charge."},
@@ -312,7 +232,6 @@ export function TrainingScreen(p){
                 </div>
               )}
               {(function(){var boss=getBossSession(w.sessions.filter(function(s){return s.type!=="rest";}));return w.sessions.map(function(s,si){return <SessionCard key={si} session={s} profile={p.profile} isNext={!!(nextSessDate&&s.date&&s.date.getTime()===nextSessDate.getTime())} isBoss={!!(boss&&s===boss)} onBossKill={p.onBossKill} onShowPricing={p.onShowPricing}/>;});}())}
-              <StrengthCard profile={p.profile} weekIdx={activeIdx}/>
               <div style={{display:"flex",gap:10,marginBottom:24,marginTop:4}}>
                 <Btn label="Précédente" onClick={function(){setSelWeek(Math.max(0,activeIdx-1));}} disabled={activeIdx===0} variant="ghost" style={{flex:1}} size="sm"/>
                 <Btn label="Suivante" onClick={function(){var next=activeIdx+1;if(planLevel(p.profile)<1&&next>=FREE_PLAN_WEEKS){setShowPlanUpgrade(true);}else{setSelWeek(Math.min(planWeeks.length-1,next));}}} disabled={activeIdx===planWeeks.length-1} variant="ghost" style={{flex:1}} size="sm"/>
