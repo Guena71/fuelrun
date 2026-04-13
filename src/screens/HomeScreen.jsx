@@ -56,8 +56,8 @@ export function HomeScreen(p){
   var nextSess=curWeek&&curWeek.sessions&&curWeek.sessions.length>0?curWeek.sessions[0]:null;
   var sessType=nextSess?nextSess.type:"easy";
   var sessCol=TYPE_COLORS[sessType]||OR;
-  var wba=null;
-  if(p.wellbeing){var tot=0;var vals=Object.values(p.wellbeing);for(var vi=0;vi<vals.length;vi++)tot+=vals[vi];var wpct=tot/(4*4);if(wpct<=0.4)wba={text:"Repos aujourd'hui",sub:"Ton corps a besoin de récupérer.",icon:"🛌",color:RE,bg:RE+"12"};else if(wpct<=0.6)wba={text:"Séance légère conseillée",sub:"Ne force pas trop.",icon:"🚶",color:YE,bg:YE+"12"};else if(wpct<=0.8)wba={text:"Séance normale",sub:"Tu es en bonne forme.",icon:"✅",color:BL,bg:BL+"12"};else wba={text:"Super forme !",sub:"Profites-en, donne tout.",icon:"🚀",color:GR,bg:GR+"12"};}
+  var wba=null;var wbaSessOverride=null;
+  if(p.wellbeing){var tot=0;var vals=Object.values(p.wellbeing);for(var vi=0;vi<vals.length;vi++)tot+=vals[vi];var wpct=tot/(4*4);var plannedLabel=nextSess?nextSess.label:"la séance prévue";if(wpct<=0.4){wba={text:"Repos conseillé",sub:"Fatigue — remplace "+plannedLabel+" par récupération active.",icon:"🛌",color:RE,bg:RE+"12"};wbaSessOverride="recovery";}else if(wpct<=0.6){wba={text:"Séance allégée",sub:"Réduis l'intensité de "+plannedLabel+" de 20-30%.",icon:"🚶",color:YE,bg:YE+"12"};wbaSessOverride="easy";}else if(wpct<=0.8){wba={text:"Bonne forme",sub:"Fais "+plannedLabel+" comme prévu.",icon:"✅",color:BL,bg:BL+"12"};}else{wba={text:"Super forme !",sub:"Idéal pour "+plannedLabel+" — donne tout.",icon:"🚀",color:GR,bg:GR+"12"};}}
   var raceProgress=p.race&&planWeeks.length>0?Math.max(2,Math.min(100,Math.round((1-raceWeeks/planWeeks.length)*100))):0;
   return(
     <><div style={{paddingBottom:8}}>
@@ -238,7 +238,7 @@ export function HomeScreen(p){
             ],
           };
           var dayIdx=new Date().getDay();
-          var tipsForType=coachTips[sessType]||["Écoute ton corps aujourd'hui. La régularité sur plusieurs mois fait plus que l'intensité d'une seule séance. Chaque kilomètre compte, même les jours sans motivation."];
+          var tipsForType=coachTips[wbaSessOverride||sessType]||coachTips[sessType]||["Écoute ton corps aujourd'hui. La régularité sur plusieurs mois fait plus que l'intensité d'une seule séance. Chaque kilomètre compte, même les jours sans motivation."];
           var tip=tipsForType[dayIdx%tipsForType.length];
           return(
             <div style={{borderRadius:18,background:SURF,border:"1px solid "+BORD,marginBottom:14,overflow:"hidden"}}>

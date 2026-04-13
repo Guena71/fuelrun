@@ -88,17 +88,23 @@ export function weeklyKm(entries,weekKey){
 
 // ─── Challenge hebdomadaire auto ──────────────────────────────────────────────
 var CHALLENGE_POOL=[
-  {type:"sessions",icon:"🏃",xp:60, label:function(t){return t+" séances cette semaine";},       targets:{débutant:2,intermédiaire:3,avancé:4}},
-  {type:"km",      icon:"📏",xp:80, label:function(t){return "Cumule "+t+" km cette semaine";},   targets:{débutant:12,intermédiaire:25,avancé:40}},
-  {type:"sessions",icon:"💪",xp:75, label:function(t){return t+" séances — tiens la cadence !";}, targets:{débutant:3,intermédiaire:4,avancé:5}},
-  {type:"km",      icon:"🗺️",xp:90, label:function(t){return "Dépasse les "+t+" km au compteur";},targets:{débutant:15,intermédiaire:30,avancé:50}},
+  {type:"sessions",icon:"🏃",xp:60, label:function(t){return t+" séances cette semaine";},       targets:{debutant:2,intermediaire:3,avance:4}},
+  {type:"km",      icon:"📏",xp:80, label:function(t){return "Cumule "+t+" km cette semaine";},   targets:{debutant:12,intermediaire:25,avance:40}},
+  {type:"sessions",icon:"💪",xp:75, label:function(t){return t+" séances — tiens la cadence !";}, targets:{debutant:3,intermediaire:4,avance:5}},
+  {type:"km",      icon:"🗺️",xp:90, label:function(t){return "Dépasse les "+t+" km au compteur";},targets:{debutant:15,intermediaire:30,avance:50}},
 ];
+
+function profileToTier(level){
+  if(level==="advanced"||level==="expert")return "avance";
+  if(level==="intermediate")return "intermediaire";
+  return "debutant";
+}
 
 export function generateWeeklyChallenge(profile,weekKey){
   var wn=parseInt((weekKey||"").split("-W")[1])||1;
   var def=CHALLENGE_POOL[wn%CHALLENGE_POOL.length];
-  var lvl=(profile&&profile.level)||"débutant";
-  var target=def.targets[lvl]||def.targets["débutant"];
+  var tier=profileToTier(profile&&profile.level);
+  var target=def.targets[tier];
   return {weekKey:weekKey,type:def.type,icon:def.icon,label:def.label(target),target:target,xp:def.xp};
 }
 
