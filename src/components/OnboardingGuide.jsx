@@ -1,37 +1,87 @@
 import { useState } from "react";
-import { OR } from "../data/constants.js";
+import { TXT, SUB, MUT, OR, GR, BL } from "../data/constants.js";
+import { RunnerHero } from "./RunnerHero.jsx";
 
-var GUIDE_STEPS=[
-  {tab:"home",     title:"Ton tableau de bord",   desc:"Retrouve ici ta prochaine séance, ton objectif course et ton état de forme."},
-  {tab:"courses",  title:"Trouve ta course",       desc:"Sélectionne une course objectif et laisse FuelRun générer ton plan personnalisé."},
-  {tab:"training", title:"Ton plan d'entraînement",desc:"Toutes tes séances semaine par semaine, avec nutrition et recettes intégrées."},
-  {tab:"suivi",    title:"Suis ta progression",    desc:"Visualise tes km, tes sorties récentes et ta progression vers la course."},
-  {tab:"coach",    title:"Ton coach",           desc:"Pose toutes tes questions à ton coach personnel, disponible 24h/24."},
+var SLIDES=[
+  {
+    icon:null,runner:true,
+    title:"Bienvenue sur FuelRun",
+    desc:"Ton application de running personnalisée — plan d'entraînement, nutrition et coaching adaptés à ton niveau.",
+    cta:"Commencer",
+  },
+  {
+    icon:"🏁",
+    title:"Choisis ta course objectif",
+    desc:"Sélectionne un 10 km, un semi, un marathon ou un trail. FuelRun génère ton plan semaine par semaine jusqu'au jour J.",
+    cta:"Suivant",
+  },
+  {
+    icon:"💪",
+    title:"Entraîne-toi intelligemment",
+    desc:"Chaque semaine : séances de course, renforcement musculaire et nutrition adaptés à ta forme du moment.",
+    cta:"Suivant",
+  },
+  {
+    icon:"🏃",
+    title:"Suis ta progression",
+    desc:"Enregistre tes sorties, valide tes séances et pose tes questions à ton coach disponible 24h/24.",
+    cta:"C'est parti !",
+  },
 ];
-var NAV_IDS=["home","courses","training","suivi","coach"];
 
 export function OnboardingGuide(p){
   var [step,setStep]=useState(0);
-  var current=GUIDE_STEPS[step];
-  var tabIndex=NAV_IDS.indexOf(current.tab);
-  var tabPct=tabIndex>=0?(tabIndex+0.5)/NAV_IDS.length*100:50;
-  function next(){if(step<GUIDE_STEPS.length-1){setStep(step+1);p.onTab(GUIDE_STEPS[step+1].tab);}else{p.onDone();}}
+  var slide=SLIDES[step];
+  var isLast=step===SLIDES.length-1;
+
+  function next(){
+    if(isLast){p.onDone();}
+    else{setStep(step+1);}
+  }
+
   return(
-    <div style={{position:"fixed",inset:0,zIndex:500,pointerEvents:"none"}}>
-      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)",pointerEvents:"auto"}} onClick={p.onDone}/>
-      <div style={{position:"absolute",bottom:90,left:"clamp(8px, calc("+tabPct+"% - 130px), calc(100% - 268px))",maxWidth:260,width:"calc(100% - 16px)",pointerEvents:"auto",animation:"fadeIn .3s ease"}}>
-        <div style={{background:OR,borderRadius:14,padding:"14px 16px",boxShadow:"0 8px 32px rgba(0,0,0,.4)"}}>
-          <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{current.title}</div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6,marginBottom:14}}>{current.desc}</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <button onClick={p.onDone} style={{fontSize:11,color:"rgba(255,255,255,.7)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Passer</button>
-            <button onClick={next} style={{padding:"7px 16px",borderRadius:20,background:"#fff",border:"none",color:OR,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{step<GUIDE_STEPS.length-1?"Suivant →":"Terminer"}</button>
-          </div>
+    <div style={{position:"fixed",inset:0,zIndex:500,display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
+      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={p.onDone}/>
+      <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:"#111111",borderRadius:"24px 24px 0 0",border:"1px solid rgba(255,255,255,0.1)",borderBottom:"none",padding:"32px 24px 48px",display:"flex",flexDirection:"column",alignItems:"center",gap:0}}>
+
+        {/* Drag handle */}
+        <div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.15)",marginBottom:32}}/>
+
+        {/* Icon / Illustration */}
+        <div style={{marginBottom:24,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          {slide.runner?(
+            <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 24px "+OR+"60)"}}>
+              <RunnerHero size={100}/>
+            </div>
+          ):(
+            <div style={{width:80,height:80,borderRadius:24,background:"linear-gradient(135deg,"+OR+"22,"+OR+"08)",border:"1px solid "+OR+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>
+              {slide.icon}
+            </div>
+          )}
         </div>
-        <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+OR,margin:"0 auto"}}/>
-      </div>
-      <div style={{position:"absolute",bottom:76,left:"50%",transform:"translateX(-50%)",display:"flex",gap:5,pointerEvents:"auto"}}>
-        {GUIDE_STEPS.map(function(_,i){return <div key={i} style={{width:i===step?18:6,height:6,borderRadius:3,background:i===step?"#fff":"rgba(255,255,255,.3)",transition:"width .3s"}}/>;}) }
+
+        {/* Text */}
+        <div style={{fontSize:22,fontWeight:800,color:TXT,textAlign:"center",letterSpacing:"-0.3px",marginBottom:12,lineHeight:1.2}}>{slide.title}</div>
+        <div style={{fontSize:14,color:SUB,textAlign:"center",lineHeight:1.7,maxWidth:320,marginBottom:32}}>{slide.desc}</div>
+
+        {/* Progress dots */}
+        <div style={{display:"flex",gap:6,marginBottom:28}}>
+          {SLIDES.map(function(_,i){return(
+            <div key={i} style={{height:4,borderRadius:2,background:i===step?OR:"rgba(255,255,255,0.15)",width:i===step?24:8,transition:"all 0.3s ease"}}/>
+          );})}
+        </div>
+
+        {/* Buttons */}
+        <div style={{width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10}}>
+          <button onClick={next} style={{width:"100%",padding:"15px",borderRadius:14,background:OR,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:0.2}}>
+            {slide.cta}
+          </button>
+          {!isLast&&(
+            <button onClick={p.onDone} style={{width:"100%",padding:"10px",borderRadius:14,background:"none",border:"none",color:MUT,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>
+              Passer
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
