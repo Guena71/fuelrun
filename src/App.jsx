@@ -338,7 +338,7 @@ export default function App(){
   return(
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,minHeight:0,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y"}}>
+        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y",paddingBottom:80,isolation:"isolate"}}>
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace/>}/>
             <Route path="/home" element={
@@ -428,7 +428,7 @@ export default function App(){
 
         {/* ── Bottom nav bar ── */}
         {NAV.some(function(n){return n.path===curPath;})&&(
-          <div style={{width:"100%",background:SURF,borderTop:"1px solid "+BORD,display:"flex",flexShrink:0,paddingBottom:"max(4px, env(safe-area-inset-bottom, 4px))"}}>
+          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:SURF,borderTop:"1px solid "+BORD,display:"flex",zIndex:100,paddingBottom:"max(4px, env(safe-area-inset-bottom, 4px))"}}>
             {NAV.map(function(n){var active=curPath===n.path;var color=active?OR:"#686868";return(
               <button key={n.path} onClick={function(){navigate(n.path);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,paddingTop:8,paddingBottom:4,cursor:"pointer",background:"transparent",border:"none",position:"relative"}}>
                 {n.icon(color)}
@@ -440,7 +440,7 @@ export default function App(){
         )}
         {/* ── Floating coach button (visible on all non-coach tabs) ── */}
         {curPath!=="/coach"&&NAV.some(function(n){return n.path===curPath;})&&(
-          <button className="coach-fab" onClick={function(){openCoach(CONTEXT_LABELS[curPath]||null);}} style={{position:"fixed",bottom:"calc(64px + env(safe-area-inset-bottom, 0px))",right:"calc(50% - 215px + 16px)",width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,"+OR+","+OR+"bb)",border:"none",cursor:"pointer",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
+          <button className="coach-fab" onClick={function(){openCoach(CONTEXT_LABELS[curPath]||null);}} style={{position:"fixed",bottom:72,right:"calc(50% - 215px + 16px)",width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,"+OR+","+OR+"bb)",border:"none",cursor:"pointer",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
             🏃
           </button>
         )}
