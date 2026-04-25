@@ -219,7 +219,7 @@ export function SuiviScreen(p){
           )}
         </div>
 
-      <div style={{height:"calc(96px + env(safe-area-inset-bottom, 0px))"}}/>
+      <div style={{height:80}}/>
       </div>
     </div>
     {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
