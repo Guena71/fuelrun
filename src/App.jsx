@@ -338,7 +338,7 @@ export default function App(){
   return(
     <div style={{background:BG,minHeight:"100vh",display:"flex",justifyContent:"center",overflowX:"hidden",maxWidth:"100vw"}}>
       <div style={{width:"100%",maxWidth:430,background:BG,height:"100vh",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
-        <div style={{flex:1,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y"}}>
+        <div style={{flex:1,minHeight:0,overflowY:"auto",overflowX:"hidden",touchAction:"pan-y"}}>
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace/>}/>
             <Route path="/home" element={
