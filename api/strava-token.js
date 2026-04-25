@@ -7,19 +7,21 @@ export default async function handler(req, res) {
 
   var { code, refresh_token, redirect_uri, grant_type = "authorization_code" } = req.body || {};
 
-  if (!process.env.STRAVA_CLIENT_ID || !process.env.STRAVA_CLIENT_SECRET) {
+  var clientId     = (process.env.STRAVA_CLIENT_ID     || "").trim();
+  var clientSecret = (process.env.STRAVA_CLIENT_SECRET || "").trim();
+
+  if (!clientId || !clientSecret) {
     return res.status(500).json({ error: "Strava credentials not configured" });
   }
 
   try {
     var params = new URLSearchParams({
-      client_id:     process.env.STRAVA_CLIENT_ID,
-      client_secret: process.env.STRAVA_CLIENT_SECRET,
+      client_id:     clientId,
+      client_secret: clientSecret,
       grant_type,
     });
     if (grant_type === "authorization_code") {
       params.set("code", code);
-      if (redirect_uri) params.set("redirect_uri", redirect_uri);
     } else {
       params.set("refresh_token", refresh_token);
     }

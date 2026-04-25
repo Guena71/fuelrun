@@ -1,5 +1,5 @@
 var CLIENT_ID=import.meta.env.VITE_STRAVA_CLIENT_ID||"";
-var REDIRECT_URI="https://fuelrun-9ibg.vercel.app/strava-callback";
+var REDIRECT_URI="https://fuelrun.vercel.app/strava-callback";
 
 // Build the Strava OAuth authorization URL
 export function stravaAuthUrl(){

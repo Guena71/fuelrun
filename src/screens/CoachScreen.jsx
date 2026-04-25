@@ -71,26 +71,30 @@ export function CoachScreen(p){
     var lvlStr=(p.profile&&p.profile.level)||"beginner";var strengthMap={starter:"gainage et poids du corps uniquement",beginner:"circuits fonctionnels, squats et step-ups",intermediate:"goblet squat, fente bulgare, deadlift roumain, box jump",advanced:"back squat 85% 1RM, deadlift lourd, nordic curl, pliométrie",expert:"power clean, back squat 90% 1RM, bounding, pliométrie élite"};var strengthAdvice=strengthMap[lvlStr]||strengthMap.beginner;
     var sys="Tu es le coach de FuelRun, expert en running, trail, nutrition sportive et renforcement musculaire. Tu connais parfaitement cet athlète et son plan.\n"+ctxLine+"\n== PROFIL ==\n"+(p.profile.name||"Coureur")+", "+(p.profile.age||"30")+" ans, "+(p.profile.weight||"70")+" kg, niveau "+(p.profile.level||"débutant")+(p.profile.gender?", "+p.profile.gender:"")+"\nNiveau gamification : "+level.emoji+" "+level.name+" ("+(gam.xp||0)+" XP) · Série : "+(p.stats&&p.stats.streak||0)+" jour(s) consécutif(s) · Total : "+(p.stats&&Math.round(p.stats.km)||0)+" km en "+(p.stats&&p.stats.sessions||0)+" séances\n\n== OBJECTIF ==\n"+(p.race?p.race.name+", "+p.race.dist+"km ("+(p.race.type==="trail"?"trail":"route")+") — dans "+weeksUntil(p.race.date)+" semaine(s)":"Pas de course configurée")+"\n\n== PLAN DE COURSE ==\nSemaine "+(curWIdx+1)+"/"+planWCtx.length+" · "+donePlanSess+"/"+totalPlanSess+" séances réalisées depuis le début\nSéances cette semaine :\n  "+weekSessLines+"\n\n== RENFORCEMENT MUSCULAIRE ==\nNiveau de renforcement adapté : "+strengthAdvice+"\nUne séance de renforcement complémentaire est suggérée chaque semaine dans le plan.\n\n== 30 DERNIERS JOURS ==\n"+(recentLines.length>0?recentLines.slice(-12).join(" | "):"Aucune activité enregistrée")+"\n\n== ÉTAT ==\nForme : "+wellStr+"\n"+(contract?"Contrat semaine : "+contractDoneCount+"/"+contract.target+" séances réalisées":"Pas de contrat cette semaine")+"\n\nRéponds en français, ton naturel et direct, 2-4 phrases max, conseils concrets et personnalisés basés sur ces données précises.";
     var hist=newMsgs.map(function(m){return{role:m.role==="model"?"assistant":m.role,content:m.content};});
-    fetch("/api/coach",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({system:sys,messages:hist})
-    }).then(function(r){return r.json();}).then(function(data){
-      if(data.error){setError(data.error.message||data.error||"Erreur API");setLoading(false);return;}
-      var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
-      var updated=newMsgs.concat([{role:"model",content:reply}]);
-      setMessages(updated);
-      saveHistory(updated);
-      var nc=dailyCount+1;setDailyCount(nc);lsSet(countKey,nc);
-      p.onMessage&&p.onMessage();
-      setLoading(false);
-    }).catch(function(){
-      setMessages(function(m){return m.concat([{role:"model",content:"Problème de connexion."}]);});setLoading(false);
-    });
+    var doFetch=function(token){
+      fetch("/api/coach",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+(token||"")},
+        body:JSON.stringify({system:sys,messages:hist})
+      }).then(function(r){return r.json();}).then(function(data){
+        if(data.error){setError(data.error.message||data.error||"Erreur API");setLoading(false);return;}
+        var reply=((data.choices||[])[0]||{}).message&&data.choices[0].message.content||"Désolé, réessaie.";
+        var updated=newMsgs.concat([{role:"model",content:reply}]);
+        setMessages(updated);
+        saveHistory(updated);
+        var nc=dailyCount+1;setDailyCount(nc);lsSet(countKey,nc);
+        p.onMessage&&p.onMessage();
+        setLoading(false);
+      }).catch(function(){
+        setMessages(function(m){return m.concat([{role:"model",content:"Problème de connexion."}]);});setLoading(false);
+      });
+    };
+    if(p.user&&p.user.getIdToken){p.user.getIdToken().then(doFetch).catch(function(){doFetch("");});}
+    else{doFetch("");}
   }
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 70px)",overflowX:"hidden",maxWidth:"100%"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 80px)",overflowX:"hidden",maxWidth:"100%"}}>
       <LogoBar/>
       <div style={{padding:"16px 16px 12px",borderBottom:"1px solid "+BORD,flexShrink:0,overflowX:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>

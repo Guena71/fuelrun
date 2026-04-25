@@ -66,10 +66,10 @@ export function AuthScreen(){
 
   if(forgotMode){
     return(
-      <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
-        
+      <div style={{height:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 24px",overflow:"hidden"}}>
+
         <LogoBar/>
-        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",paddingTop:32}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center"}}>
           {forgotSent?(
             <>
               <div style={{fontSize:48,textAlign:"center",marginBottom:16}}>📧</div>
@@ -97,10 +97,10 @@ export function AuthScreen(){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px"}}>
-      
+    <div style={{height:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 24px",overflow:"hidden"}}>
+
       <LogoBar/>
-      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",paddingTop:32}}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center"}}>
         <div style={{fontSize:28,fontWeight:800,color:TXT,marginBottom:6}}>{isLogin?"Bon retour !":"Créer un compte"}</div>
         <div style={{fontSize:14,color:SUB,marginBottom:28}}>{isLogin?"Retrouve ton plan et tes stats.":"Gratuit · Sans carte bancaire"}</div>
 

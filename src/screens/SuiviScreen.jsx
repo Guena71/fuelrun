@@ -164,9 +164,9 @@ export function SuiviScreen(p){
               </div>
             )}
             {planLevel(p.profile)>=1?(
-              <label style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:BL+"0e",border:"1px solid "+BL+"33",cursor:"pointer",whiteSpace:"nowrap"}}>
+              <label style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:BL+"0e",border:"1px solid "+BL+"33",cursor:"pointer"}}>
                 <span style={{fontSize:16}}>📎</span>
-                <div style={{fontSize:12,fontWeight:600,color:BL}}>GPX</div>
+                <div style={{fontSize:12,fontWeight:600,color:BL}}>Importer GPX</div>
                 <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
                   var file=e.target.files&&e.target.files[0];if(!file)return;
                   var reader=new FileReader();
@@ -175,9 +175,9 @@ export function SuiviScreen(p){
                 }}/>
               </label>
             ):(
-              <div onClick={function(){setShowGpxUpgrade(true);}} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:SURF2,border:"1px solid "+BORD,cursor:"pointer",whiteSpace:"nowrap"}}>
+              <div onClick={function(){setShowGpxUpgrade(true);}} style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:SURF2,border:"1px solid "+BORD,cursor:"pointer"}}>
                 <span style={{fontSize:16}}>🔒</span>
-                <div style={{fontSize:12,fontWeight:600,color:MUT}}>GPX</div>
+                <div style={{fontSize:12,fontWeight:600,color:MUT}}>Importer GPX</div>
                 <span style={{fontSize:9,fontWeight:700,color:BL,background:BL+"18",padding:"2px 6px",borderRadius:4}}>Ess.</span>
               </div>
             )}

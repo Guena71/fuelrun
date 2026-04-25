@@ -18,7 +18,10 @@ export function RaceStrategyModal(p){
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)p.onClose();}}>
       <div style={{background:SURF,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"24px 20px 36px",animation:"slideUp .3s ease",maxHeight:"88vh",overflowY:"auto"}}>
-        <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 20px"}}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+          <div style={{width:40,height:4,borderRadius:2,background:BORD,flex:1}}/>
+          <button onClick={p.onClose} style={{background:"none",border:"none",color:MUT,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 0 0 16px"}}>×</button>
+        </div>
         <div style={{fontSize:18,fontWeight:700,color:TXT,marginBottom:4}}>Stratégie de course</div>
         <div style={{fontSize:13,color:SUB,marginBottom:20}}>{p.race&&p.race.name} · {dist} km</div>
 
