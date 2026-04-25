@@ -2,6 +2,8 @@
 // Variables d'environnement : STRIPE_WEBHOOK_SECRET, FIREBASE_PROJECT_ID, FIREBASE_API_KEY
 
 import crypto from "crypto";
+import { sendEmail, templates } from "./_email.js";
+import { getUserByUid } from "./_firestore.js";
 
 function verifyStripeSignature(rawBody, signature, secret) {
   const parts = Object.fromEntries(signature.split(",").map(p => p.split("=")));
@@ -57,7 +59,20 @@ export default async function handler(req, res) {
   if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
     if (uid && plan) {
       const active = sub.status === "active" || sub.status === "trialing";
-      await updatePlan(uid, active ? plan : "gratuit");
+      const newPlan = active ? plan : "gratuit";
+      await updatePlan(uid, newPlan);
+      if (active && event.type === "customer.subscription.created") {
+        try {
+          const user = await getUserByUid(uid);
+          if (user?.email) {
+            await sendEmail({
+              to: user.email,
+              subject: `Ton abonnement FuelRun ${plan} est activé 🎉`,
+              html: templates.subscription({ name: user.name, plan }),
+            });
+          }
+        } catch (e) { console.error("Email abonnement:", e.message); }
+      }
     }
   }
   if (event.type === "customer.subscription.deleted") {

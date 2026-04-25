@@ -294,7 +294,13 @@ export default function App(){
   if(authState==="onboarding"){return <Onboarding onDone={function(d){
     var prof={name:d.name,age:d.age,weight:d.weight,height:d.height,sex:d.sex,level:d.level,sessWeek:d.sessWeek,kmWeek:d.kmWeek,plan:ls("fr_pending_plan","gratuit")};
     setProfile(prof);setRace(d.race);
-    if(user)fsSave(user.uid,{profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
+    if(user){
+      fsSave(user.uid,{email:user.email||null,profile:prof,race:d.race||null,stats:{sessions:0,km:0,streak:0},wellbeing:null});
+      // Email de bienvenue (fire-and-forget)
+      user.getIdToken&&user.getIdToken().then(function(tok){
+        fetch("/api/send-email",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},body:JSON.stringify({type:"welcome",name:prof.name})}).catch(function(){});
+      }).catch(function(){});
+    }
     if(d.level==="starter"){setAuthState("firstrun");return;}
     setAuthState("app");
     navigate(d.race?"/training":"/home",{replace:true});
