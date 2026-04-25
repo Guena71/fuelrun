@@ -4,7 +4,7 @@ import { stravaAuthUrl } from "../utils/strava.js";
 import { fmtDate, fmtPaceSec, fmtDuration } from "../utils/date.js";
 import { planLevel } from "../utils/nutrition.js";
 import { buildPlan, getPlanWeeks } from "../utils/plan.js";
-import { parseGpx, calcTrackKm, RunMap } from "../components/gps.jsx";
+import { parseGpx, calcTrackKm, RunMap, MapModal } from "../components/gps.jsx";
 import { LogoBar } from "../components/HeroScreen.jsx";
 import { UpgradeModal } from "../components/UpgradeModal.jsx";
 
@@ -15,6 +15,7 @@ export function SuiviScreen(p){
   var entries=p.entries||{};
   var today=new Date();
   var [showGpxUpgrade,setShowGpxUpgrade]=useState(false);
+  var [showMapModal,setShowMapModal]=useState(false);
   var todayKey=today.toDateString();
   var todayDone=!!(entries[todayKey]&&entries[todayKey].done);
 
@@ -190,7 +191,7 @@ export function SuiviScreen(p){
                 <div style={{fontSize:11,color:MUT,fontWeight:600}}>Dernière sortie tracée</div>
                 <div style={{fontSize:11,color:SUB}}>{fmtDate(new Date(lastTracked[0]))} · {lastTracked[1].km} km</div>
               </div>
-              <RunMap track={lastTracked[1].track} height={140}/>
+              <RunMap track={lastTracked[1].track} height={140} onClick={function(){setShowMapModal(true);}}/>
               {lastTracked[1].min&&<div style={{marginTop:6,fontSize:11,color:SUB,textAlign:"center"}}>{fmtDuration(lastTracked[1].min,lastTracked[1].sec)} · {fmtPaceSec((parseFloat(lastTracked[1].min)*60)/(parseFloat(lastTracked[1].km)||1))} /km</div>}
             </div>
           )}
@@ -222,6 +223,7 @@ export function SuiviScreen(p){
 
       </div>
     </div>
+    {showMapModal&&lastTracked&&<MapModal track={lastTracked[1].track} onClose={function(){setShowMapModal(false);}}/>}
     {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     </>
   );

@@ -26,23 +26,60 @@ export function calcTrackKm(track){
   return Math.round(d*100)/100;
 }
 
-export function RunMap({track,height}){
+function LeafletMap({track,interactive,style}){
   var ref=useRef(null);
   var mapInst=useRef(null);
   useEffect(function(){
     if(!track||track.length<2||!ref.current)return;
     if(mapInst.current){mapInst.current.remove();mapInst.current=null;}
-    var map=L.map(ref.current,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,touchZoom:false,doubleClickZoom:false});
+    var map=L.map(ref.current,{
+      zoomControl:interactive,
+      attributionControl:false,
+      dragging:interactive,
+      scrollWheelZoom:interactive,
+      touchZoom:interactive,
+      doubleClickZoom:interactive,
+    });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
     var coords=track.map(function(p){return[p.lat,p.lon];});
-    L.polyline(coords,{color:OR,weight:4,opacity:0.9}).addTo(map);
-    L.circleMarker(coords[0],{radius:6,fillColor:"#22c55e",fillOpacity:1,color:"#fff",weight:2}).addTo(map);
-    L.circleMarker(coords[coords.length-1],{radius:6,fillColor:RE,fillOpacity:1,color:"#fff",weight:2}).addTo(map);
-    map.fitBounds(L.polyline(coords).getBounds(),{padding:[16,16]});
+    L.polyline(coords,{color:OR,weight:interactive?5:4,opacity:0.9}).addTo(map);
+    L.circleMarker(coords[0],{radius:7,fillColor:"#22c55e",fillOpacity:1,color:"#fff",weight:2}).addTo(map);
+    L.circleMarker(coords[coords.length-1],{radius:7,fillColor:RE,fillOpacity:1,color:"#fff",weight:2}).addTo(map);
+    map.fitBounds(L.polyline(coords).getBounds(),{padding:[20,20]});
     mapInst.current=map;
     return function(){if(mapInst.current){mapInst.current.remove();mapInst.current=null;}};
   },[track]);
-  return <div ref={ref} style={{height:height||200,borderRadius:12,overflow:"hidden",background:SURF2}}/>;
+  return <div ref={ref} style={style}/>;
+}
+
+export function RunMap({track,height,onClick}){
+  return(
+    <div style={{position:"relative",cursor:onClick?"pointer":"default"}} onClick={onClick}>
+      <LeafletMap track={track} interactive={false} style={{height:height||200,borderRadius:12,overflow:"hidden",background:SURF2}}/>
+      {onClick&&(
+        <div style={{position:"absolute",bottom:8,right:8,background:"rgba(0,0,0,.55)",borderRadius:6,padding:"4px 8px",display:"flex",alignItems:"center",gap:4,pointerEvents:"none"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M9 21H3v-6M21 3l-9 9M3 21l9-9" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/></svg>
+          <span style={{fontSize:11,color:"#fff",fontWeight:600}}>Agrandir</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function MapModal({track,onClose}){
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"#000",display:"flex",flexDirection:"column"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(16px,env(safe-area-inset-top,16px)) 16px 12px",background:"linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%)"}}>
+        <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Parcours</div>
+        <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+      </div>
+      <LeafletMap track={track} interactive={true} style={{flex:1,background:"#1a1a1a"}}/>
+      <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 16px max(20px,env(safe-area-inset-bottom,20px))",background:"linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 100%)",display:"flex",justifyContent:"center",gap:20,pointerEvents:"none"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:12,height:12,borderRadius:"50%",background:"#22c55e",border:"2px solid #fff"}}/><span style={{fontSize:12,color:"#fff",fontWeight:600}}>Départ</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:12,height:12,borderRadius:"50%",background:RE,border:"2px solid #fff"}}/><span style={{fontSize:12,color:"#fff",fontWeight:600}}>Arrivée</span></div>
+      </div>
+    </div>
+  );
 }
 
 export function GpsTrackerModal({onSave,onClose}){
