@@ -69,7 +69,7 @@ export function SuiviScreen(p){
 
   return(
     <><div><LogoBar/>
-      <div style={{padding:"16px 16px 80px"}}>
+      <div style={{padding:"16px 16px 0"}}>
 
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
@@ -219,6 +219,7 @@ export function SuiviScreen(p){
           )}
         </div>
 
+      <div style={{height:"calc(96px + env(safe-area-inset-bottom, 0px))"}}/>
       </div>
     </div>
     {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
