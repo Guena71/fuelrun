@@ -479,8 +479,9 @@ export function HomeScreen(p){
       var goodCount=0;var goodIdxs=new Set();
       scores.forEach(function(_,i){if(goodSet.has(i)&&goodCount<3){goodIdxs.add(i);goodCount++;}});
       return(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(){setShowWeather(false);}}>
-          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"20px 16px 50px"}}>
+        <>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:300}} onClick={function(){setShowWeather(false);}}/>
+        <div onClick={function(e){e.stopPropagation();}} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:301,background:BG,borderRadius:"20px 20px 0 0",padding:"20px 16px",paddingBottom:"calc(env(safe-area-inset-bottom, 0px) + 90px)"}}>
             <div style={{width:36,height:4,borderRadius:2,background:BORD,margin:"0 auto 16px"}}/>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo · {hours.length} créneaux</div>
@@ -501,8 +502,8 @@ export function HomeScreen(p){
                 </div>
               </div>
             );})}
-          </div>
         </div>
+        </>
       );
     })()}
     </>
