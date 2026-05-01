@@ -459,12 +459,13 @@ export function HomeScreen(p){
 
     {/* ── Météo détail (bottom sheet) ───────────────── */}
     {showWeather&&hourly&&(function(){
+      function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,"0")+"-"+d.getDate().toString().padStart(2,"0");}
       var now=new Date();var curHour=now.getHours();
-      var todayStr=now.toLocaleDateString("sv-SE");
-      var tom=new Date(now);tom.setDate(tom.getDate()+1);var tomStr=tom.toLocaleDateString("sv-SE");
+      var todayStr=ymd(now);
+      var tom=new Date(now);tom.setDate(tom.getDate()+1);var tomStr=ymd(tom);
       var allSlots=hourly.time.map(function(t,i){
-        var dateStr=t.slice(0,10);var h=parseInt(t.slice(11,13));
-        return{h:h,temp:Math.round(hourly.temperature_2m[i]),code:hourly.weathercode[i],rain:hourly.precipitation_probability[i]||0,wind:Math.round(hourly.windspeed_10m[i]),tomorrow:dateStr===tomStr,dateStr:dateStr};
+        var ds=t.slice(0,10);var h=parseInt(t.slice(11,13));
+        return{h:h,temp:Math.round(hourly.temperature_2m[i]),code:hourly.weathercode[i],rain:hourly.precipitation_probability[i]||0,wind:Math.round(hourly.windspeed_10m[i]),tomorrow:ds===tomStr,dateStr:ds};
       });
       var todaySlots=allSlots.filter(function(s){return s.dateStr===todayStr&&s.h>=curHour;});
       var tomSlots=allSlots.filter(function(s){return s.dateStr===tomStr&&s.h>=5&&s.h<=22;});
@@ -478,13 +479,13 @@ export function HomeScreen(p){
       var goodCount=0;var goodIdxs=new Set();
       scores.forEach(function(_,i){if(goodSet.has(i)&&goodCount<3){goodIdxs.add(i);goodCount++;}});
       return(
-        <div style={{position:"fixed",top:0,left:0,right:0,height:window.innerHeight+"px",zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={function(){setShowWeather(false);}}>
-          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"12px 16px 32px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-              <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo du jour</div>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(){setShowWeather(false);}}>
+          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,padding:"20px 16px 50px"}}>
+            <div style={{width:36,height:4,borderRadius:2,background:BORD,margin:"0 auto 16px"}}/>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo · {hours.length} créneaux</div>
               <button onClick={function(){setShowWeather(false);}} style={{background:"none",border:"none",color:MUT,fontSize:20,cursor:"pointer",padding:4}}>✕</button>
             </div>
-            {goodIdxs.size>1&&<div style={{fontSize:11,color:OR,fontWeight:600,marginBottom:8}}>{goodIdxs.size} créneaux recommandés pour courir</div>}
             {hours.map(function(h,i){var isGood=goodIdxs.has(i);var showTomLabel=h.tomorrow&&(i===0||!hours[i-1].tomorrow);return(
               <div key={i}>
                 {showTomLabel&&<div style={{fontSize:11,color:MUT,fontWeight:600,padding:"4px 2px 2px"}}>Demain matin</div>}
