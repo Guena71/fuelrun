@@ -28,9 +28,11 @@ export function HomeScreen(p){
   var todayDone=!!(p.entries&&p.entries[todayKey]&&p.entries[todayKey].done);
 
   useEffect(function(){
-    if(showWeather){document.body.style.overflow="hidden";document.body.style.position="fixed";document.body.style.width="100%";}
-    else{document.body.style.overflow="";document.body.style.position="";document.body.style.width="";}
-    return function(){document.body.style.overflow="";document.body.style.position="";document.body.style.width="";};
+    var el=document.getElementById("main-scroll");
+    if(!el)return;
+    if(showWeather){el.style.overflow="hidden";el.style.touchAction="none";}
+    else{el.style.overflow="";el.style.touchAction="";}
+    return function(){el.style.overflow="";el.style.touchAction="";};
   },[showWeather]);
 
   useEffect(function(){
