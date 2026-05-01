@@ -28,6 +28,12 @@ export function HomeScreen(p){
   var todayDone=!!(p.entries&&p.entries[todayKey]&&p.entries[todayKey].done);
 
   useEffect(function(){
+    if(showWeather){document.body.style.overflow="hidden";document.body.style.position="fixed";document.body.style.width="100%";}
+    else{document.body.style.overflow="";document.body.style.position="";document.body.style.width="";}
+    return function(){document.body.style.overflow="";document.body.style.position="";document.body.style.width="";};
+  },[showWeather]);
+
+  useEffect(function(){
     if(!navigator.geolocation)return;
     navigator.geolocation.getCurrentPosition(function(pos){
       var la=pos.coords.latitude.toFixed(4),lo=pos.coords.longitude.toFixed(4);
@@ -470,7 +476,7 @@ export function HomeScreen(p){
       var goodCount=0;var goodIdxs=new Set();
       scores.forEach(function(_,i){if(goodSet.has(i)&&goodCount<3){goodIdxs.add(i);goodCount++;}});
       return(
-        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end",touchAction:"none"}} onClick={function(){setShowWeather(false);}}>
+        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={function(){setShowWeather(false);}}>
           <div onClick={function(e){e.stopPropagation();}} onTouchMove={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"0 0 32px",maxHeight:"92vh",display:"flex",flexDirection:"column"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px"}}>
               <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo du jour</div>
