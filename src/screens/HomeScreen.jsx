@@ -477,29 +477,27 @@ export function HomeScreen(p){
       scores.forEach(function(_,i){if(goodSet.has(i)&&goodCount<3){goodIdxs.add(i);goodCount++;}});
       return(
         <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={function(){setShowWeather(false);}}>
-          <div onClick={function(e){e.stopPropagation();}} onTouchMove={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"0 0 32px",maxHeight:"92vh",display:"flex",flexDirection:"column"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px"}}>
+          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"12px 16px 40px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo du jour</div>
               <button onClick={function(){setShowWeather(false);}} style={{background:"none",border:"none",color:MUT,fontSize:20,cursor:"pointer",padding:4}}>✕</button>
             </div>
-            {goodIdxs.size>1&&<div style={{fontSize:11,color:OR,fontWeight:600,padding:"0 20px 10px"}}>{goodIdxs.size} créneaux recommandés pour courir</div>}
-            <div style={{overflowY:"auto",flex:1,minHeight:0,padding:"0 16px",overscrollBehavior:"contain"}}>
-              {hours.map(function(h,i){var isGood=goodIdxs.has(i);var showTomLabel=h.tomorrow&&(i===0||!hours[i-1].tomorrow);return(
-                <div key={i}>
-                  {showTomLabel&&<div style={{fontSize:11,color:MUT,fontWeight:600,padding:"6px 4px 4px"}}>Demain matin</div>}
-                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:12,marginBottom:6,background:isGood?OR+"12":SURF,border:"1px solid "+(isGood?OR+"44":BORD)}}>
-                    <span style={{fontSize:13,fontWeight:700,color:isGood?OR:MUT,width:36,flexShrink:0}}>{String(h.h).padStart(2,"0")}h</span>
-                    <span style={{fontSize:20,flexShrink:0}}>{wIcon(h.code)}</span>
-                    <span style={{fontSize:15,fontWeight:700,color:TXT,width:36,flexShrink:0}}>{h.temp}°</span>
-                    <div style={{flex:1,display:"flex",gap:8}}>
-                      {h.rain>0&&<span style={{fontSize:11,color:BL}}>💧{h.rain}%</span>}
-                      {h.wind>10&&<span style={{fontSize:11,color:MUT}}>💨{h.wind}km/h</span>}
-                    </div>
-                    {isGood&&<span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Idéal</span>}
+            {goodIdxs.size>1&&<div style={{fontSize:11,color:OR,fontWeight:600,marginBottom:8}}>{goodIdxs.size} créneaux recommandés pour courir</div>}
+            {hours.map(function(h,i){var isGood=goodIdxs.has(i);var showTomLabel=h.tomorrow&&(i===0||!hours[i-1].tomorrow);return(
+              <div key={i}>
+                {showTomLabel&&<div style={{fontSize:11,color:MUT,fontWeight:600,padding:"4px 2px 2px"}}>Demain matin</div>}
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:12,marginBottom:6,background:isGood?OR+"12":SURF,border:"1px solid "+(isGood?OR+"44":BORD)}}>
+                  <span style={{fontSize:13,fontWeight:700,color:isGood?OR:MUT,width:34,flexShrink:0}}>{String(h.h).padStart(2,"0")}h</span>
+                  <span style={{fontSize:18,flexShrink:0}}>{wIcon(h.code)}</span>
+                  <span style={{fontSize:14,fontWeight:700,color:TXT,width:34,flexShrink:0}}>{h.temp}°</span>
+                  <div style={{flex:1,display:"flex",gap:8}}>
+                    {h.rain>0&&<span style={{fontSize:11,color:BL}}>💧{h.rain}%</span>}
+                    {h.wind>10&&<span style={{fontSize:11,color:MUT}}>💨{h.wind}km/h</span>}
                   </div>
+                  {isGood&&<span style={{fontSize:10,fontWeight:700,color:OR,background:OR+"18",padding:"2px 8px",borderRadius:6}}>Idéal</span>}
                 </div>
-              );})}
-            </div>
+              </div>
+            );})}
           </div>
         </div>
       );
