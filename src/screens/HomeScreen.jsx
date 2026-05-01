@@ -477,7 +477,7 @@ export function HomeScreen(p){
               <button onClick={function(){setShowWeather(false);}} style={{background:"none",border:"none",color:MUT,fontSize:20,cursor:"pointer",padding:4}}>✕</button>
             </div>
             {goodIdxs.size>1&&<div style={{fontSize:11,color:OR,fontWeight:600,padding:"0 20px 10px"}}>{goodIdxs.size} créneaux recommandés pour courir</div>}
-            <div style={{overflowY:"auto",padding:"0 16px"}}>
+            <div style={{overflowY:"auto",flex:1,minHeight:0,padding:"0 16px"}}>
               {hours.map(function(h,i){var isGood=goodIdxs.has(i);var showTomLabel=h.tomorrow&&(i===0||!hours[i-1].tomorrow);return(
                 <div key={i}>
                   {showTomLabel&&<div style={{fontSize:11,color:MUT,fontWeight:600,padding:"6px 4px 4px"}}>Demain matin</div>}
