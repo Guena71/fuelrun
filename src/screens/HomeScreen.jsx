@@ -470,14 +470,14 @@ export function HomeScreen(p){
       var goodCount=0;var goodIdxs=new Set();
       scores.forEach(function(_,i){if(goodSet.has(i)&&goodCount<3){goodIdxs.add(i);goodCount++;}});
       return(
-        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={function(){setShowWeather(false);}}>
-          <div onClick={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"0 0 32px",maxHeight:"92vh",display:"flex",flexDirection:"column"}}>
+        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",flexDirection:"column",justifyContent:"flex-end",touchAction:"none"}} onClick={function(){setShowWeather(false);}}>
+          <div onClick={function(e){e.stopPropagation();}} onTouchMove={function(e){e.stopPropagation();}} style={{background:BG,borderRadius:"20px 20px 0 0",border:"1px solid "+BORD,borderBottom:"none",padding:"0 0 32px",maxHeight:"92vh",display:"flex",flexDirection:"column"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px"}}>
               <div style={{fontSize:16,fontWeight:800,color:TXT}}>Météo du jour</div>
               <button onClick={function(){setShowWeather(false);}} style={{background:"none",border:"none",color:MUT,fontSize:20,cursor:"pointer",padding:4}}>✕</button>
             </div>
             {goodIdxs.size>1&&<div style={{fontSize:11,color:OR,fontWeight:600,padding:"0 20px 10px"}}>{goodIdxs.size} créneaux recommandés pour courir</div>}
-            <div style={{overflowY:"auto",flex:1,minHeight:0,padding:"0 16px"}}>
+            <div style={{overflowY:"auto",flex:1,minHeight:0,padding:"0 16px",overscrollBehavior:"contain"}}>
               {hours.map(function(h,i){var isGood=goodIdxs.has(i);var showTomLabel=h.tomorrow&&(i===0||!hours[i-1].tomorrow);return(
                 <div key={i}>
                   {showTomLabel&&<div style={{fontSize:11,color:MUT,fontWeight:600,padding:"6px 4px 4px"}}>Demain matin</div>}
