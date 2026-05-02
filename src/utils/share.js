@@ -23,9 +23,9 @@ export function shareBadge(badge){
 
 export function shareChallenge(challenge,done){
   return share(
-    "🔥 Challenge relevé sur FuelRun !\n"+
+    "🔥 Défi relevé sur FuelRun !\n"+
     challenge.icon+" "+challenge.label+"\n"+
-    "✅ "+done+"/"+challenge.target+" · +"+challenge.xp+" XP\n"+
+    "✅ "+done+"/"+challenge.target+" · +"+challenge.xp+" pts\n"+
     "👟 Rejoins-moi sur FuelRun"
   );
 }

@@ -257,19 +257,41 @@ export var RACES=[
   {id:280,name:"Ultra-Trail Cape Town 100 km",   dist:100, type:"trail",date:"2026-10-18",city:"Le Cap",              lat:-33.93,lng:18.42},
 ];
 
-// ── URLs d'inscription par course ────────────────────────────────────────
-export var REG_URLS={
+// ── URLs d'inscription directes (vérifiées) ──────────────────────────────
+var REG_URLS={
+  // UTMB World Series
   112:"https://utmb.world/utmb-world-series/races/utmb",
   113:"https://utmb.world/utmb-world-series/races/ccc",
   152:"https://utmb.world/utmb-world-series/races/tds",
   154:"https://utmb.world/utmb-world-series/races/occ",
-  107:"https://www.maxi-race.com",
-  119:"https://www.lestempliers.com",
+  232:"https://utmb.world/utmb-world-series/races/utca",
+  272:"https://utmb.world/utmb-world-series/races/k78",
+  // Trail France & international
   120:"https://www.grandraid-reunion.com",
   150:"https://www.wser.org",
   151:"https://hardrock100.com",
   153:"https://ultratraillavaredo.com",
-  134:"https://www.ecotrail.fr",
+  191:"https://www.saintelyon.com",
+  192:"https://www.marathondessables.com",
+  227:"https://www.comrades.com",
+  231:"https://www.grand-raid-pyrenees.com",
+  261:"https://www.tordesgeants.it",
+  262:"https://www.transgrancanaria.net",
+  264:"https://www.eigerultratrail.ch",
+  267:"https://www.leadvilleraceseries.com",
+  268:"https://www.ultratrailaustralia.com.au",
+  269:"https://miut.pt",
+  270:"https://www.hk100-ultra.com",
+  274:"https://www.lakeland100.com",
+  // Road France
+  3:"https://www.20kmparis.com",
+  5:"https://www.schneiderelectricparismarathon.com",
+  23:"https://www.marathon06.com",
+  38:"https://www.marathondumedoc.com",
+  // Road Belgique / Suisse
+  90:"https://www.brusselsmarathon.be",
+  92:"https://www.lausanne-marathon.com",
+  // World Majors
   51:"https://www.baa.org/races/boston-marathon",
   52:"https://www.tcslondonmarathon.com",
   53:"https://www.bmw-berlin-marathon.com",
@@ -278,28 +300,33 @@ export var REG_URLS={
   56:"https://www.marathon.tokyo",
   57:"https://valenciaciudaddelrunning.com/en/marathon",
   58:"https://www.tcsamstelgoldrace.nl",
-  5:"https://www.schneiderelectricparismarathon.com",
+  59:"https://www.frankfurt-marathon.com",
   203:"https://www.zurichmaratobarcelona.es",
   206:"https://www.maratonadiroma.it",
   207:"https://www.firenzemarathon.it",
+  208:"https://www.venicemarathon.it",
   209:"https://www.athensauthenticmarathon.gr",
   210:"https://www.vienna-marathon.com",
   211:"https://www.haspa-hamburg-marathon.de",
-  231:"https://www.grand-raid-pyrenees.com",
-  232:"https://utmb.world/utmb-world-series/races/utca",
-  261:"https://www.tordesgeants.it",
-  262:"https://www.transgrancanaria.net",
-  264:"https://www.eigerultratrai.ch",
-  267:"https://www.leadvilleraceseries.com",
-  268:"https://www.ultratrailaustralia.com.au",
-  269:"https://miut.pt",
-  270:"https://www.hk100-ultra.com",
-  191:"https://www.saintelyon.com",
-  192:"https://www.marathondessables.com",
-  227:"https://www.comrades.com",
+  214:"https://www.stockholmmarathon.se",
+  215:"https://www.runczech.com",
+  217:"https://www.dublinmarathon.ie",
+  218:"https://www.edinburghmarathon.com",
+  219:"https://www.manchestermarathon.co.uk",
+  221:"https://www.dubaimarathon.org",
+  228:"https://www.hkmarathon.com",
 };
 
-export function regUrl(race){
-  if(REG_URLS[race.id])return REG_URLS[race.id];
-  return "https://www.klikego.com/recherche?terms="+encodeURIComponent(race.name);
+// Retourne {url, label, platform} pour le lien d'inscription
+export function regInfo(race){
+  if(REG_URLS[race.id])return{url:REG_URLS[race.id],label:"Site officiel",platform:"own"};
+  var q=encodeURIComponent(race.name);
+  // Courses françaises (approximation lat/lng)
+  var isFR=race.lat>41.5&&race.lat<51.2&&race.lng>-5.2&&race.lng<8.4;
+  if(race.type==="trail"||!isFR)
+    return{url:"https://www.klikego.com/recherche?terms="+q,label:"Klikego",platform:"klikego"};
+  return{url:"https://finishers.com/fr/recherche?q="+q,label:"Finishers",platform:"finishers"};
 }
+
+// Compatibilité ascendante
+export function regUrl(race){return regInfo(race).url;}

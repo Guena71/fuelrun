@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR } from "../data/constants.js";
+import { SURF, BORD, TXT, SUB, MUT, OR } from "../data/constants.js";
 
 export function WeeklyContractModal({onCommit,onClose}){
   var [target,setTarget]=useState(3);
@@ -9,7 +9,7 @@ export function WeeklyContractModal({onCommit,onClose}){
         <div style={{width:40,height:4,borderRadius:2,background:BORD,margin:"0 auto 20px"}}/>
         <div style={{fontSize:22,fontWeight:800,color:TXT,marginBottom:6}}>🤝 Contrat de la semaine</div>
         <div style={{fontSize:13,color:SUB,lineHeight:1.6,marginBottom:24}}>
-          Engage-toi sur un nombre de séances pour cette semaine. Si tu tiens parole, tu gagnes <span style={{color:OR,fontWeight:700}}>+50 XP</span> et un badge.
+          Engage-toi sur un nombre de séances pour cette semaine. Si tu tiens parole, tu gagnes <span style={{color:OR,fontWeight:700}}>+50 pts</span> et un badge.
         </div>
         <div style={{marginBottom:24}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
@@ -26,7 +26,7 @@ export function WeeklyContractModal({onCommit,onClose}){
           <span style={{fontSize:20}}>🎯</span>
           <div>
             <div style={{fontSize:13,fontWeight:700,color:OR}}>Objectif : {target} séance{target>1?"s":""}</div>
-            <div style={{fontSize:11,color:MUT}}>Récompense si tenu : +50 XP + badge 🤝</div>
+            <div style={{fontSize:11,color:MUT}}>Récompense si tenu : +50 pts + badge 🤝</div>
           </div>
         </div>
         <button onClick={function(){onCommit(target);}} style={{width:"100%",padding:"15px",borderRadius:14,background:OR,border:"none",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>

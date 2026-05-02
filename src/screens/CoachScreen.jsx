@@ -22,7 +22,7 @@ export function CoachScreen(p){
   var countKey="fr_coach_count_"+todayKey;
   var [dailyCount,setDailyCount]=useState(function(){return ls(countKey,0);});
   var lvl=planLevel(p.profile);
-  var maxMsg=lvl>=2?Infinity:lvl>=1?30:5;
+  var maxMsg=lvl>=2?Infinity:lvl>=1?30:7;
   var remaining=maxMsg===Infinity?null:Math.max(0,maxMsg-dailyCount);
   useEffect(function(){if(msgsRef.current)msgsRef.current.scrollTop=msgsRef.current.scrollHeight;},[messages]);
 
@@ -111,13 +111,13 @@ export function CoachScreen(p){
           var prog=challengeProgress(p.entries||{},wk,chal);
           var done=prog>=chal.target;
           var pct=Math.min(100,Math.round(prog/chal.target*100));
-          var chalMsg="Coach, j'ai un challenge cette semaine : "+chal.label+". J'en suis à "+prog+"/"+chal.target+". Donne-moi des conseils pour le réussir !";
+          var chalMsg="Coach, j'ai un défi cette semaine : "+chal.label+". J'en suis à "+prog+"/"+chal.target+". Donne-moi des conseils pour le réussir !";
           return(
             <div style={{padding:"10px 12px",borderRadius:10,background:done?GR+"12":OR+"0e",border:"1px solid "+(done?GR+"44":OR+"22")}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <span style={{fontSize:16}}>{chal.icon}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:done?GR:OR,textTransform:"uppercase",letterSpacing:0.5}}>Challenge de la semaine</span>
+                  <span style={{fontSize:11,fontWeight:700,color:done?GR:OR,textTransform:"uppercase",letterSpacing:0.5}}>Défi de la semaine</span>
                 </div>
                 <span style={{fontSize:11,fontWeight:700,color:done?GR:OR}}>{prog}/{chal.target}{done?" ✓":""}</span>
               </div>

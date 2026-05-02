@@ -30,3 +30,8 @@ dist-ssr
 *.gpx
 
 .vercel
+
+# Firebase credentials (never commit service account keys)
+*-adminsdk-*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json

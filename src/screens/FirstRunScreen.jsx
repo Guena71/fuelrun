@@ -42,7 +42,7 @@ export function FirstRunScreen({onStart}){
               <div style={{fontSize:16,fontWeight:800,color:TXT}}>Course de découverte</div>
             </div>
             <div style={{marginLeft:"auto",background:OR+"22",border:"1px solid "+OR+"44",borderRadius:10,padding:"4px 10px"}}>
-              <div style={{fontSize:11,fontWeight:700,color:OR}}>+150 XP</div>
+              <div style={{fontSize:11,fontWeight:700,color:OR}}>+150 pts</div>
             </div>
           </div>
 

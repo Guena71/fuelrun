@@ -17,6 +17,8 @@ export default async function handler(req, res) {
   await Promise.allSettled(docs.map(async (doc) => {
     const user = parseUser(doc);
     if (!user.email) { results.skipped++; return; }
+    // Ne pas relancer les utilisateurs sans aucune activité (compte créé mais jamais utilisé)
+    if (!user.statsSessions && !user.statsKm) { results.skipped++; return; }
     try {
       await sendEmail({
         to: user.email,

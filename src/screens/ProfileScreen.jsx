@@ -12,6 +12,8 @@ import { UpgradeModal } from "../components/UpgradeModal.jsx";
 import { LegalModal } from "../components/LegalModal.jsx";
 
 export function ProfileScreen(p){
+  var [cancelLoading,setCancelLoading]=useState(false);
+  var [showCancelModal,setShowCancelModal]=useState(false);
   var [editing,setEditing]=useState(false);
   var [form,setForm]=useState({name:p.profile.name||"",age:p.profile.age||"",weight:p.profile.weight||"",height:p.profile.height||"",sex:p.profile.sex||"M",level:p.profile.level||"beginner",sessWeek:p.profile.sessWeek||3,kmWeek:p.profile.kmWeek||25});
   var [showVdot,setShowVdot]=useState(false);
@@ -21,6 +23,7 @@ export function ProfileScreen(p){
   var [showResetModal,setShowResetModal]=useState(false);
   var [showDeleteModal,setShowDeleteModal]=useState(false);
   var [showVdotUpgrade,setShowVdotUpgrade]=useState(false);
+  var [vdotError,setVdotError]=useState("");
   var [legalOpen,setLegalOpen]=useState(null);
   var [showPwdModal,setShowPwdModal]=useState(false);
   var [pwdCurrent,setPwdCurrent]=useState("");
@@ -31,6 +34,22 @@ export function ProfileScreen(p){
   var [pwdDone,setPwdDone]=useState(false);
   var levelRef=useRef(null);
   function save(){p.onUpdate(form);setEditing(false);}
+  function cancelSubscription(){
+    if(!p.user)return;
+    setCancelLoading(true);
+    p.user.getIdToken().then(function(token){
+      return fetch("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({cancel:true,uid:p.user.uid})});
+    }).then(function(r){return r.json();}).then(function(data){
+      setCancelLoading(false);
+      if(data.cancelled){
+        p.onUpdate({plan:"gratuit"});
+        setShowCancelModal(false);
+        if(p.onToast)p.onToast("Abonnement résilié — formule Gratuit active","ok");
+      } else {
+        alert(data.error||"Erreur lors de la résiliation");
+      }
+    }).catch(function(){setCancelLoading(false);alert("Erreur réseau");});
+  }
   var isEmailUser=p.user&&p.user.providerData&&p.user.providerData.some(function(pd){return pd.providerId==="password";});
   function handleChangePwd(){
     if(!pwdCurrent||!pwdNew||!pwdConfirm){setPwdError("Remplis tous les champs.");return;}
@@ -56,11 +75,11 @@ export function ProfileScreen(p){
       </div>
     );
   }
-  var stats=[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km)+" km",color:BL},{label:"Streak",value:p.stats.streak+" j",color:YE}];
+  var stats=[{label:"Séances",value:p.stats.sessions,color:OR},{label:"Kilomètres",value:Math.round(p.stats.km)+" km",color:BL},{label:"Jours de suite",value:p.stats.streak+" j",color:YE}];
   return(
     <><div><LogoBar/>
       <div style={{padding:"20px 16px 80px"}}>
-        <button onClick={function(){p.onBack&&p.onBack();}} style={{background:"none",border:"none",color:OR,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"0 0 16px 0"}}>← Accueil</button>
+        <button onClick={function(){p.onBack&&p.onBack();}} style={{width:"100%",padding:"13px 16px",marginBottom:16,borderRadius:12,background:OR+"12",border:"1px solid "+OR+"33",color:OR,fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>← Retour à l'accueil</button>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
           <div style={{display:"flex",alignItems:"center",gap:14}}>
             <div style={{width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,"+OR+"44,#1a0800)",border:"2px solid "+OR+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:700,color:OR}}>
@@ -89,7 +108,13 @@ export function ProfileScreen(p){
                 <span style={{fontSize:16}}>⭐</span>
                 <div><div style={{fontSize:12,color:MUT}}>Formule actuelle</div><div style={{fontSize:14,fontWeight:700,color:pl.color}}>{pl.name}</div></div>
               </div>
-              <button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 14px",borderRadius:8,background:pl.id==="gratuit"?OR:SURF2,border:"1px solid "+(pl.id==="gratuit"?OR:BORD),color:pl.id==="gratuit"?"#fff":SUB,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{pl.id==="gratuit"?"Upgrader":"Changer"}</button>
+              {pl.id==="gratuit"
+                ?<button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 14px",borderRadius:8,background:OR,border:"1px solid "+OR,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Upgrader</button>
+                :<div style={{display:"flex",gap:6}}>
+                  <button onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{padding:"6px 12px",borderRadius:8,background:SURF2,border:"1px solid "+BORD,color:SUB,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Changer</button>
+                  <button onClick={function(){setShowCancelModal(true);}} style={{padding:"6px 12px",borderRadius:8,background:"transparent",border:"1px solid "+RE+"44",color:RE,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Résilier</button>
+                </div>
+              }
             </div>
           );
         })()}
@@ -186,7 +211,7 @@ export function ProfileScreen(p){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
                 <div>
                   <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Distance</label>
-                  <select value={vdotDist} onChange={function(e){setVdotDist(e.target.value);setVdotResult(null);}} style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit",colorScheme:"dark"}}>
+                  <select value={vdotDist} onChange={function(e){setVdotDist(e.target.value);setVdotResult(null);setVdotError("");}} style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit",colorScheme:"dark"}}>
                     <option value="5">5 km</option>
                     <option value="10">10 km</option>
                     <option value="21.1">Semi (21,1 km)</option>
@@ -195,9 +220,10 @@ export function ProfileScreen(p){
                 </div>
                 <div>
                   <label style={{fontSize:12,color:MUT,display:"block",marginBottom:6}}>Temps (hh:mm:ss)</label>
-                  <input value={vdotTime} onChange={function(e){setVdotTime(e.target.value);setVdotResult(null);}} placeholder="00:45:00" style={{width:"100%",background:SURF2,border:"1px solid "+BORD,borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+                  <input value={vdotTime} onChange={function(e){setVdotTime(e.target.value);setVdotResult(null);setVdotError("");}} placeholder="hh:mm:ss" style={{width:"100%",background:SURF2,border:"1px solid "+(vdotError?RE:BORD),borderRadius:10,padding:"11px 12px",color:TXT,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
                 </div>
               </div>
+              {vdotError&&<div style={{fontSize:12,color:RE,marginBottom:12,padding:"8px 12px",borderRadius:8,background:RE+"12"}}>{vdotError}</div>}
               {vdotResult&&(
                 <div style={{background:OR+"10",border:"1px solid "+OR+"30",borderRadius:12,padding:"14px 16px",marginBottom:14}}>
                   <div style={{fontSize:11,color:OR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>Tes allures personnalisées</div>
@@ -211,10 +237,19 @@ export function ProfileScreen(p){
               )}
               <div style={{display:"flex",gap:8}}>
                 <Btn label="Calculer" onClick={function(){
-                  var parts=vdotTime.split(":").map(Number);
-                  var secs=parts.length===3?parts[0]*3600+parts[1]*60+(parts[2]||0):parts.length===2?parts[0]*60+(parts[1]||0):0;
-                  if(!secs||secs<60)return;
+                  setVdotError("");
+                  var raw=vdotTime.trim().split(":").map(function(x){return parseInt(x,10)||0;});
+                  var secs=0;
+                  if(raw.length===3){secs=raw[0]*3600+raw[1]*60+raw[2];}
+                  else if(raw.length===2){
+                    // "1:45" pour un semi/marathon → h:mm ; sinon mm:ss
+                    if(raw[0]<10&&parseFloat(vdotDist)>=21){secs=raw[0]*3600+raw[1]*60;}
+                    else{secs=raw[0]*60+raw[1];}
+                  }
+                  else if(raw.length===1){secs=raw[0]*60;}
+                  if(!secs||secs<60){setVdotError("Temps invalide. Utilise mm:ss ou hh:mm:ss.");return;}
                   var vdot=calcVdot(parseFloat(vdotDist),secs);
+                  if(!isFinite(vdot)||vdot<=0){setVdotError("Résultat hors limites — vérifie ta performance.");return;}
                   setVdotResult(vdotToPaces(vdot));
                 }} size="sm" style={{flex:1}}/>
                 {vdotResult&&<Btn label="Appliquer" onClick={function(){
@@ -231,44 +266,68 @@ export function ProfileScreen(p){
 
         <div style={{marginBottom:14}}>
           <div style={{fontSize:12,color:MUT,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:8}}>Connexions</div>
-          {p.stravaProfile?(
-            <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:16,overflow:"hidden",marginBottom:8}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
-                <div style={{width:40,height:40,borderRadius:11,background:"#FC4C02",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {p.stravaProfile.athleteAvatar
-                    ?<img src={p.stravaProfile.athleteAvatar} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                    :<span style={{color:"#fff",fontWeight:700,fontSize:16}}>S</span>}
+          {planLevel(p.profile)>=1?(
+            p.stravaProfile?(
+              <div style={{background:SURF,border:"1px solid "+BORD,borderRadius:16,overflow:"hidden",marginBottom:8}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderBottom:"1px solid "+BORD}}>
+                  <div style={{width:40,height:40,borderRadius:11,background:"#FC4C02",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {p.stravaProfile.athleteAvatar
+                      ?<img src={p.stravaProfile.athleteAvatar} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      :<span style={{color:"#fff",fontWeight:700,fontSize:16}}>S</span>}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:TXT}}>Strava connecté</div>
+                    <div style={{fontSize:11,color:SUB,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.stravaProfile.athleteName||"Athlete #"+p.stravaProfile.athleteId}</div>
+                  </div>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:GR,flexShrink:0}}/>
                 </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:700,color:TXT}}>Strava connecté</div>
-                  <div style={{fontSize:11,color:SUB,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.stravaProfile.athleteName||"Athlete #"+p.stravaProfile.athleteId}</div>
+                <div style={{display:"flex"}}>
+                  <button onClick={p.onStravaSync} style={{flex:1,padding:"12px",background:"none",border:"none",borderRight:"1px solid "+BORD,color:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🔄 Synchroniser</button>
+                  <button onClick={p.onStravaDisconnect} style={{flex:1,padding:"12px",background:"none",border:"none",color:MUT,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Déconnecter</button>
                 </div>
-                <div style={{width:8,height:8,borderRadius:"50%",background:GR,flexShrink:0}}/>
               </div>
-              <div style={{display:"flex"}}>
-                <button onClick={p.onStravaSync} style={{flex:1,padding:"12px",background:"none",border:"none",borderRight:"1px solid "+BORD,color:OR,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🔄 Synchroniser</button>
-                <button onClick={p.onStravaDisconnect} style={{flex:1,padding:"12px",background:"none",border:"none",color:MUT,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Déconnecter</button>
-              </div>
-            </div>
+            ):(
+              <a href={stravaAuthUrl()} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:"#FC4C02",border:"none",textDecoration:"none",marginBottom:8}}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Connecter Strava</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.75)"}}>Importe tes courses automatiquement</div>
+                </div>
+                <div style={{color:"#fff",fontSize:18,fontWeight:300}}>›</div>
+              </a>
+            )
           ):(
-            <a href={stravaAuthUrl()} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:"#FC4C02",border:"none",textDecoration:"none",marginBottom:8}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+            <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:"#FC4C02"+"22",border:"1px solid #FC4C0244",marginBottom:8,cursor:"pointer"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FC4C02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
               <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Connecter Strava</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.75)"}}>Importe tes courses automatiquement</div>
+                <div style={{fontSize:14,fontWeight:700,color:TXT}}>Synchroniser Strava</div>
+                <div style={{fontSize:11,color:SUB}}>Disponible avec la formule Essentiel</div>
               </div>
-              <div style={{color:"#fff",fontSize:18,fontWeight:300}}>›</div>
-            </a>
-          )}
-          <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:SURF2,border:"1px solid "+BORD}}>
-            <div style={{width:40,height:40,borderRadius:11,background:"#1A9F7822",border:"1px solid #1A9F7844",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20}}>🟢</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,fontWeight:700,color:TXT}}>Garmin Connect</div>
-              <div style={{fontSize:11,color:SUB,marginTop:2}}>Exporte en GPX depuis l'app Garmin</div>
+              <span style={{fontSize:10,fontWeight:700,color:BL,background:BL+"18",padding:"3px 8px",borderRadius:6}}>Essentiel</span>
             </div>
-            <button onClick={function(){window.open("https://connect.garmin.com/modern/activities","_blank");}} style={{flexShrink:0,padding:"6px 12px",borderRadius:8,background:"#1A9F7822",color:"#1A9F78",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",border:"none"}}>Ouvrir</button>
-          </div>
-          <div style={{fontSize:11,color:MUT,marginTop:6,paddingLeft:4,lineHeight:1.5}}>Garmin → Mes activités → Exporter GPX → importer via le bouton 📎 dans le Journal</div>
+          )}
+          {planLevel(p.profile)>=1?(
+            <>
+              <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:SURF2,border:"1px solid "+BORD}}>
+                <div style={{width:40,height:40,borderRadius:11,background:"#1A9F7822",border:"1px solid #1A9F7844",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20}}>🟢</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:700,color:TXT}}>Garmin Connect</div>
+                  <div style={{fontSize:11,color:SUB,marginTop:2}}>Exporte en GPX depuis l'app Garmin</div>
+                </div>
+                <button onClick={function(){window.open("https://connect.garmin.com/modern/activities","_blank");}} style={{flexShrink:0,padding:"6px 12px",borderRadius:8,background:"#1A9F7822",color:"#1A9F78",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",border:"none"}}>Ouvrir</button>
+              </div>
+              <div style={{fontSize:11,color:MUT,marginTop:6,paddingLeft:4,lineHeight:1.5}}>Garmin → Mes activités → Exporter GPX → importer via le bouton 📎 dans le Journal</div>
+            </>
+          ):(
+            <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,background:SURF2,border:"1px solid "+BORD,cursor:"pointer"}}>
+              <div style={{width:40,height:40,borderRadius:11,background:"#1A9F7822",border:"1px solid #1A9F7844",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20}}>🔒</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:MUT}}>Garmin / GPX</div>
+                <div style={{fontSize:11,color:MUT,marginTop:2}}>Import de tracés GPS</div>
+              </div>
+              <span style={{fontSize:10,fontWeight:700,color:BL,background:BL+"18",padding:"3px 8px",borderRadius:6}}>Essentiel</span>
+            </div>
+          )}
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10,marginTop:4}}>
@@ -304,6 +363,8 @@ export function ProfileScreen(p){
           <span onClick={function(){setLegalOpen("cgu");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>CGU</span>
           {"  ·  "}
           <span onClick={function(){setLegalOpen("confidentialite");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Confidentialité</span>
+          {"  ·  "}
+          <span onClick={function(){setLegalOpen("mentions");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Mentions légales</span>
         </div>
       </div>
     </div>
@@ -367,6 +428,19 @@ export function ProfileScreen(p){
     )}
     {showVdotUpgrade&&<UpgradeModal feature="Calibrer mes allures" minPlanLabel="Pro" minPlanColor={OR} onClose={function(){setShowVdotUpgrade(false);}} onUpgrade={function(){setShowVdotUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
     <LegalModal open={legalOpen} onClose={function(){setLegalOpen(null);}}/>
+    {showCancelModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={function(e){if(e.target===e.currentTarget)setShowCancelModal(false);}}>
+        <div style={{background:SURF,borderRadius:20,padding:"28px 24px",width:"100%",maxWidth:380}}>
+          <div style={{fontSize:24,textAlign:"center",marginBottom:12}}>⚠️</div>
+          <div style={{fontSize:18,fontWeight:700,color:TXT,textAlign:"center",marginBottom:8}}>Résilier l'abonnement ?</div>
+          <div style={{fontSize:13,color:SUB,textAlign:"center",lineHeight:1.6,marginBottom:24}}>Tu perdras immédiatement l'accès aux fonctionnalités payantes et repasseras sur la formule Gratuit.</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <button onClick={cancelSubscription} disabled={cancelLoading} style={{width:"100%",padding:"14px",borderRadius:12,background:RE,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{cancelLoading?"Résiliation…":"Confirmer la résiliation"}</button>
+            <button onClick={function(){setShowCancelModal(false);}} style={{width:"100%",padding:"14px",borderRadius:12,background:"none",border:"1px solid "+BORD,color:SUB,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }

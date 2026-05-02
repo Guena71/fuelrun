@@ -139,6 +139,8 @@ export function AuthScreen(){
           <span onClick={function(){setLegal("cgu");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>CGU</span>
           {" "}et notre{" "}
           <span onClick={function(){setLegal("confidentialite");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Politique de confidentialité</span>
+          {" · "}
+          <span onClick={function(){setLegal("mentions");}} style={{color:SUB,textDecoration:"underline",cursor:"pointer"}}>Mentions légales</span>
         </div>
       </div>
       <LegalModal open={legal} onClose={function(){setLegal(null);}}/>

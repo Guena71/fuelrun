@@ -85,7 +85,7 @@ export function JournalScreen(p){
                   <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
                     var file=e.target.files&&e.target.files[0];if(!file)return;
                     var reader=new FileReader();
-                    reader.onload=function(ev){
+                    reader.onload=function(ev){try{
                       var track=parseGpx(ev.target.result);
                       if(track.length>0){
                         var km=calcTrackKm(track);
@@ -93,7 +93,8 @@ export function JournalScreen(p){
                         var minDur=secDur?Math.round(secDur/60):null;
                         setForm(function(f){return Object.assign({},f,{track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):f.min,sec:secDur?String(secDur):f.sec,done:true});});
                       }
-                    };reader.readAsText(file);e.target.value="";
+                    }catch(e){alert("Fichier GPX invalide ou corrompu.");}}
+                    ;reader.readAsText(file);e.target.value="";
                   }}/>
                 </label>
               ):(
@@ -108,7 +109,7 @@ export function JournalScreen(p){
               </div>
               <div style={{marginBottom:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <label style={{fontSize:12,color:MUT}}>Effort ressenti (RPE)</label>
+                  <label style={{fontSize:12,color:MUT}}>Effort ressenti</label>
                   <span style={{fontSize:13,fontWeight:700,color:(function(){var r=form.rpe||5;return r<=3?GR:r<=6?"#F59E0B":r<=8?OR:RE;})()}}>{form.rpe||5}<span style={{fontSize:10,color:MUT,fontWeight:400}}>/10</span></span>
                 </div>
                 <input type="range" min={1} max={10} value={form.rpe||5} onChange={function(e){setForm(function(f){return Object.assign({},f,{rpe:parseInt(e.target.value)});});}} style={{width:"100%",accentColor:OR}}/>

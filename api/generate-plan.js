@@ -166,7 +166,9 @@ async function verifyToken(idToken) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://fuelrun.vercel.app");
+  const _allowed = ["https://fuelrun.fr", "https://fuelrun.vercel.app"];
+  const _origin = req.headers.origin || "";
+  if (_allowed.includes(_origin)) res.setHeader("Access-Control-Allow-Origin", _origin);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -174,6 +176,17 @@ export default async function handler(req, res) {
 
   const { race, profile } = req.body || {};
   if (!race) return res.status(400).json({ error: "race required" });
+
+  // Validation des paramètres
+  const raceDate = new Date(race.date);
+  if (!race.date || isNaN(raceDate.getTime())) return res.status(400).json({ error: "race.date invalide" });
+  const raceDist = parseFloat(race.dist);
+  if (!race.dist || isNaN(raceDist) || raceDist <= 0 || raceDist > 1000) return res.status(400).json({ error: "race.dist invalide" });
+  race.dist = raceDist;
+  const VALID_LEVELS = ["starter","beginner","intermediate","advanced","expert"];
+  if (profile?.level && !VALID_LEVELS.includes(profile.level)) return res.status(400).json({ error: "profile.level invalide" });
+  const kmWeek = profile?.kmWeek ? parseFloat(profile.kmWeek) : null;
+  if (kmWeek !== null && (isNaN(kmWeek) || kmWeek < 0 || kmWeek > 500)) return res.status(400).json({ error: "profile.kmWeek invalide" });
 
   const today = new Date(new Date().setHours(0,0,0,0));
   const plan = buildPlan(race, profile || {}, today);

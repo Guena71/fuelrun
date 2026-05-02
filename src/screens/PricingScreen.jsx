@@ -21,6 +21,7 @@ export function PricingScreen(p){
       body:JSON.stringify({plan:pl.id,uid:user.uid})
     }).then(function(r){return r.json();}).then(function(data){
       if(data.url){window.location.href=data.url;}
+      else if(data.upgraded){setCheckoutLoading(null);p.onUpgrade?p.onUpgrade(data.plan):p.onStart&&p.onStart();}
       else{setCheckoutLoading(null);alert("Erreur : "+data.error);}
     }).catch(function(){setCheckoutLoading(null);alert("Erreur réseau, réessaie.");});
   }
@@ -29,7 +30,7 @@ export function PricingScreen(p){
     <div style={{minHeight:"100vh",background:BG,display:"flex",flexDirection:"column",padding:"0 24px 40px",overflowY:"auto"}}>
       
       {p.onClose?(
-        <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 0 0"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:"max(20px, env(safe-area-inset-top, 20px))"}}>
           <button onClick={p.onClose} style={{background:"none",border:"none",color:OR,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:0}}>← Retour</button>
         </div>
       ):<LogoBar/>}

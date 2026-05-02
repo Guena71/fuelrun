@@ -12,7 +12,9 @@ function verifyStripeSignature(rawBody, signature, secret) {
   return expected === parts.v1;
 }
 
-async function updatePlan(uid, plan) {
+const PLAN_LEVEL = { gratuit: 0, essential: 1, pro: 2 };
+
+async function updatePlan(uid, plan, preventDowngrade = false) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const apiKey    = process.env.FIREBASE_API_KEY;
   // Lire d'abord le profil existant pour ne pas écraser les autres champs
@@ -22,6 +24,14 @@ async function updatePlan(uid, plan) {
   const doc = await getRes.json();
   // Reconstruire le profil avec le nouveau plan
   const existingProfile = doc.fields?.profile?.mapValue?.fields || {};
+  // Pour les abonnements actifs, ne jamais rétrograder (cas de plusieurs abonnements en mode test)
+  if (preventDowngrade) {
+    const currentPlan = existingProfile?.plan?.stringValue || "gratuit";
+    if ((PLAN_LEVEL[plan] || 0) < (PLAN_LEVEL[currentPlan] || 0)) {
+      console.log("Webhook: downgrade ignoré", uid, currentPlan, "→", plan);
+      return;
+    }
+  }
   const updatedFields = Object.assign({}, existingProfile, { plan: { stringValue: plan } });
   const patchUrl = `${base}&updateMask.fieldPaths=profile`;
   const patchRes = await fetch(patchUrl, {
@@ -52,6 +62,32 @@ export default async function handler(req, res) {
   }
 
   const event = JSON.parse(rawBody);
+
+  // ── Idempotency : ignorer les événements déjà traités ──────────────────────
+  try {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const apiKey    = process.env.FIREBASE_API_KEY;
+    const evUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/webhook_events/${event.id}?key=${apiKey}`;
+    const evGet = await fetch(evUrl);
+    if (evGet.ok) {
+      const evDoc = await evGet.json();
+      if (evDoc.fields?.processed?.booleanValue) {
+        console.log("Webhook: event déjà traité", event.id);
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+    }
+    // Marquer comme traité immédiatement
+    fetch(evUrl.split("?")[0] + `?updateMask.fieldPaths=processed&updateMask.fieldPaths=type&updateMask.fieldPaths=ts&key=${apiKey}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields: {
+        processed: { booleanValue: true },
+        type:      { stringValue: event.type },
+        ts:        { integerValue: String(Date.now()) },
+      }}),
+    }).catch(() => {});
+  } catch (e) { console.error("Idempotency check failed:", e.message); }
+
   const sub = event.data?.object;
   const uid = sub?.metadata?.uid;
   const plan = sub?.metadata?.plan;
@@ -60,7 +96,8 @@ export default async function handler(req, res) {
     if (uid && plan) {
       const active = sub.status === "active" || sub.status === "trialing";
       const newPlan = active ? plan : "gratuit";
-      await updatePlan(uid, newPlan);
+      // preventDowngrade=true pour les abonnements actifs (évite qu'un vieil event "essential" écrase "pro")
+      await updatePlan(uid, newPlan, active);
       if (active && event.type === "customer.subscription.created") {
         try {
           const user = await getUserByUid(uid);

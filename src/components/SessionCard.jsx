@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE } from "../data/constants.js";
+import { SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { RECIPES } from "../data/meals.js";
 import { TYPE_COLORS } from "../data/training.js";
 import { calcNutrition, planLevel, getRecipesTrial, RECIPES_TRIAL_DAYS } from "../utils/nutrition.js";
+import { sessionHydration } from "../utils/adaptive.js";
 import { durStr } from "../utils/date.js";
 import { ls, lsSet } from "../utils/storage.js";
 import { Card } from "./ui.jsx";
+
+function paceStr(km,min){
+  if(!km||!min||parseFloat(km)<=0||parseFloat(min)<=0)return null;
+  var s=parseFloat(min)*60/parseFloat(km);
+  return Math.floor(s/60)+"'"+String(Math.round(s%60)).padStart(2,"0")+'"';
+}
+function fmtKm(v){var n=parseFloat(v);if(isNaN(n))return"";return n===Math.round(n)?String(Math.round(n)):n.toFixed(1);}
 
 function RecipeRow(p){
   var r=p.row;
@@ -36,14 +44,34 @@ export function SessionCard(p){
   var s=p.session;
   var [open,setOpen]=useState(p.isNext||false);
   var [nutOpen,setNutOpen]=useState(false);
+  var [saving,setSaving]=useState(false);
+
+  // Done state : priorité à l'entry (journal) si fournie, sinon localStorage
+  var entryDone=!!(p.entry&&p.entry.done);
   var doneKey="fr_done_"+s.date;
-  var [done,setDoneRaw]=useState(function(){return ls(doneKey,false);});
-  function toggleDone(e){e.stopPropagation();var v=!done;setDoneRaw(v);lsSet(doneKey,v);if(v&&p.isBoss&&p.onBossKill)p.onBossKill();}
+  var [localDone,setLocalDone]=useState(function(){return ls(doneKey,false);});
+  var done=p.entry!==undefined?entryDone:localDone;
+
+  function handleDone(e){
+    e.stopPropagation();
+    if(saving||done)return;
+    if(p.onValidate){setSaving(true);p.onValidate(s);return;}
+    // fallback localStorage (si pas de onValidate)
+    var v=!localDone;setLocalDone(v);lsSet(doneKey,v);if(v&&p.isBoss&&p.onBossKill)p.onBossKill();
+  }
+
   var sc=TYPE_COLORS[s.type]||OR;
   var isStrength=s.type==="strength";
   var n=calcNutrition(p.profile,s.type);
   var recipes=RECIPES[s.type]||[];
   var isPast=s.date&&s.date<new Date(new Date().setHours(0,0,0,0));
+
+  // Données réelles si l'entrée est renseignée
+  var actualKm=p.entry&&p.entry.km?parseFloat(p.entry.km):null;
+  var actualMin=p.entry&&p.entry.min?parseFloat(p.entry.min):null;
+  var actualPace=paceStr(actualKm,actualMin);
+  var kmDiff=actualKm!=null&&s.km?actualKm-s.km:null;
+
   return(
     <Card style={{marginBottom:10,border:done?"1.5px solid "+GR:p.isNext?"1.5px solid "+sc:"1px solid "+BORD,opacity:(isPast&&!done)?0.5:1}}>
       {p.isBoss&&(
@@ -52,7 +80,7 @@ export function SessionCard(p){
             <span style={{fontSize:10}}>💥</span>
             <span style={{fontSize:10,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:0.8}}>Session Boss</span>
           </div>
-          <span style={{fontSize:9,color:"rgba(255,255,255,0.8)",fontWeight:600}}>+25 XP bonus si complétée</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,0.8)",fontWeight:600}}>+25 pts bonus si complétée</span>
         </div>
       )}
       {p.isNext&&!p.isBoss&&(
@@ -75,12 +103,20 @@ export function SessionCard(p){
               {isStrength?(
                 <><span style={{fontSize:12,color:sc,fontWeight:600}}>Renforcement</span>{s.duration&&<span style={{fontSize:12,color:SUB}}>· {s.duration}</span>}{s.exercises&&<span style={{fontSize:12,color:SUB}}>· {s.exercises.length} exercices</span>}</>
               ):(
-                <>{s.type!=="race"?<span style={{fontSize:12,color:SUB}}>{s.km} km</span>:null}{s.pace?<span style={{fontSize:12,color:SUB}}>· {s.pace}/km</span>:null}{(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}</>
+                done&&actualKm!=null?(
+                  // Affichage réel
+                  <><span style={{fontSize:12,color:GR,fontWeight:600}}>{fmtKm(actualKm)} km</span>
+                  {actualMin&&<span style={{fontSize:12,color:SUB}}>· {actualMin} min</span>}
+                  {actualPace&&<span style={{fontSize:12,color:GR}}>· {actualPace}/km</span>}
+                  {kmDiff!==null&&Math.abs(kmDiff)>=0.1&&<span style={{fontSize:11,color:kmDiff>=0?GR:RE,fontWeight:600}}>{kmDiff>=0?"+":""}{fmtKm(kmDiff)} km vs plan</span>}</>
+                ):(
+                  <>{s.type!=="race"?<span style={{fontSize:12,color:SUB}}>{s.km} km</span>:null}{s.pace?<span style={{fontSize:12,color:SUB}}>· {s.pace}/km</span>:null}{(s.type!=="race"&&s.pace)?<span style={{fontSize:12,color:sc,fontWeight:600}}>· {durStr(s.pace,s.km)}</span>:null}</>
+                )
               )}
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-            <button onClick={toggleDone} style={{width:28,height:28,borderRadius:8,background:done?GR+"22":SURF2,border:"1px solid "+(done?GR:BORD),display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:done?GR:MUT}}>{done?"✓":"○"}</button>
+            <button onClick={handleDone} disabled={saving||done} style={{width:28,height:28,borderRadius:8,background:done?GR+"22":SURF2,border:"1px solid "+(done?GR:BORD),display:"flex",alignItems:"center",justifyContent:"center",cursor:done||saving?"default":"pointer",fontSize:12,color:done?GR:MUT,opacity:saving?0.5:1}}>{saving?"…":done?"✓":"○"}</button>
             <div style={{width:24,height:24,borderRadius:8,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:SUB,transform:open?"rotate(180deg)":"rotate(0deg)"}}>▼</div>
           </div>
         </div>
@@ -107,6 +143,38 @@ export function SessionCard(p){
                 );})}
               </div>
             )}
+
+            {/* Bloc réalisé : réel vs planifié */}
+            {done&&(actualKm!=null||actualMin!=null)&&(
+              <div style={{background:GR+"10",border:"1px solid "+GR+"30",borderRadius:12,padding:"12px 14px",marginBottom:12}}>
+                <div style={{fontSize:10,color:GR,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,marginBottom:10}}>Réalisé</div>
+                <div style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:actualPace||s.pace?8:0}}>
+                  {actualKm!=null&&<div>
+                    <div style={{fontSize:18,fontWeight:800,color:kmDiff!=null&&kmDiff<-1?RE:GR}}>{fmtKm(actualKm)} km</div>
+                    {s.km&&<div style={{fontSize:10,color:MUT}}>planifié {s.km} km{kmDiff!=null&&Math.abs(kmDiff)>=0.1?(" · "+(kmDiff>=0?"+":"")+fmtKm(kmDiff)+" km"):""}</div>}
+                  </div>}
+                  {actualMin!=null&&<div>
+                    <div style={{fontSize:18,fontWeight:800,color:BL}}>{actualMin} min</div>
+                    <div style={{fontSize:10,color:MUT}}>durée réelle</div>
+                  </div>}
+                  {actualPace&&<div>
+                    <div style={{fontSize:18,fontWeight:800,color:OR}}>{actualPace}/km</div>
+                    {s.pace&&<div style={{fontSize:10,color:MUT}}>planifié {s.pace}/km</div>}
+                  </div>}
+                </div>
+                {p.entry&&p.entry.rpe&&<div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:11,color:MUT}}>Effort :</span>
+                  <span style={{fontSize:11,fontWeight:700,color:p.entry.rpe<=3?GR:p.entry.rpe<=6?"#F59E0B":p.entry.rpe<=8?OR:RE}}>{p.entry.rpe}/10</span>
+                </div>}
+              </div>
+            )}
+            {/* Bouton Valider si pas encore fait */}
+            {!done&&p.onValidate&&s.type!=="race"&&(
+              <button onClick={function(){if(saving)return;setSaving(true);p.onValidate(s);}} disabled={saving} style={{width:"100%",marginBottom:12,padding:"10px",borderRadius:10,background:GR+"15",border:"1px solid "+GR+"44",color:GR,fontSize:13,fontWeight:600,cursor:saving?"default":"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6,opacity:saving?0.5:1}}>
+                {saving?"…":"✓ Valider avec mes vraies valeurs"}
+              </button>
+            )}
+
             {(function(){
               var isPro=planLevel(p.profile)>=2;
               var trial=isPro?{active:true,daysLeft:99}:getRecipesTrial();
@@ -132,13 +200,30 @@ export function SessionCard(p){
                           return <div key={i} style={{flex:1,background:SURF2,borderRadius:8,padding:"7px 4px",textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:m.color}}>{m.value}</div><div style={{fontSize:9,color:MUT,marginTop:2}}>{m.label}</div></div>;
                         })}
                       </div>
+                      {(function(){
+                        if(isStrength||s.km<=0)return null;
+                        var km=actualKm||s.km||0;
+                        var hyd=sessionHydration(p.profile&&p.profile.weight,km);
+                        if(hyd.dailyMl<=0)return null;
+                        var dailyL=(hyd.dailyMl/1000).toFixed(1);
+                        var duringMl=Math.round(hyd.duringMl/50)*50;
+                        return(
+                          <div style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderTop:"1px solid "+BORD}}>
+                            <span style={{fontSize:14,flexShrink:0}}>🚰</span>
+                            <div style={{flex:1}}>
+                              <span style={{fontSize:12,fontWeight:600,color:BL}}>{dailyL} L aujourd'hui</span>
+                              {duringMl>0&&<span style={{fontSize:11,color:MUT}}> · dont ~{duringMl} ml pendant la séance</span>}
+                            </div>
+                          </div>
+                        );
+                      })()}
                       {canSeeRecipes?(
                         <>
                           {!isPro&&<div style={{margin:"8px 12px 0",padding:"8px 12px",borderRadius:8,background:YE+"12",border:"1px solid "+YE+"33",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                             <span style={{fontSize:11,color:YE,fontWeight:600}}>⏳ Accès gratuit encore {trial.daysLeft} jour{trial.daysLeft>1?"s":""}</span>
                             <span onClick={function(e){e.stopPropagation();p.onShowPricing&&p.onShowPricing();}} style={{fontSize:10,fontWeight:700,color:OR,cursor:"pointer",textDecoration:"underline"}}>Passer Pro</span>
                           </div>}
-                          {(recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}) : n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};})).map(function(row,ri){
+                          {(function(){var src=recipes.length>0?recipes.map(function(r){return{slot:r.slot,name:r.name,kcal:r.kcal,ingredients:r.ingredients,steps:r.steps};}):n.meals.map(function(m){return{slot:m.time,name:m.food,kcal:m.kcal,ingredients:null,steps:null};});var seen=new Set();return src.filter(function(row){if(seen.has(row.slot))return false;seen.add(row.slot);return true;});})().map(function(row,ri){
                             return <RecipeRow key={ri} row={row}/>;
                           })}
                         </>

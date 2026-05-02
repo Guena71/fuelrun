@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL } from "../data/constants.js";
+import { SURF, SURF2, BORD, TXT, SUB, MUT, OR, GR, BL, YE, RE } from "../data/constants.js";
 import { stravaAuthUrl } from "../utils/strava.js";
 import { fmtDate, fmtPaceSec, fmtDuration } from "../utils/date.js";
 import { planLevel } from "../utils/nutrition.js";
@@ -16,6 +16,8 @@ export function SuiviScreen(p){
   var today=new Date();
   var [showGpxUpgrade,setShowGpxUpgrade]=useState(false);
   var [showMapModal,setShowMapModal]=useState(false);
+  var [showValModal,setShowValModal]=useState(false);
+  var [valForm,setValForm]=useState({km:"",min:"",rpe:5});
   var todayKey=today.toDateString();
   var todayDone=!!(entries[todayKey]&&entries[todayKey].done);
 
@@ -30,11 +32,30 @@ export function SuiviScreen(p){
     if(todaySess)break;
   }
 
-  function validateToday(){
-    var km=todaySess?todaySess.km||5:5;
+  // Ajustement wellbeing
+  var wpct=null;
+  if(p.wellbeing){var wt=0;Object.values(p.wellbeing).forEach(function(v){wt+=v;});wpct=wt/16;}
+  var adjKm=todaySess?todaySess.km:null;
+  var adjNote=null;
+  if(todaySess&&wpct!==null&&wpct<0.6){
+    var adjFactor=wpct<=0.4?0.3:0.7;
+    adjKm=Math.max(2,Math.round(todaySess.km*adjFactor));
+    adjNote=wpct<=0.4?"Repos actif conseillé · "+adjKm+" km max":"Allégée selon ton état · "+adjKm+" km recommandés";
+  }
+
+  function openValModal(){
+    var defaultKm=adjKm!==null?String(adjKm):todaySess?String(todaySess.km||""):"";
+    setValForm({km:defaultKm,min:"",rpe:5});
+    setShowValModal(true);
+  }
+
+  function saveVal(){
+    var km=parseFloat(valForm.km)||(todaySess?todaySess.km||5:5);
+    var min=valForm.min?parseFloat(valForm.min):null;
     var prev=entries[todayKey]||{};
-    p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[todayKey]:Object.assign({},prev,{done:true,km:String(km),min:""})});});
-    p.onAddSession&&p.onAddSession(km);
+    p.onSetEntries&&p.onSetEntries(function(e){return Object.assign({},e,{[todayKey]:Object.assign({},prev,{done:true,km:String(km),min:min?String(min):undefined,rpe:valForm.rpe})});});
+    p.onAddSession&&p.onAddSession(km,todaySess||null,{km:String(km),min:min?String(min):undefined,rpe:valForm.rpe});
+    setShowValModal(false);
   }
 
   function saveTrack(res){
@@ -80,19 +101,20 @@ export function SuiviScreen(p){
 
         {/* Séance du jour */}
         {(todaySess||!todayDone)&&(
-          <div style={{borderRadius:14,marginBottom:12,overflow:"hidden",background:todayDone?GR+"12":OR+"0e",border:"1.5px solid "+(todayDone?GR:OR)+"44"}}>
+          <div style={{borderRadius:14,marginBottom:12,overflow:"hidden",background:todayDone?GR+"12":adjNote?RE+"0a":OR+"0e",border:"1.5px solid "+(todayDone?GR:adjNote?RE:OR)+"44"}}>
+            {adjNote&&!todayDone&&<div style={{height:3,background:"linear-gradient(90deg,"+RE+"99,"+RE+")"}}/>}
             <div style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-              <span style={{fontSize:22,flexShrink:0}}>{todayDone?"✅":"🏃"}</span>
+              <span style={{fontSize:22,flexShrink:0}}>{todayDone?"✅":adjNote?wpct<=0.4?"🛌":"🚶":"🏃"}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:700,color:todayDone?GR:OR}}>
-                  {todayDone?"Séance validée !":todaySess?todaySess.label:"Séance du jour"}
+                <div style={{fontSize:13,fontWeight:700,color:todayDone?GR:adjNote?RE:OR}}>
+                  {todayDone?"Séance validée !":adjNote?"Séance ajustée":todaySess?todaySess.label:"Séance du jour"}
                 </div>
                 <div style={{fontSize:11,color:SUB,marginTop:2}}>
-                  {todayDone?"Bravo, continue comme ça 💪":todaySess?(todaySess.type==="strength"?(todaySess.duration||"Renforcement"):todaySess.km+" km · "+(todaySess.pace||"allure libre")):"Enregistre ta sortie"}
+                  {todayDone?"Bravo, continue comme ça 💪":adjNote?adjNote:todaySess?(todaySess.type==="strength"?(todaySess.duration||"Renforcement"):todaySess.km+" km · "+(todaySess.pace||"allure libre")):"Enregistre ta sortie"}
                 </div>
               </div>
               {!todayDone&&(
-                <button onClick={validateToday} style={{flexShrink:0,padding:"8px 14px",borderRadius:10,background:OR,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Valider ✓</button>
+                <button onClick={openValModal} style={{flexShrink:0,padding:"8px 14px",borderRadius:10,background:adjNote?RE:OR,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Valider ✓</button>
               )}
             </div>
           </div>
@@ -150,7 +172,13 @@ export function SuiviScreen(p){
 
           {/* Strava + GPX dans une même ligne */}
           <div style={{padding:"10px 16px",borderBottom:"1px solid "+BORD,display:"flex",gap:8}}>
-            {!p.stravaProfile?(
+            {planLevel(p.profile)<1?(
+              <div onClick={function(){p.onShowPricing&&p.onShowPricing();}} style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:SURF2,border:"1px solid "+BORD,cursor:"pointer"}}>
+                <span style={{fontSize:16}}>🔒</span>
+                <div style={{flex:1,fontSize:12,fontWeight:600,color:MUT}}>Connecter Strava</div>
+                <span style={{fontSize:9,fontWeight:700,color:BL,background:BL+"18",padding:"2px 6px",borderRadius:4}}>Ess.</span>
+              </div>
+            ):!p.stravaProfile?(
               <a href={stravaAuthUrl()} style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:10,background:"#FC4C02",textDecoration:"none"}}>
                 <span style={{fontSize:16}}>🔗</span>
                 <div style={{flex:1}}>
@@ -171,7 +199,7 @@ export function SuiviScreen(p){
                 <input type="file" accept=".gpx" style={{display:"none"}} onChange={function(e){
                   var file=e.target.files&&e.target.files[0];if(!file)return;
                   var reader=new FileReader();
-                  reader.onload=function(ev){var track=parseGpx(ev.target.result);if(track.length>1){var km=calcTrackKm(track);var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});}};
+                  reader.onload=function(ev){try{var track=parseGpx(ev.target.result);if(track.length>1){var km=calcTrackKm(track);var minDur=track[0].ts&&track[track.length-1].ts?Math.round((track[track.length-1].ts-track[0].ts)/60000):null;saveTrack({track:track,km:String(km.toFixed(2)),min:minDur?String(minDur):""});}}catch(e){alert("Fichier GPX invalide ou corrompu.");}};
                   reader.readAsText(file);e.target.value="";
                 }}/>
               </label>
@@ -210,7 +238,7 @@ export function SuiviScreen(p){
                   <div style={{width:36,height:36,borderRadius:10,background:OR+"15",border:"1px solid "+OR+"30",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:12,color:OR,fontWeight:800}}>{Math.round(data.km||0)}<span style={{fontSize:7,fontWeight:500,marginLeft:1}}>km</span></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:TXT}}>{data.km||0} km{data.min?" · "+fmtDuration(data.min,data.sec):""}</div>
-                    <div style={{fontSize:11,color:MUT,marginTop:1}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}{data.rpe?" · RPE "+data.rpe:""}</div>
+                    <div style={{fontSize:11,color:MUT,marginTop:1}}>{d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()}{data.rpe?" · Effort "+data.rpe+"/10":""}</div>
                   </div>
                   {data.feel!=null&&<div style={{fontSize:16}}>{[..."😤😓😐🙂💪"][data.feel]||""}</div>}
                   <div style={{fontSize:13,color:MUT}}>›</div>
@@ -225,6 +253,46 @@ export function SuiviScreen(p){
     </div>
     {showMapModal&&lastTracked&&<MapModal track={lastTracked[1].track} onClose={function(){setShowMapModal(false);}}/>}
     {showGpxUpgrade&&<UpgradeModal feature="Import GPX" minPlanLabel="Essentiel" minPlanColor={BL} onClose={function(){setShowGpxUpgrade(false);}} onUpgrade={function(){setShowGpxUpgrade(false);p.onShowPricing&&p.onShowPricing();}}/>}
-    </>
+    {showValModal&&(
+      <div style={{position:"fixed",inset:0,zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(){setShowValModal(false);}}>
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.55)"}}/>
+        <div style={{position:"relative",width:"100%",maxWidth:430,background:"#1a1a1a",borderRadius:"20px 20px 0 0",maxHeight:"90vh",display:"flex",flexDirection:"column"}} onClick={function(e){e.stopPropagation();}}>
+          <div style={{padding:"20px 20px 0",flexShrink:0}}>
+            <div style={{width:36,height:4,background:"#444",borderRadius:2,margin:"0 auto 16px"}}/>
+            <div style={{fontSize:15,fontWeight:700,color:"#f0f0f0",marginBottom:4}}>Valider ma séance</div>
+          </div>
+          <div style={{overflowY:"auto",padding:"0 20px 16px",flex:1}}>
+            {adjNote&&<div style={{fontSize:11,color:RE,fontWeight:600,marginBottom:14,padding:"7px 10px",borderRadius:8,background:RE+"15",border:"1px solid "+RE+"33"}}>⚠ {adjNote}</div>}
+            {!adjNote&&todaySess&&<div style={{fontSize:11,color:"#888",marginBottom:14}}>Prévu : {todaySess.km} km{todaySess.pace?" · "+todaySess.pace+"/km":""}</div>}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+              <div>
+                <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600}}>Distance (km)</div>
+                <input type="number" inputMode="decimal" min="0" step="0.1" placeholder={adjKm!==null?String(adjKm):todaySess?String(todaySess.km||""):"km"}
+                  value={valForm.km} onChange={function(e){setValForm(function(f){return Object.assign({},f,{km:e.target.value});});}}
+                  style={{width:"100%",background:"#252525",border:"1px solid "+(adjNote?"#7f1d1d":"#333"),borderRadius:10,padding:"11px 12px",color:"#f0f0f0",fontSize:15,fontWeight:600,outline:"none",boxSizing:"border-box",fontFamily:"inherit"}}/>
+              </div>
+              <div>
+                <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600}}>Durée (min)</div>
+                <input type="number" inputMode="numeric" min="0" placeholder="min"
+                  value={valForm.min} onChange={function(e){setValForm(function(f){return Object.assign({},f,{min:e.target.value});});}}
+                  style={{width:"100%",background:"#252525",border:"1px solid #333",borderRadius:10,padding:"11px 12px",color:"#f0f0f0",fontSize:15,fontWeight:600,outline:"none",boxSizing:"border-box",fontFamily:"inherit"}}/>
+              </div>
+            </div>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:11,color:"#888",marginBottom:8,fontWeight:600,display:"flex",justifyContent:"space-between"}}>
+                <span>Effort perçu</span><span style={{color:OR,fontWeight:700}}>{valForm.rpe}/10</span>
+              </div>
+              <input type="range" min="1" max="10" value={valForm.rpe} onChange={function(e){setValForm(function(f){return Object.assign({},f,{rpe:parseInt(e.target.value)});});}}
+                style={{width:"100%",accentColor:OR}}/>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:10,padding:"12px 20px",paddingBottom:"calc(16px + env(safe-area-inset-bottom, 0px))",borderTop:"1px solid #333",flexShrink:0}}>
+            <button onClick={function(){setShowValModal(false);}} style={{flex:1,padding:"13px",borderRadius:12,background:"#252525",border:"1px solid #333",color:"#aaa",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Annuler</button>
+            <button onClick={saveVal} style={{flex:2,padding:"13px",borderRadius:12,background:OR,border:"none",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Enregistrer ✓</button>
+          </div>
+        </div>
+      </div>
+    )}
+</>
   );
 }

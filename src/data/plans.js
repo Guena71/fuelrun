@@ -3,43 +3,42 @@ import { SUB, BL, OR } from "./constants.js";
 export var PLANS=[
   {
     id:"gratuit", name:"Gratuit", price:"0", per:"toujours", color:SUB, tag:null,
-    desc:"Commence à t'entraîner, découvre les fonctionnalités.",
+    desc:"Découvre FuelRun et commence à t'entraîner.",
     items:[
-      "3 premières semaines de plan d'entraînement offertes",
+      "3 premières semaines de plan d'entraînement",
       "1 objectif de course",
-      "Nutrition du jour (calories et macros)",
       "Journal des séances",
-      "XP, badges & défis hebdomadaires",
-      "5 messages Coach par jour",
+      "Points, badges et défis hebdomadaires",
+      "7 messages Coach par jour",
     ],
     cta:"Commencer gratuitement"
   },
   {
-    id:"essential", name:"Essentiel", price:"4,99", per:"/mois", color:BL, tag:"Populaire",
+    id:"essential", name:"Essentiel", price:"6,99", per:"/mois", color:BL, tag:"Populaire",
     desc:"Le suivi complet pour progresser régulièrement.",
     items:[
-      "14 jours gratuits, puis 4,99 € par mois :",
-      "Courses et objectifs illimités",
-      "Plan d'entraînement complet sur toutes les semaines",
-      "Journal avec suivi de la fatigue et de l'effort perçu",
-      "Nutrition du jour pour toutes tes courses",
-      "Synchronisation Strava (import automatique des activités)",
-      "Import de tracés GPS (Garmin, Polar, Wahoo…)",
+      "14 jours gratuits, puis 6,99 € / mois :",
+      "Plan d'entraînement complet (toutes les semaines)",
+      "Objectifs de course illimités",
+      "Synchronisation Strava automatique",
+      "Import tracés GPS (Garmin, Polar, Wahoo…)",
+      "Score de forme et adaptation du plan",
+      "Conseil du jour + récap hebdomadaire Coach",
       "30 messages Coach par jour",
     ],
     cta:"Essayer 14 jours gratuit"
   },
   {
-    id:"pro", name:"Pro", price:"9,99", per:"/mois", color:OR, tag:"Recommandé",
+    id:"pro", name:"Pro", price:"12,99", per:"/mois", color:OR, tag:"Recommandé",
     desc:"La préparation complète pour performer en compétition.",
     items:[
-      "14 jours gratuits, puis 9,99 € par mois :",
+      "14 jours gratuits, puis 12,99 € / mois :",
       "Tout Essentiel, plus :",
-      "Coach illimité 24h sur 24",
-      "Allures personnalisées et zones d'entraînement",
-      "Stratégie de course et temps par kilomètre",
-      "Recettes premium et plans repas sur-mesure",
-      "Prédictions de temps et analyse de performance détaillée",
+      "Coach illimité 24h/24",
+      "Calibration de tes allures de course (méthode scientifique)",
+      "Stratégie de course et temps de passage",
+      "Analyse IA automatique après chaque séance",
+      "Recettes et plans repas sur-mesure",
     ],
     cta:"Essayer 14 jours gratuit"
   }

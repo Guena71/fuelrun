@@ -1,5 +1,7 @@
 // Strava activities — retourne les 10 dernières courses de l'utilisateur
-// Variables Vercel : STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, FIREBASE_PROJECT_ID, FIREBASE_API_KEY
+// Variables Vercel : STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, FIREBASE_PROJECT_ID, FIREBASE_API_KEY, STRAVA_ENCRYPT_KEY
+
+import { encrypt, decrypt } from "./_crypto.js";
 
 const FS_BASE = () =>
   `https://firestore.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
@@ -37,8 +39,16 @@ function msToPace(mps) {
   return `${Math.floor(s / 60)}'${String(Math.round(s % 60)).padStart(2, "0")}"`;
 }
 
+function fetchWithTimeout(url, options, ms = 8000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://fuelrun.vercel.app");
+  const _allowed = ["https://fuelrun.fr", "https://fuelrun.vercel.app"];
+  const _origin = req.headers.origin || "";
+  if (_allowed.includes(_origin)) res.setHeader("Access-Control-Allow-Origin", _origin);
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -53,59 +63,71 @@ export default async function handler(req, res) {
   const sf  = doc?.fields?.strava?.mapValue?.fields;
   if (!sf) return res.status(404).json({ error: "Strava non connecté" });
 
-  let accessToken  = fsStr(sf.accessToken);
-  let refreshToken = fsStr(sf.refreshToken);
+  let accessToken  = decrypt(fsStr(sf.accessToken));
+  let refreshToken = decrypt(fsStr(sf.refreshToken));
   let expiresAt    = fsInt(sf.expiresAt) || 0;
 
+  // Rafraîchir le token si expiré
   if (Date.now() / 1000 > expiresAt - 60) {
-    const r = await fetch("https://www.strava.com/oauth/token", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id:     process.env.STRAVA_CLIENT_ID,
-        client_secret: process.env.STRAVA_CLIENT_SECRET,
-        refresh_token: refreshToken,
-        grant_type:    "refresh_token",
-      }),
-    });
-    const refreshed = await r.json();
-    if (refreshed.access_token) {
-      accessToken  = refreshed.access_token;
-      refreshToken = refreshed.refresh_token;
-      expiresAt    = refreshed.expires_at;
-      await fsPatch(`users/${uid}`, {
-        strava: {
-          mapValue: {
-            fields: {
-              accessToken:  { stringValue: accessToken },
-              refreshToken: { stringValue: refreshToken },
-              expiresAt:    { integerValue: String(expiresAt) },
-              athleteId:    sf.athleteId,
-              athleteName:  sf.athleteName,
+    try {
+      const r = await fetchWithTimeout("https://www.strava.com/oauth/token", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id:     process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          refresh_token: refreshToken,
+          grant_type:    "refresh_token",
+        }),
+      });
+      const refreshed = await r.json();
+      if (refreshed.access_token) {
+        accessToken  = refreshed.access_token;
+        refreshToken = refreshed.refresh_token;
+        expiresAt    = refreshed.expires_at;
+        await fsPatch(`users/${uid}`, {
+          strava: {
+            mapValue: {
+              fields: {
+                accessToken:  { stringValue: encrypt(accessToken) },
+                refreshToken: { stringValue: encrypt(refreshToken) },
+                expiresAt:    { integerValue: String(expiresAt) },
+                athleteId:    sf.athleteId,
+                athleteName:  sf.athleteName,
+              },
             },
           },
-        },
-      }, idToken);
+        }, idToken);
+      }
+    } catch (e) {
+      console.error("Strava token refresh failed:", e.message);
+      return res.status(502).json({ error: "Impossible de rafraîchir le token Strava" });
     }
   }
 
-  const r = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=10&page=1", {
-    headers: { Authorization: "Bearer " + accessToken },
-  });
-  if (!r.ok) return res.status(r.status).json({ error: "Erreur API Strava" });
-  const activities = await r.json();
+  try {
+    const r = await fetchWithTimeout(
+      "https://www.strava.com/api/v3/athlete/activities?per_page=10&page=1",
+      { headers: { Authorization: "Bearer " + accessToken } }
+    );
+    if (!r.ok) return res.status(r.status).json({ error: "Erreur API Strava" });
+    const activities = await r.json();
 
-  const runs = activities
-    .filter(a => a.type === "Run" || a.sport_type === "Run")
-    .map(a => ({
-      id:        a.id,
-      name:      a.name,
-      date:      a.start_date_local.slice(0, 10),
-      km:        +(a.distance / 1000).toFixed(2),
-      duration:  Math.round(a.moving_time / 60),
-      pace:      msToPace(a.average_speed),
-      elevation: Math.round(a.total_elevation_gain),
-    }));
+    const runs = activities
+      .filter(a => a.type === "Run" || a.sport_type === "Run")
+      .map(a => ({
+        id:        a.id,
+        name:      a.name,
+        date:      a.start_date_local.slice(0, 10),
+        km:        +(a.distance / 1000).toFixed(2),
+        duration:  Math.round(a.moving_time / 60),
+        pace:      msToPace(a.average_speed),
+        elevation: Math.round(a.total_elevation_gain),
+      }));
 
-  res.status(200).json({ runs, athleteName: fsStr(sf.athleteName) });
+    res.status(200).json({ runs, athleteName: fsStr(sf.athleteName) });
+  } catch (e) {
+    if (e.name === "AbortError") return res.status(504).json({ error: "Strava ne répond pas" });
+    return res.status(502).json({ error: "Erreur Strava" });
+  }
 }

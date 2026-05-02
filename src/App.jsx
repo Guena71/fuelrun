@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-function stripMd(t){return(t||"").replace(/\*+/g,"").replace(/_([^_\n]*)_/g,"$1").replace(/  +/g," ").trim();}
+function escHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function stripMd(t){return escHtml((t||"").replace(/\*+/g,"").replace(/_([^_\n]*)_/g,"$1").replace(/  +/g," ").trim());}
 // Capture synchronously at module load — before any effect or replaceState can clear the URL
 var _checkoutPlan=(function(){try{var p=new URLSearchParams(window.location.search);if(p.get("checkout")==="success")return p.get("plan")||"essential";}catch(e){}return null;})();
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { auth, db, analytics, signOut, onAuthStateChanged, getRedirectResult, logEvent, doc, setDoc, getDoc, deleteDoc, deleteUser } from "./firebase.js";
 import { BG, SURF, BORD, OR, GR, RE } from "./data/constants.js";
 import { ls, lsSet } from "./utils/storage.js";
-import { checkNewBadges, getWeeklyContractKey, sessionXP, xpToLevel, generateWeeklyChallenge, challengeProgress } from "./utils/gamification.js";
+import { getWeeklyContractKey, sessionXP, generateWeeklyChallenge, challengeProgress } from "./utils/gamification.js";
 import { planLevel } from "./utils/nutrition.js";
 import { stravaExchange, fetchStravaRuns, stravaActivitiesToEntries } from "./utils/strava.js";
 import { RunnerHero } from "./components/RunnerHero.jsx";

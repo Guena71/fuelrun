@@ -12,22 +12,31 @@ L'application est accessible depuis tout appareil connecté à Internet. L'utili
 
 3. FORMULES ET ABONNEMENTS
 • Gratuit : accès limité (3 semaines de plan, 5 messages Coach/jour)
-• Essentiel (4,99 €/mois) : plan complet, Strava, nutrition, 30 messages Coach/jour
-• Pro (9,99 €/mois) : toutes fonctionnalités, coach illimité, recettes premium
+• Essentiel (6,99 €/mois) : plan complet, Strava, nutrition, score forme, conseil du jour, récap hebdo, 30 messages Coach/jour
+• Pro (12,99 €/mois) : toutes fonctionnalités, coach illimité, analyse IA post-séance, calibration des allures, recettes premium
 
-Les abonnements sont sans engagement et résiliables à tout moment depuis les paramètres. Aucun remboursement ne sera effectué pour une période déjà facturée.
+Chaque formule payante bénéficie d'un essai gratuit de 14 jours. Aucun débit n'est effectué pendant cette période. À l'issue de l'essai, l'abonnement est reconduit mensuellement sans engagement.
 
-4. PROPRIÉTÉ INTELLECTUELLE
+Les abonnements sont résiliables à tout moment depuis les paramètres du compte (section "Gérer mon abonnement"). La résiliation prend effet à la fin de la période en cours.
+
+4. DROIT DE RÉTRACTATION
+Conformément aux articles L221-18 et L221-28 du Code de la consommation, vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation à compter de la souscription.
+
+Toutefois, en acceptant les présentes CGU et en démarrant l'essai gratuit, vous reconnaissez expressément que l'exécution du service commence immédiatement, et vous renoncez à votre droit de rétractation pour toute période d'abonnement effectivement facturée, conformément à l'article L221-28 4° du Code de la consommation.
+
+Pour exercer ce droit avant tout débit, contactez : contact@fuelrun.app
+
+5. PROPRIÉTÉ INTELLECTUELLE
 Tous les contenus de FuelRun (plans d'entraînement, recettes, textes, design) sont la propriété exclusive de FuelRun. Toute reproduction sans autorisation est interdite.
 
-5. RESPONSABILITÉ
+6. RESPONSABILITÉ
 FuelRun est un outil d'aide à l'entraînement. Il ne remplace pas un avis médical professionnel. L'utilisateur pratique à ses propres risques. FuelRun ne saurait être tenu responsable de blessures ou dommages résultant de l'utilisation du service.
 
-6. MODIFICATION DES CGU
-FuelRun se réserve le droit de modifier les présentes CGU. Les utilisateurs seront informés par notification dans l'application.
+7. MODIFICATION DES CGU
+FuelRun se réserve le droit de modifier les présentes CGU. Les utilisateurs seront informés par notification dans l'application au moins 30 jours avant l'entrée en vigueur des modifications.
 
-7. DROIT APPLICABLE
-Les présentes CGU sont soumises au droit français. Tout litige relève de la compétence des tribunaux français.
+8. DROIT APPLICABLE ET LITIGES
+Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux français sont compétents. Le consommateur peut également recourir gratuitement à un médiateur de la consommation (ex. : médiation de la FEVAD ou de la CMAP).
 
 Contact : contact@fuelrun.app`;
 
@@ -80,10 +89,42 @@ L'application utilise le stockage local (localStorage) uniquement pour les préf
 
 Contact DPO : contact@fuelrun.app`;
 
+var LEGAL_MENTIONS=`MENTIONS LÉGALES
+
+Dernière mise à jour : avril 2026
+
+1. ÉDITEUR DE L'APPLICATION
+Nom commercial : FuelRun
+Contact : contact@fuelrun.app
+Site : https://fuelrun.fr
+
+Directeur de la publication : le responsable du compte FuelRun.
+
+2. HÉBERGEMENT
+L'application FuelRun est hébergée par :
+• Vercel Inc. — 440 N Barranca Ave #4133, Covina, CA 91723, USA
+• Google Firebase (Google LLC) — 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA
+
+Ces prestataires disposent d'engagements contractuels conformes au RGPD et participent au EU-US Data Privacy Framework.
+
+3. PROPRIÉTÉ INTELLECTUELLE
+L'ensemble du contenu de l'application (textes, plans d'entraînement, design, code source, logo) est protégé par le droit d'auteur français et les conventions internationales. Toute reproduction, même partielle, est interdite sans autorisation préalable écrite.
+
+4. DONNÉES PERSONNELLES
+Le traitement des données personnelles est décrit dans la Politique de Confidentialité accessible depuis l'application. Conformément au RGPD et à la loi Informatique et Libertés, vous pouvez exercer vos droits à : contact@fuelrun.app
+
+5. RESPONSABILITÉ
+FuelRun s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées. FuelRun décline toute responsabilité pour des dommages directs ou indirects résultant d'une interruption de service, d'une erreur dans les contenus ou d'une utilisation inappropriée des recommandations d'entraînement.
+
+6. COOKIES ET TRACEURS
+L'application utilise uniquement le stockage local du navigateur (localStorage) pour le fonctionnement du service. Aucun cookie publicitaire ni traceur tiers à des fins commerciales n'est déposé.
+
+Contact : contact@fuelrun.app`;
+
 export function LegalModal(p){
   if(!p.open)return null;
-  var content=p.open==="cgu"?LEGAL_CGU:LEGAL_PRIVACY;
-  var title=p.open==="cgu"?"Conditions Générales d'Utilisation":"Politique de Confidentialité";
+  var content=p.open==="cgu"?LEGAL_CGU:p.open==="mentions"?LEGAL_MENTIONS:LEGAL_PRIVACY;
+  var title=p.open==="cgu"?"Conditions Générales d'Utilisation":p.open==="mentions"?"Mentions Légales":"Politique de Confidentialité";
   return(
     <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.85)",display:"flex",flexDirection:"column"}}>
       <div style={{background:SURF,flex:1,display:"flex",flexDirection:"column",marginTop:48,borderRadius:"24px 24px 0 0",overflow:"hidden"}}>

@@ -21,17 +21,25 @@ var SLIDES=[
 
 export function LogoBar(p){
   var navigate=useNavigate();
+  var initials=p.profile?(p.profile.name||"").split(" ").map(function(w){return w[0]||"";}).join("").slice(0,2).toUpperCase()||"?":"";
   return(
     <div style={{display:"flex",alignItems:"center",paddingTop:"max(16px, env(safe-area-inset-top, 16px))",paddingBottom:12,paddingLeft:20,paddingRight:20,flexShrink:0}}>
       <div onClick={function(){navigate("/home");}} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
         <div style={{animation:"bounce 1.8s ease-in-out infinite",filter:"drop-shadow(0 0 10px "+OR+"60)"}}><RunnerHero size={44}/></div>
         <span style={{fontSize:34,fontWeight:800,color:TXT,letterSpacing:"-0.5px"}}>FuelRun</span>
       </div>
-      {p.onSignOut&&(
-        <button onClick={p.onSignOut} title="Se déconnecter" style={{marginLeft:"auto",width:38,height:38,borderRadius:10,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={MUT} strokeWidth="2" strokeLinecap="round"/><polyline points="16 17 21 12 16 7" stroke={MUT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke={MUT} strokeWidth="2" strokeLinecap="round"/></svg>
-        </button>
-      )}
+      <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+        {p.onProfile&&(
+          <button onClick={p.onProfile} title="Mon profil" style={{width:38,height:38,borderRadius:12,background:"linear-gradient(135deg,"+OR+"44,#1a0800)",border:"2px solid "+OR+"55",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontFamily:"inherit"}}>
+            <span style={{fontSize:13,fontWeight:700,color:OR}}>{initials}</span>
+          </button>
+        )}
+        {p.onSignOut&&(
+          <button onClick={p.onSignOut} title="Se déconnecter" style={{width:38,height:38,borderRadius:10,background:SURF2,border:"1px solid "+BORD,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={MUT} strokeWidth="2" strokeLinecap="round"/><polyline points="16 17 21 12 16 7" stroke={MUT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke={MUT} strokeWidth="2" strokeLinecap="round"/></svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export function getRecipesTrial(){
 
 export function planLevel(profile){
   var p=(profile&&profile.plan)||"gratuit";
-  if(p==="elite"||p==="pro")return 2;
+  if(p==="pro")return 2;
   if(p==="essential")return 1;
   return 0;
 }
